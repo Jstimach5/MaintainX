@@ -21,6 +21,8 @@ import { StatusChangeForm, TransferForm } from "../asset-forms";
 import { buildPickerData } from "../picker";
 import { setAssetArchivedAction } from "../actions";
 import { IMAGE_TYPES } from "@/server/storage";
+import { listWorkOrders } from "@/server/services/workOrders";
+import { WoStatusBadge } from "../../work-orders/wo-badges";
 
 export const metadata = { title: "Asset" };
 
@@ -54,6 +56,7 @@ export default async function AssetDetailPage({
   const tz = org.timezone;
   const attachments = await listAttachments("asset", assetId);
   const picker = await buildPickerData();
+  const assetWos = await listWorkOrders({ assetId, includeDone: true });
   const isAdmin = user.role === "admin";
   const canManage = user.role === "admin" || user.role === "manager";
 
@@ -206,11 +209,39 @@ export default async function AssetDetailPage({
           ) : null}
 
           <Card>
-            <h2 className="mb-2 font-semibold">Open work orders</h2>
-            <p className="text-sm text-gray-500">
-              Work orders arrive in the next phase — this asset&apos;s open and
-              completed work will show here.
-            </p>
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="font-semibold">Work history</h2>
+              {canManage && !asset.archivedAt ? (
+                <ButtonLink
+                  href={`/work-orders/new?asset=${asset.id}`}
+                  variant="secondary"
+                >
+                  New work order
+                </ButtonLink>
+              ) : null}
+            </div>
+            {assetWos.length === 0 ? (
+              <p className="text-sm text-gray-500">
+                No work orders reference this asset yet.
+              </p>
+            ) : (
+              <ul className="space-y-1">
+                {assetWos.map(({ wo }) => (
+                  <li
+                    key={wo.id}
+                    className="flex items-center justify-between gap-2 text-sm"
+                  >
+                    <Link
+                      href={`/work-orders/${wo.id}`}
+                      className="text-blue-700 hover:underline"
+                    >
+                      {wo.woNumber} · {wo.title}
+                    </Link>
+                    <WoStatusBadge status={wo.status} />
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
         </div>
 

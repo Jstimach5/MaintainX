@@ -137,3 +137,40 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
   with numeric prefixes (00-auth, 10-sites, 20-assets) for deterministic
   order.
 - **Final result:** PASS — all suites green.
+
+---
+
+## Phase 4 — Work orders core
+
+### 2026-07-27 — Full verification cycle
+
+- **Feature tested:** WO creation (§7 field set incl. planned/due datetimes,
+  estimates, downtime, costs fields, tags, parent/sub-WOs, multi-asset,
+  team + people assignment), sequential numbering, status lifecycle with
+  history (actualStartAt stamped on first start; completedAt set/cleared),
+  technician action boundaries, comments, per-tech labor entries, WO
+  attachments, asset work-history panel, org-timezone datetime handling.
+- **Commands run:** db:migrate (0004_work_orders), typecheck, lint,
+  `npm test`, `npm run test:e2e`, build
+- **Automated results:** vitest **62/62** (adds 16: numbering, initial
+  status by assignment, primary-asset linking + history row, archived/
+  cross-site asset rejects, lifecycle timestamps + reopen semantics + 4-row
+  history, tech-cannot-cancel, Scenario-F boundaries (assigned/team/
+  unassigned/manager), labor totals + range validation, comments, update
+  syncs assignees/assets, self-parent reject, list filters incl. mine/asset/
+  default-hides-finished). Playwright **23/23** (adds 6: manager creates WO
+  from asset page with prefilled site+asset and assigns tech; tech runs the
+  full job — start, photo upload, comment, 1h15m labor, complete with notes
+  + downtime, history trail visible; completed WO in asset history; second
+  tech blocked from another tech's WO (read-only banner, no action
+  buttons); requester 403; @mobile tech start-work flow with no horizontal
+  scroll).
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** admin, manager, technician (x2), requester
+- **Failures found & fixes:** (1) datetime-local inputs were being parsed in
+  server timezone — added wallTimeToUtc(org tz) conversion in actions
+  (DECISIONS.md #5 class bug caught in review). (2) e2e assignee locator
+  referenced a fixture name that the UI-created user shadowed → locator by
+  visible display name. (3) mid-test re-login hit the /login→dashboard
+  redirect → login helper signs out first.
+- **Final result:** PASS — all suites green.

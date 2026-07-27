@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 3)
+Last updated: 2026-07-27 (Phase 4)
 
 ## P0 — Must work
 
@@ -19,9 +19,9 @@ Last updated: 2026-07-27 (Phase 3)
 | Assets (full field set, parent/sub-assets, statuses) | P0 | Verified | src/app/(app)/assets, src/server/services/assets.ts | — | Create/edit/archive via UI; sub-assets + cycle guard | PASS 2026-07-27 | TEST_LOG.md Phase 3 |
 | Asset location history + transfers | P0 | Verified | src/server/services/assets.ts (transferAsset) | — | Transfer writes history + audit; panel shows it | PASS 2026-07-27 | TEST_LOG.md Phase 3 |
 | Asset status history | P0 | Verified | src/server/services/assets.ts (changeAssetStatus) | — | Status change writes history + audit; panel shows it | PASS 2026-07-27 | TEST_LOG.md Phase 3 |
-| Work orders (fields, numbering, lifecycle statuses + history) | P0 | Missing | src/app/work-orders/ (planned) | Build in Phase 4 | Full lifecycle via UI; status history complete with user+timestamp | — | — |
-| WO assignments (users/team) | P0 | Missing | (planned) | Build in Phase 4 | Assign/unassign; technician sees assigned work | — | — |
-| Pictures & files on WOs/assets/requests (survive restart) | P0 | Partially working | src/server/storage/, src/server/services/attachments.ts, src/app/api/attachments, src/app/files/[id] | Asset uploads verified (incl. mobile + reload + disk roundtrip); WO/request wiring in Phases 4/6 | Upload via mobile viewport; picture visible after reload/restart | Asset path PASS 2026-07-27 | TEST_LOG.md Phase 3 |
+| Work orders (fields, numbering, lifecycle statuses + history) | P0 | Verified | src/app/(app)/work-orders, src/server/services/workOrders.ts | — | Full lifecycle via UI; status history complete with user+timestamp | PASS 2026-07-27 | TEST_LOG.md Phase 4 |
+| WO assignments (users/team) | P0 | Verified | src/server/services/workOrders.ts | — | Assign/unassign; tech sees Mine filter; Scenario-F boundaries enforced | PASS 2026-07-27 | TEST_LOG.md Phase 4 |
+| Pictures & files on WOs/assets/requests (survive restart) | P0 | Partially working | src/server/storage/, src/server/services/attachments.ts | Asset + WO uploads verified (mobile, reload, disk roundtrip); request wiring in Phase 6 | Upload via mobile viewport; picture visible after reload/restart | Asset+WO paths PASS 2026-07-27 | TEST_LOG.md Phases 3–4 |
 | Procedures (templates, versioned snapshots, all step types) | P0 | Missing | src/app/procedures/ (planned) | Build in Phase 5 | Template edit never mutates completed WO's procedure; required steps block completion | — | — |
 | Failed inspection → flag + corrective request | P0 | Missing | (planned) | Build in Phase 5 | Fail a step → WO flagged, corrective request created | — | — |
 | Work requests + approval + convert (no duplicate conversion) | P0 | Missing | src/app/requests/ (planned) | Build in Phase 6 | Scenario A end-to-end | — | — |

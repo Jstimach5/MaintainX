@@ -29,6 +29,13 @@
       "when": 1785158529159,
       "tag": "0003_assets_attachments",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785159032844,
+      "tag": "0004_work_orders",
+      "breakpoints": true
     }
   ]
 }

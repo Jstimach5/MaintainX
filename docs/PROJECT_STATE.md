@@ -1,48 +1,49 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 3 complete)
+Last updated: 2026-07-27 (Phase 4 complete)
 
 ## Current phase
 
-Phase 3 complete — assets with status/location histories, storage adapter
-+ uploads, QR labels all verified. Next up: Phase 4 (work orders core).
+Phase 4 complete — work orders core verified end to end (lifecycle,
+assignments, Scenario-F boundaries, labor, comments, photos, org-timezone
+datetimes). Next up: Phase 5 (procedures).
 
 ## Last completed task
 
-Phase 3: assets — full §6 field set, auto asset numbers, sub-asset
-hierarchy with cycle guard, status + location histories (in-tx with audit),
-archive/restore, storage adapter with validated uploads + auth-gated
-serving, shared AttachmentSection UI, QR tokens + printable labels +
-/a/<token> resolver; 19 new vitest + 6 new e2e tests.
+Phase 4: work orders — §7 schema (28 cols) + assignments/assets/status-
+history/labor/comments tables, lifecycle service with first-start/completion
+timestamp semantics, canActOnWorkOrder boundaries, org-TZ datetime-local
+handling (wallTimeToUtc), list with persistent filters, detail page with
+quick-status bar + activity, asset work-history panel; 16 new vitest + 6
+new e2e tests.
 
 ## Current task
 
-Begin Phase 4: work orders core — schema (§7 fields, numbering, status
-history, assignments, multi-asset), lifecycle service, list/detail UI with
-quick actions, comments, attachments reuse, labor time.
+Begin Phase 5: procedures — template builder (all §7 step types,
+conditional follow-ups, min/max), versioned snapshot on attach, technician
+step-through UI, completion blocking, failed-inspection flow.
 
 ## Next three tasks
 
-1. Phase 4: work orders core (fields, numbering, statuses + history,
-   assignments, comments, attachments, mobile cards).
-2. Phase 5: procedures (templates, versioned snapshots, execution UI).
-3. Phase 6: work requests + portal + notifications (Scenario A).
+1. Phase 5: procedures (templates, versioned snapshots, execution UI).
+2. Phase 6: work requests + portal + notifications (Scenario A).
+3. Phase 7: preventive maintenance engine (Scenario B).
 
 ## Known failures
 
-None. All suites green (46 vitest, 17 playwright).
+None. All suites green (62 vitest, 23 playwright).
 
 ## Current test results
 
-- `npm test`: 46/46 pass (auth, sites/locations, assets, attachments)
-- `npm run test:e2e`: 17/17 pass (desktop + mobile projects)
+- `npm test`: 62/62 pass (auth, sites/locations, assets, attachments, WOs)
+- `npm run test:e2e`: 23/23 pass (desktop + mobile projects)
 - `npm run build && typecheck && lint`: clean
 - Prod-mode /setup door: verified by hand both directions (TEST_LOG Phase 1)
 
 ## Database migration status
 
-Migrations 0000–0003 (org_settings; users/sessions/teams/audit; sites/
-locations; assets/attachments/histories) applied cleanly to
+Migrations 0000–0004 (…; assets/attachments; work orders + assignments/
+assets/status-history/labor/comments) applied cleanly to
 cmms_dev/cmms_test/cmms_e2e.
 Dev DB: postgres://cmms@localhost:5432/cmms_dev (sandbox local Postgres 16).
 

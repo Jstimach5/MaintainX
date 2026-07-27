@@ -8,6 +8,7 @@ import {
   text,
   jsonb,
   date,
+  numeric,
   timestamp,
   primaryKey,
   uniqueIndex,
@@ -331,6 +332,210 @@ export const assetLocationHistory = pgTable(
       .defaultNow(),
   },
   (table) => [index("asset_location_hist_idx").on(table.assetId)],
+);
+
+// ---------------------------------------------------------------------------
+// Work orders (§7)
+// ---------------------------------------------------------------------------
+
+export const woStatus = pgEnum("wo_status", [
+  "draft",
+  "open",
+  "assigned",
+  "in_progress",
+  "on_hold",
+  "waiting",
+  "completed",
+  "canceled",
+]);
+
+export const woPriority = pgEnum("wo_priority", [
+  "none",
+  "low",
+  "medium",
+  "high",
+  "critical",
+]);
+
+export const woType = pgEnum("wo_type", [
+  "preventive",
+  "reactive",
+  "inspection",
+  "corrective",
+  "safety",
+  "project",
+  "other",
+]);
+
+export const woSource = pgEnum("wo_source", [
+  "manual",
+  "request",
+  "import",
+  "pm",
+  "meter",
+]);
+
+export const workOrders = pgTable(
+  "work_orders",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    woNumber: text("wo_number").notNull().unique(),
+    title: text("title").notNull(),
+    description: text("description"),
+    siteId: integer("site_id")
+      .notNull()
+      .references(() => sites.id),
+    locationId: integer("location_id").references(() => locations.id),
+    parentWorkOrderId: integer("parent_work_order_id"), // self-FK below
+    workType: woType("work_type").notNull().default("reactive"),
+    priority: woPriority("priority").notNull().default("medium"),
+    status: woStatus("status").notNull().default("open"),
+    tags: text("tags").array(),
+    assignedTeamId: integer("assigned_team_id").references(() => teams.id),
+    requesterId: integer("requester_id").references(() => users.id),
+    plannedStartAt: timestamp("planned_start_at", { withTimezone: true }),
+    dueAt: timestamp("due_at", { withTimezone: true }),
+    actualStartAt: timestamp("actual_start_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    estimatedMinutes: integer("estimated_minutes"),
+    plannedDowntimeMinutes: integer("planned_downtime_minutes"),
+    actualDowntimeMinutes: integer("actual_downtime_minutes"),
+    laborCost: numeric("labor_cost", { precision: 12, scale: 2 }),
+    otherCost: numeric("other_cost", { precision: 12, scale: 2 }),
+    completionNotes: text("completion_notes"),
+    source: woSource("source").notNull().default("manual"),
+    /** Stable identifier for imported/external records (§12). */
+    externalId: text("external_id"),
+    createdBy: integer("created_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("wo_status_idx").on(table.status),
+    index("wo_site_idx").on(table.siteId),
+    index("wo_due_idx").on(table.dueAt),
+    index("wo_team_idx").on(table.assignedTeamId),
+    uniqueIndex("wo_external_id_uq")
+      .on(table.externalId)
+      .where(sql`${table.externalId} IS NOT NULL`),
+    foreignKey({
+      columns: [table.parentWorkOrderId],
+      foreignColumns: [table.id],
+      name: "wo_parent_fk",
+    }),
+  ],
+);
+
+/** Multi-asset support (§5/§7); exactly one row per WO may be primary. */
+export const workOrderAssets = pgTable(
+  "work_order_assets",
+  {
+    workOrderId: integer("work_order_id")
+      .notNull()
+      .references(() => workOrders.id, { onDelete: "cascade" }),
+    assetId: integer("asset_id")
+      .notNull()
+      .references(() => assets.id),
+    isPrimary: boolean("is_primary").notNull().default(false),
+  },
+  (table) => [
+    primaryKey({ columns: [table.workOrderId, table.assetId] }),
+    index("wo_assets_asset_idx").on(table.assetId),
+  ],
+);
+
+export const workOrderAssignments = pgTable(
+  "work_order_assignments",
+  {
+    workOrderId: integer("work_order_id")
+      .notNull()
+      .references(() => workOrders.id, { onDelete: "cascade" }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    assignedBy: integer("assigned_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.workOrderId, table.userId] }),
+    index("wo_assign_user_idx").on(table.userId),
+  ],
+);
+
+export const workOrderStatusHistory = pgTable(
+  "work_order_status_history",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    workOrderId: integer("work_order_id")
+      .notNull()
+      .references(() => workOrders.id, { onDelete: "cascade" }),
+    status: woStatus("status").notNull(),
+    previousStatus: woStatus("previous_status"),
+    note: text("note"),
+    changedBy: integer("changed_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("wo_status_hist_idx").on(table.workOrderId)],
+);
+
+/** Per-technician labor time (§7); actual labor = SUM over entries. */
+export const workOrderLabor = pgTable(
+  "work_order_labor",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    workOrderId: integer("work_order_id")
+      .notNull()
+      .references(() => workOrders.id, { onDelete: "cascade" }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    minutes: integer("minutes").notNull(),
+    note: text("note"),
+    workDate: date("work_date"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("wo_labor_wo_idx").on(table.workOrderId),
+    check("wo_labor_minutes_positive", sql`${table.minutes} > 0`),
+  ],
+);
+
+/**
+ * Comments — polymorphic (work_order, request) so the request module reuses
+ * it. `isInternal` marks manager-only notes that requesters must never see.
+ */
+export const comments = pgTable(
+  "comments",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    entityType: text("entity_type").notNull(),
+    entityId: integer("entity_id").notNull(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    body: text("body").notNull(),
+    isInternal: boolean("is_internal").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("comments_entity_idx").on(table.entityType, table.entityId)],
 );
 
 // ---------------------------------------------------------------------------

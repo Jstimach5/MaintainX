@@ -61,3 +61,40 @@ export function addDays(isoDate: string, days: number): string {
 export function isBefore(a: string, b: string): boolean {
   return a < b;
 }
+
+/**
+ * Interpret a datetime-local string ("YYYY-MM-DDTHH:MM") as wall time in the
+ * given IANA zone and return the UTC instant. Two-pass offset correction
+ * handles DST transitions. This is how all user-entered date/times become
+ * timestamps (DECISIONS.md #5) — never `new Date(str)` (server-zone).
+ */
+export function wallTimeToUtc(wall: string, timeZone: string): Date | null {
+  const m = wall.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!m) return null;
+  const [, ys, ms, ds, hs, mins] = m;
+  const [y, mo, d, h, min] = [ys, ms, ds, hs, mins].map(Number);
+  const target = Date.UTC(y, mo - 1, d, h, min);
+  let utc = target;
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+  for (let i = 0; i < 2; i++) {
+    const parts = fmt.formatToParts(new Date(utc));
+    const get = (t: string) => Number(parts.find((p) => p.type === t)?.value ?? 0);
+    const shown = Date.UTC(
+      get("year"),
+      get("month") - 1,
+      get("day"),
+      get("hour"),
+      get("minute"),
+    );
+    utc += target - shown;
+  }
+  return new Date(utc);
+}
