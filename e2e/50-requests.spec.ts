@@ -183,7 +183,9 @@ test.describe.serial("work requests — Scenario A", () => {
     });
     await submit(page);
     await page.waitForURL(/\?submitted=/);
-    await expect(page.getByText(/request received/i)).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /request received/i }),
+    ).toBeVisible();
 
     // The team sees it, with the photo, marked as portal-sourced.
     await login(page, CREDS.manager);

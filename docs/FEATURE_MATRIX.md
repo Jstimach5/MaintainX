@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 6)
+Last updated: 2026-07-27 (Phase 7)
 
 ## P0 — Must work
 
@@ -27,7 +27,7 @@ Last updated: 2026-07-27 (Phase 6)
 | Work requests + approval + convert (no duplicate conversion) | P0 | Verified | src/app/(app)/requests, src/server/services/requests.ts | — | Scenario A end-to-end | PASS 2026-07-27 | TEST_LOG.md Phase 6 |
 | Public request portal (per-site, rate-limited) | P0 | Verified | src/app/portal/[token] | — | Submit without account (w/ photo); no internal data exposed; 5/hr/IP limit | PASS 2026-07-27 | TEST_LOG.md Phase 6 |
 | In-app notifications (adapter for email later) | P0 | Verified | src/server/services/notifications.ts, src/app/(app)/notifications | — | Request lifecycle notifications appear (badge + page); email stub behind SMTP_URL | PASS 2026-07-27 | TEST_LOG.md Phase 6 |
-| Preventive maintenance generation (idempotent, fixed+floating) | P0 | Missing | src/server/jobs/ (planned) | Build in Phase 7 | Scenario B; double-run creates no duplicates | — | — |
+| Preventive maintenance generation (idempotent, fixed+floating) | P0 | Verified | src/server/services/pm.ts, src/app/(app)/pm-plans, src/worker | — | Scenario B; double-run creates no duplicates (unique occurrence keys) | PASS 2026-07-27 | TEST_LOG.md Phase 7 |
 | Meter readings + validation + correction w/ audit | P0 | Missing | src/app/meters/ (planned) | Build in Phase 8 | Reading history + trend; impossible readings rejected | — | — |
 | Meter-triggered WOs (exactly once) | P0 | Missing | (planned) | Build in Phase 8 | Scenario C; reprocessing creates no duplicate | — | — |
 | Manager progress view (filters + warnings) | P0 | Missing | src/app/schedule/ (planned) | Build in Phase 9 | All §11 filters work; warning set renders | — | — |

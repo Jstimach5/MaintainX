@@ -433,6 +433,9 @@ export async function changeWorkOrderStatus(
   if (status === "completed") {
     const { notifyRequestClosedForWo } = await import("./requests");
     await notifyRequestClosedForWo(workOrderId);
+    // Floating PM plans re-anchor from completion (§9).
+    const { onPmWorkOrderCompleted } = await import("./pm");
+    await onPmWorkOrderCompleted(workOrderId);
   }
 }
 

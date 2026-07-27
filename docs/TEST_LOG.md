@@ -241,3 +241,33 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
   rewritten to avoid nesting transactions across pool connections
   (conditional-UPDATE claim + cancel-stray-WO on lost race).
 - **Final result:** PASS — all suites green.
+
+---
+
+## Phase 7 — Preventive maintenance
+
+### 2026-07-27 — Full verification cycle
+
+- **Feature tested:** PM plans (§9) — recurrence (day/week/month/year with
+  month-end clamping, DST-safe pure calendar math), fixed vs floating basis,
+  lead-day advance generation, pause/resume, end dates, archived-asset skip,
+  idempotent generation via UNIQUE occurrence keys, missed-occurrence
+  collapse to one catch-up, crash-window repair, procedure auto-attach,
+  worker cron + startup run + manual "Run scheduler now".
+- **Commands run:** db:migrate (0007_pm_plans), typecheck, lint, `npm test`,
+  `npm run test:e2e`, build
+- **Automated results:** vitest **101/101** (adds 16: recurrence math incl.
+  Jan-31→Feb-28/29 clamps + leap years + DST week-add + projection with end
+  dates; exactly-one generation with idempotent re-run; lead-window before/
+  inside; paused + archived-asset skips; floating no-stacking + completion
+  re-anchor; fixed marching with single catch-up keeping the overdue date +
+  cadence alignment; end-date stop; procedure attach + assignees on
+  generated WOs; orphan-occurrence repair; preview; pause via update).
+  Playwright **37/37** (adds 4 — Scenario B: manager creates weekly floating
+  plan due today; Run-now generates exactly one WO, re-run still one, plan
+  history shows it; technician completes → next due re-anchors a week out
+  and re-run generates nothing; technician 403 on /pm-plans). Also fixed a
+  flaky portal locator (route-announcer strict-mode clash).
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** manager, technician
+- **Final result:** PASS — all suites green.

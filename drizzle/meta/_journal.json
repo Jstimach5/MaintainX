@@ -50,6 +50,13 @@
       "when": 1785161251724,
       "tag": "0006_requests_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1785161962534,
+      "tag": "0007_pm_plans",
+      "breakpoints": true
     }
   ]
 }

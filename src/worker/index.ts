@@ -40,11 +40,25 @@ async function main() {
     console.log("[worker] housekeeping: expired sessions purged");
   });
 
-  // Job registrations are added per phase:
-  //  - pm-scheduler   (Phase 7)
+  // PM generation: hourly cron + one run at worker start (§9). The tick is
+  // idempotent (unique occurrence keys), so overlapping runs are safe.
+  const PM_QUEUE = "pm-scheduler";
+  await boss.createQueue(PM_QUEUE);
+  await boss.schedule(PM_QUEUE, "0 * * * *");
+  await boss.work(PM_QUEUE, async () => {
+    const { runPmTick } = await import("@/server/services/pm");
+    const result = await runPmTick();
+    if (result.generated > 0 || result.repaired > 0) {
+      console.log(
+        `[worker] pm tick: generated ${result.generated}, repaired ${result.repaired}`,
+      );
+    }
+  });
+  await boss.send(PM_QUEUE, {}); // startup catch-up run
+
+  // Job registrations still to come:
   //  - meter-eval     (Phase 8)
   //  - import-run     (Phase 10)
-  //  - notify         (Phase 6)
 
   const shutdown = async (signal: string) => {
     console.log(`[worker] received ${signal}, stopping…`);
