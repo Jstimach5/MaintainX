@@ -19,7 +19,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/server/db/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "e2e:server": "next dev -p 3100"
+    "e2e:server": "tsx e2e/reset-db.ts && DATABASE_URL=${E2E_DATABASE_URL:-postgres://cmms:cmms_dev_password@localhost:5432/cmms_e2e} next dev -p 3100"
   },
   "dependencies": {
     "csv-parse": "7.0.1",

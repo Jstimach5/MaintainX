@@ -4,16 +4,16 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 0)
+Last updated: 2026-07-27 (Phase 1)
 
 ## P0 — Must work
 
 | Feature | Priority | Status | Relevant files | Required work | Acceptance test | Last test result | Evidence |
 |---|---|---|---|---|---|---|---|
 | Project scaffold (build/typecheck/lint/migrations on clean DB) | P0 | Verified | package.json, next.config.ts, drizzle/, src/server/db/ | — | `npm run build && npm run typecheck && npm run lint && npm run db:migrate` all succeed on clean DB | PASS 2026-07-27 | TEST_LOG.md Phase 0 |
-| Authentication (sessions, scrypt, expiry) | P0 | Missing | src/server/auth/ (planned) | Build in Phase 1 | Login/logout/expiry Playwright smoke; wrong password rejected | — | — |
-| Roles + backend permissions (admin/manager/technician/requester) | P0 | Missing | src/server/auth/ (planned) | Build in Phase 1 | Vitest permission matrix: every role × every guarded action; Scenario F | — | — |
-| Users & teams admin (deactivation revokes sessions) | P0 | Missing | src/app/admin/ (planned) | Build in Phase 1 | Deactivated user's live session is rejected immediately | — | — |
+| Authentication (sessions, scrypt, expiry) | P0 | Verified | src/server/auth/{password,session,guards}.ts, src/app/(auth)/login, src/app/setup | — | Login/logout/expiry e2e; wrong password rejected | PASS 2026-07-27 (18 unit + 6 e2e) | TEST_LOG.md Phase 1 |
+| Roles + backend permissions (admin/manager/technician/requester) | P0 | Partially working | src/server/auth/guards.ts | Guard pattern + admin-page enforcement verified; full role×action matrix grows with each module (Scenario F in Phase 12) | Vitest permission matrix; Scenario F | PASS for auth/admin surfaces 2026-07-27 | TEST_LOG.md Phase 1 |
+| Users & teams admin (deactivation revokes sessions) | P0 | Verified | src/app/(app)/admin/{users,teams}, src/server/services/{users,teams}.ts | — | Deactivated user's live session rejected immediately; last-admin guards | PASS 2026-07-27 | TEST_LOG.md Phase 1 |
 | Sites | P0 | Missing | src/app/sites/ (planned) | Build in Phase 2 | CRUD via UI; archival blocks new references | — | — |
 | Nested locations (parent/child, history-safe archival) | P0 | Missing | src/app/locations/ (planned) | Build in Phase 2 | Tree CRUD via UI; child re-parenting; filters | — | — |
 | Assets (full field set, parent/sub-assets, statuses) | P0 | Missing | src/app/assets/ (planned) | Build in Phase 3 | Create/edit/archive via UI; sub-asset tree renders | — | — |
@@ -33,7 +33,7 @@ Last updated: 2026-07-27 (Phase 0)
 | Manager progress view (filters + warnings) | P0 | Missing | src/app/schedule/ (planned) | Build in Phase 9 | All §11 filters work; warning set renders | — | — |
 | Bulk WO import (CSV/XLSX, ≥10k rows, dry-run, idempotent) | P0 | Missing | src/app/imports/ (planned) | Build in Phase 10 | Scenario D; 10k-row background import test | — | — |
 | Basic reporting (§13 list, CSV export, KPI tests) | P0 | Missing | src/app/reports/ (planned) | Build in Phase 9 | Reports agree with seeded records; canceled ≠ completed | — | — |
-| Audit logging (append-only, admin browser) | P0 | Missing | src/server/services/audit (planned) | Plumbing Phase 1; browser Phase 11 | Every §14 action writes an event; not editable in app | — | — |
+| Audit logging (append-only, admin browser) | P0 | Partially working | src/server/services/audit.ts | Plumbing live (user/team/org actions write events in-tx); admin browser in Phase 11 | Every §14 action writes an event; not editable in app | Plumbing PASS 2026-07-27 | TEST_LOG.md Phase 1 |
 | Mobile usability (technician flows on phone-sized browser) | P0 | Missing | all UI | Continuous; pass in Phase 11 | Playwright mobile project on technician flows | — | — |
 | Reliable database migrations | P0 | Partially working | drizzle/, src/server/db/migrate.ts | Prove on clean DB every phase | Clean-DB migrate in TEST_LOG each phase | pending | — |
 | Backups (documented + scripted) | P0 | Missing | scripts/backup.sh (planned) | Build in Phase 11 | Backup + restore actually executed and logged | — | — |

@@ -1,47 +1,53 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 0 in progress)
+Last updated: 2026-07-27 (Phase 1 complete)
 
 ## Current phase
 
-Phase 0 — Foundation scaffold + self-tracking docs.
+Phase 1 complete — auth, RBAC, users/teams, audit plumbing all verified.
+Next up: Phase 2 (sites + nested locations).
 
 ## Last completed task
 
-Repository audit (empty repo — see CURRENT_STATE_AUDIT.md); stack selection
-(DECISIONS.md #1); dependency install with exact version pins; Postgres
-dev/test databases created in the sandbox (`cmms_dev`, `cmms_test`).
+Phase 1: session auth (scrypt + DB tokens with sha256-at-rest), four roles,
+requireRole()/assertRole() guard pattern, first-run /setup door (verified in
+prod mode both directions), users/teams admin UI, deactivation + password
+reset revoke sessions in-transaction, append-only audit plumbing.
 
 ## Current task
 
-Verify the scaffold: generate + apply the initial migration (org_settings),
-`npm run build`, `npm run typecheck`, `npm run lint`, dev-server smoke check;
-record results in TEST_LOG.md; commit and push Phase 0.
+Begin Phase 2: sites + nested locations (schema, services with archival
+rules, CRUD UI, list/filter primitives to be reused app-wide).
 
 ## Next three tasks
 
-1. Phase 1: sessions + scrypt auth, four roles, requireRole() guards, audit
-   plumbing, users/teams admin, permission-matrix unit tests, login e2e.
-2. Phase 2: sites + nested locations CRUD with archival rules.
-3. Phase 3: assets with status/location history, storage adapter, pictures.
+1. Phase 2: sites + nested locations CRUD with archival rules.
+2. Phase 3: assets with status/location history, storage adapter, pictures,
+   QR values.
+3. Phase 4: work orders core (fields, numbering, statuses + history,
+   assignments, comments, attachments, mobile cards).
 
 ## Known failures
 
-None yet (nothing verified yet either — see FEATURE_MATRIX.md).
+None. All suites green (18 vitest, 6 playwright).
 
 ## Current test results
 
-No test runs recorded yet. TEST_LOG.md is empty pending the Phase 0
-verification pass.
+- `npm test`: 18/18 pass (scrypt, sessions, revocation, admin guards, audit)
+- `npm run test:e2e`: 6/6 pass (desktop + mobile projects)
+- `npm run build && typecheck && lint`: clean
+- Prod-mode /setup door: verified by hand both directions (TEST_LOG Phase 1)
 
 ## Database migration status
 
-Schema defined for `org_settings` only. Initial migration not yet generated.
+Migrations 0000 (org_settings) + 0001 (users, sessions, teams, team_members,
+audit_events) applied cleanly to cmms_dev/cmms_test/cmms_e2e.
 Dev DB: postgres://cmms@localhost:5432/cmms_dev (sandbox local Postgres 16).
 
 ## Manual testing status
 
-Not started.
+Phase 1 flows driven via Playwright (browser) + curl prod-mode checks. First
+human-style walkthrough scheduled with seed data (Phase 11).
 
 ## Important design decisions
 

@@ -28,6 +28,18 @@ async function main() {
   await boss.start();
   console.log("[worker] started; waiting for jobs");
 
+  // Housekeeping: purge expired sessions hourly.
+  const HOUSEKEEPING = "housekeeping";
+  await boss.createQueue(HOUSEKEEPING);
+  await boss.schedule(HOUSEKEEPING, "0 * * * *");
+  await boss.work(HOUSEKEEPING, async () => {
+    const { purgeExpiredSessions } = await import(
+      "@/server/auth/session"
+    );
+    await purgeExpiredSessions();
+    console.log("[worker] housekeeping: expired sessions purged");
+  });
+
   // Job registrations are added per phase:
   //  - pm-scheduler   (Phase 7)
   //  - meter-eval     (Phase 8)

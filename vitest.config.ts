@@ -8,7 +8,8 @@ export default defineConfig({
     // DB integration tests share one test database; run files serially to
     // keep them isolated. Unit tests are fast enough that this does not hurt.
     fileParallelism: false,
-    setupFiles: [],
+    globalSetup: ["./tests/global-setup.ts"],
+    setupFiles: ["./tests/setup-env.ts"],
   },
   resolve: {
     alias: {

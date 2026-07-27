@@ -38,3 +38,47 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
   pg-boss 12 → switched to named import. (2) FlatCompat +
   eslint-config-next 16 throws in config-validator → native flat config.
 - **Final result:** PASS — scaffold verified end to end on a clean database.
+
+---
+
+## Phase 1 — Auth + RBAC + users/teams
+
+### 2026-07-27 — Full verification cycle (working tree at Phase 1 completion)
+
+- **Feature tested:** sessions + scrypt auth, four roles, first-run setup,
+  users/teams admin, deactivation-revokes-sessions, audit plumbing.
+- **Commands run:**
+  - `npm run db:migrate` → applied `0001_auth_users_teams_audit.sql`
+    (users, sessions, teams, team_members, audit_events + enums/indexes)
+  - `npm run typecheck` → clean; `npm run lint` → clean
+  - `npm test` → **18/18 passed** (vitest against clean `cmms_test`):
+    scrypt roundtrip/reject/malformed-hash/param-compat, session
+    create/expire/revoke, deactivation-revokes-session, password-reset-
+    revokes-sessions, last-admin deactivate+demote guards, case-insensitive
+    username uniqueness, one-time setup, audit event written in-tx
+  - `npm run test:e2e` → **6/6 passed** (Playwright, Chromium, fresh
+    `cmms_e2e` reset by the e2e:server script): first-run setup → dashboard;
+    setup one-time door; wrong password rejected + login + logout with
+    server-side revocation; admin creates technician via UI; technician
+    blocked from /admin/users server-side (403 page) with nav link hidden;
+    @mobile (Pixel 7) technician login + no horizontal scroll
+  - Production-mode check (`next build` + `next start` against a scratch DB):
+    /setup ↔ /login door verified in **both directions**
+- **Browser:** Chromium (Playwright) desktop + Pixel 7 mobile emulation
+- **Test user roles:** admin, technician
+- **Failures found & fixes:**
+  1. Playwright webServer starts before globalSetup → e2e DB reset moved
+     into the `e2e:server` command (`e2e/reset-db.ts`).
+  2. Login click flaked while React hydration was in flight → e2e helper
+     waits for network idle; removed `autoFocus` from login input.
+  3. `getByRole("alert")` strict-mode clash with Next's route announcer →
+     FormError got `data-testid="form-error"`.
+  4. **Real product bug (prod mode only):** Next 16 partially prerendered
+     /setup, /login, / — the setup-door check was skipped at runtime, so
+     `/setup` kept serving the form after setup was completed. Fixed with
+     `export const dynamic = "force-dynamic"` on all three routes; verified
+     against a production build in both DB states.
+  5. Edit-user page originally passed the full user row (incl.
+     password_hash) into a client component → now passes picked safe fields.
+- **Final result:** PASS — all automated suites green; prod-mode door
+  verified by hand.
