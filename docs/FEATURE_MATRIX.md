@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 9)
+Last updated: 2026-07-27 (Phase 10)
 
 ## P0 — Must work
 
@@ -31,7 +31,7 @@ Last updated: 2026-07-27 (Phase 9)
 | Meter readings + validation + correction w/ audit | P0 | Verified | src/app/(app)/meters, src/server/services/meters.ts | — | Reading history; impossible/decreasing readings rejected; corrections audited | PASS 2026-07-27 | TEST_LOG.md Phase 8 |
 | Meter-triggered WOs (exactly once) | P0 | Verified | src/server/services/meters.ts (evaluateTriggers) | — | Scenario C; reprocessing creates no duplicate (unique trigger+reading) | PASS 2026-07-27 | TEST_LOG.md Phase 8 |
 | Manager progress view (filters + warnings) | P0 | Verified | src/app/(app)/schedule, src/server/services/reports.ts (managerWarnings) | — | §11 filters work; warning set renders and links | PASS 2026-07-27 | TEST_LOG.md Phase 9 |
-| Bulk WO import (CSV/XLSX, ≥10k rows, dry-run, idempotent) | P0 | Missing | src/app/imports/ (planned) | Build in Phase 10 | Scenario D; 10k-row background import test | — | — |
+| Bulk WO import (CSV/XLSX, ≥10k rows, dry-run, idempotent) | P0 | Verified | src/app/(app)/imports, src/server/services/imports.ts | — | Scenario D e2e; 10k-row import test green; rollback safe | PASS 2026-07-27 | TEST_LOG.md Phase 10 |
 | Basic reporting (§13 list, CSV export, KPI tests) | P0 | Verified | src/app/(app)/reports, src/server/services/reports.ts | — | Reports agree with records; canceled ≠ completed unit-tested; CSV sanitized | PASS 2026-07-27 | TEST_LOG.md Phase 9 |
 | Audit logging (append-only, admin browser) | P0 | Partially working | src/server/services/audit.ts | Plumbing live (user/team/org actions write events in-tx); admin browser in Phase 11 | Every §14 action writes an event; not editable in app | Plumbing PASS 2026-07-27 | TEST_LOG.md Phase 1 |
 | Mobile usability (technician flows on phone-sized browser) | P0 | Missing | all UI | Continuous; pass in Phase 11 | Playwright mobile project on technician flows | — | — |
@@ -48,7 +48,7 @@ Last updated: 2026-07-27 (Phase 9)
 | Saved reporting filters / dashboards | P1 | Missing | (planned) | Phase 12 | Save + reload a dashboard; share internal link | — | — |
 | PDF / print-friendly reporting | P1 | Missing | (planned) | Phase 12 | Print stylesheet output readable | — | — |
 | QR-code asset access (scan → asset page / request form) | P1 | Partially working | src/app/(app)/assets/[id]/label, src/app/a/[token] | Label + authenticated scan verified; public limited request flow in Phase 12 | Scan URL opens asset page; unauthenticated scan → limited request page | Label+resolver PASS 2026-07-27 | TEST_LOG.md Phase 3 |
-| Import rollback where safe | P1 | Missing | (planned) | Phase 10 basic, Phase 12 polish | Rollback removes only import-created rows; refused after external edits | — | — |
+| Import rollback where safe | P1 | Verified | src/server/services/imports.ts (rollbackImport) | — | Rollback removes only untouched import-created WOs; touched ones kept + reported | PASS 2026-07-27 | TEST_LOG.md Phase 10 |
 | Notifications completeness (mentions, all §8 events) | P1 | Missing | (planned) | Phase 12 | Each §8 event notifies the right users | — | — |
 | E2E coverage of critical workflows (Scenarios A–F) | P1 | Missing | e2e/ | Built per phase; all green Phase 12 | `npm run test:e2e` green | — | — |
 | Deployment + admin documentation | P1 | Partially working | docs/, docker-compose.yml | Finalize Phase 12 | Docs match reality; commands verified | — | — |

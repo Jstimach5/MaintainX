@@ -333,3 +333,32 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
   new spec (tile label vs heading, option element, heading prefix) —
   locators scoped/exact-matched.
 - **Final result:** PASS — all suites green.
+
+---
+
+## Phase 10 — Bulk imports
+
+### 2026-07-27 — Full verification cycle
+
+- **Feature tested:** §12 import pipeline — CSV/XLSX upload + header
+  detection, auto-mapping + manual column mapping + reusable templates,
+  whole-file validation (status/priority/type normalization without
+  guessing, date parsing incl. Excel cells, site/location/asset/user/team
+  resolution by name or code, archived-record + inactive-user warnings,
+  in-file and cross-DB duplicate external ids, contradiction checks,
+  formula-content flagging, length limits), dry-run preview, duplicate
+  strategies (skip/update/new), background processing with atomic claim +
+  per-row outcomes + live progress, issues-CSV download, audit records,
+  safe rollback (only untouched WOs removed).
+- **Commands run:** db:migrate (0009_imports), typecheck, lint, `npm test`,
+  `npm run test:e2e`, build
+- **Automated results:** vitest **135/135** (adds 13, incl. the 10,000-row
+  import completing with 10,000 created and idempotent re-processing;
+  JSONB-date rehydration bug found by tests and fixed). Playwright
+  **50/50** (adds 4 — Scenario D: upload → auto-mapped columns → validate
+  shows 2 valid/2 rejected with named reasons + issues CSV; import creates
+  the WOs with completion dates + import source; re-import skips both
+  duplicates with zero creations; technician 403).
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** admin, technician
+- **Final result:** PASS — all suites green.

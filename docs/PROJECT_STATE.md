@@ -1,53 +1,50 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 9 complete)
+Last updated: 2026-07-27 (Phase 10 complete)
 
 ## Current phase
 
-Phase 9 complete — schedule view + warnings, reports + CSV, real
-dashboard, meter trend chart all verified. Next up: Phase 10 (bulk
-imports, Scenario D).
+Phase 10 complete — bulk importer verified (Scenario D, 10k rows,
+idempotent, safe rollback). Every §22 P0 module now exists. Next up:
+Phase 11 (audit browser, backups, mobile pass, seed data).
 
 ## Last completed task
 
-Phase 9: reporting core — reports service with unit-tested KPI
-definitions (canceled never counts as completed), §11 manager warnings
-(overdue PM, offline-after-completion, downtime conflicts, past-due
-planning, archived assets, inactive assignees), /schedule table view,
-/reports with tiles + bar breakdowns + CSV export (formula-sanitized),
-role-aware dashboard, meter trend LineChart; 10 new vitest + 5 new e2e.
+Phase 10: bulk imports — import_jobs/rows/mappings schema, CSV+XLSX
+parsing (formula cells import their cached result only), normalization
+maps, whole-file in-memory validation against preloaded lookups, dry-run,
+skip/update/new strategies, atomic-claim background processing with
+per-row outcomes + progress, issues CSV, audit trail, rollback that keeps
+touched WOs; 13 new vitest (incl. 10k rows) + 4 new e2e (Scenario D).
 
 ## Current task
 
-Begin Phase 10: bulk CSV/XLSX imports — import_jobs/import_rows schema,
-upload + header detection + column mapping with reusable templates,
-whole-file validation with dry-run preview, duplicate strategies
-(external-id/skip/update/new), background processing via pg-boss with live
-progress, row-error download, idempotent re-runs, safe rollback, 10k-row
-test, Scenario D e2e.
+Begin Phase 11: audit-log browser (admin), backup script + restore doc
++ BACKUP_AND_RESTORE.md, §20 seed data, §21 mobile pass, clean-DB
+migration re-verification.
 
 ## Next three tasks
 
-1. Phase 10: bulk CSV/XLSX imports (Scenario D).
-2. Phase 11: audit browser + backups + mobile pass + seed data.
-3. Phase 12: P1 set (timeline/calendar, downtime, corrective, dashboards,
+1. Phase 11: audit browser + backups + mobile pass + seed data.
+2. Phase 12: P1 set (timeline/calendar, downtime, corrective, dashboards,
    QR flows, docs).
+3. Phase 13: definition-of-done sweep + §24 delivery report.
 
 ## Known failures
 
-None. All suites green (122 vitest, 46 playwright).
+None. All suites green (135 vitest, 50 playwright).
 
 ## Current test results
 
-- `npm test`: 122/122 pass (…, meters/triggers, report KPIs/warnings)
-- `npm run test:e2e`: 46/46 pass (desktop + mobile projects)
+- `npm test`: 135/135 pass (…, reports, bulk imports incl. 10k rows)
+- `npm run test:e2e`: 50/50 pass (desktop + mobile projects)
 - `npm run build && typecheck && lint`: clean
 - Prod-mode /setup door: verified by hand both directions (TEST_LOG Phase 1)
 
 ## Database migration status
 
-Migrations 0000–0008 (…; PM; meters + readings + triggers + trigger
-events) applied cleanly to cmms_dev/cmms_test/cmms_e2e.
+Migrations 0000–0009 (…; meters; import jobs/rows/mappings) applied
+cleanly to cmms_dev/cmms_test/cmms_e2e.
 Dev DB: postgres://cmms@localhost:5432/cmms_dev (sandbox local Postgres 16).
 
 ## Manual testing status

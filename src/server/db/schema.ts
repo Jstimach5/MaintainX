@@ -945,6 +945,96 @@ export const meterTriggerEvents = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// Bulk imports (§12)
+// ---------------------------------------------------------------------------
+
+export const importStatus = pgEnum("import_status", [
+  "mapping", // uploaded, awaiting column mapping
+  "validated", // dry-run complete, awaiting start
+  "running",
+  "completed",
+  "failed",
+  "rolled_back",
+]);
+
+export const importRowStatus = pgEnum("import_row_status", [
+  "valid",
+  "warning",
+  "error",
+  "imported",
+  "updated",
+  "skipped",
+  "failed",
+  "rolled_back",
+]);
+
+export const duplicateStrategy = pgEnum("duplicate_strategy", [
+  "skip", // existing external_id → leave untouched
+  "update", // existing external_id → update the work order
+  "new", // always import as a new work order
+]);
+
+export const importJobs = pgTable("import_jobs", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  filename: text("filename").notNull(),
+  storedName: text("stored_name").notNull(), // original file via storage adapter
+  status: importStatus("status").notNull().default("mapping"),
+  headers: jsonb("headers").notNull(), // detected column names
+  mapping: jsonb("mapping"), // { columnName: fieldKey }
+  strategy: duplicateStrategy("strategy").notNull().default("skip"),
+  totalRows: integer("total_rows").notNull().default(0),
+  validRows: integer("valid_rows").notNull().default(0),
+  warningRows: integer("warning_rows").notNull().default(0),
+  errorRows: integer("error_rows").notNull().default(0),
+  processedRows: integer("processed_rows").notNull().default(0),
+  createdCount: integer("created_count").notNull().default(0),
+  updatedCount: integer("updated_count").notNull().default(0),
+  skippedCount: integer("skipped_count").notNull().default(0),
+  failedCount: integer("failed_count").notNull().default(0),
+  error: text("error"),
+  createdBy: integer("created_by")
+    .notNull()
+    .references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  startedAt: timestamp("started_at", { withTimezone: true }),
+  finishedAt: timestamp("finished_at", { withTimezone: true }),
+});
+
+export const importRows = pgTable(
+  "import_rows",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    jobId: integer("job_id")
+      .notNull()
+      .references(() => importJobs.id, { onDelete: "cascade" }),
+    rowNumber: integer("row_number").notNull(),
+    raw: jsonb("raw").notNull(),
+    status: importRowStatus("status").notNull(),
+    messages: text("messages").array(),
+    workOrderId: integer("work_order_id").references(() => workOrders.id),
+  },
+  (table) => [
+    index("import_rows_job_idx").on(table.jobId, table.status),
+    uniqueIndex("import_rows_job_row_uq").on(table.jobId, table.rowNumber),
+  ],
+);
+
+/** Reusable column-mapping templates (§12). */
+export const importMappings = pgTable("import_mappings", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  name: text("name").notNull().unique(),
+  mapping: jsonb("mapping").notNull(),
+  createdBy: integer("created_by")
+    .notNull()
+    .references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
 // Audit trail (append-only; the application role never updates or deletes)
 // ---------------------------------------------------------------------------
 
