@@ -1,0 +1,49 @@
+/**
+ * Background worker process.
+ *
+ * Runs pg-boss queues for: preventive-maintenance generation, meter trigger
+ * evaluation, bulk import jobs, and notification fan-out. Started with
+ * `npm run worker` (or the `worker` service in docker-compose).
+ *
+ * Job handlers are registered here as the corresponding phases are built.
+ */
+import { PgBoss } from "pg-boss";
+
+async function main() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    console.error("DATABASE_URL is not set. Copy .env.example to .env first.");
+    process.exit(1);
+  }
+
+  const boss = new PgBoss({
+    connectionString,
+    schema: "pgboss",
+  });
+
+  boss.on("error", (err: Error) => {
+    console.error("[worker] pg-boss error:", err);
+  });
+
+  await boss.start();
+  console.log("[worker] started; waiting for jobs");
+
+  // Job registrations are added per phase:
+  //  - pm-scheduler   (Phase 7)
+  //  - meter-eval     (Phase 8)
+  //  - import-run     (Phase 10)
+  //  - notify         (Phase 6)
+
+  const shutdown = async (signal: string) => {
+    console.log(`[worker] received ${signal}, stopping…`);
+    await boss.stop({ graceful: true });
+    process.exit(0);
+  };
+  process.on("SIGINT", () => void shutdown("SIGINT"));
+  process.on("SIGTERM", () => void shutdown("SIGTERM"));
+}
+
+main().catch((err) => {
+  console.error("[worker] fatal:", err);
+  process.exit(1);
+});
