@@ -11,6 +11,7 @@ import {
   primaryKey,
   uniqueIndex,
   index,
+  foreignKey,
   check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -118,6 +119,58 @@ export const teamMembers = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
   },
   (table) => [primaryKey({ columns: [table.teamId, table.userId] })],
+);
+
+// ---------------------------------------------------------------------------
+// Sites and nested locations (§5)
+// ---------------------------------------------------------------------------
+
+/**
+ * Sites and locations are archive-only (is_active flag) — never hard-deleted,
+ * because assets, work orders, and history reference them forever.
+ */
+export const sites = pgTable("sites", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  name: text("name").notNull().unique(),
+  code: text("code"),
+  address: text("address"),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * Locations nest arbitrarily deep within one site (building → floor → room).
+ * parent must belong to the same site; re-parenting must not create cycles
+ * (enforced in services/locations.ts).
+ */
+export const locations = pgTable(
+  "locations",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    siteId: integer("site_id")
+      .notNull()
+      .references(() => sites.id),
+    parentId: integer("parent_id"), // self-FK added via foreignKey below
+    name: text("name").notNull(),
+    code: text("code"),
+    description: text("description"),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("locations_site_idx").on(table.siteId),
+    index("locations_parent_idx").on(table.parentId),
+    foreignKey({
+      columns: [table.parentId],
+      foreignColumns: [table.id],
+      name: "locations_parent_fk",
+    }),
+  ],
 );
 
 // ---------------------------------------------------------------------------

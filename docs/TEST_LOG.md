@@ -82,3 +82,27 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
      password_hash) into a client component → now passes picked safe fields.
 - **Final result:** PASS — all automated suites green; prod-mode door
   verified by hand.
+
+---
+
+## Phase 2 — Sites + nested locations
+
+### 2026-07-27 — Full verification cycle
+
+- **Feature tested:** sites CRUD, arbitrarily nested locations, archive
+  cascades, cycle prevention, role boundaries on all pages.
+- **Commands run:** `npm run db:migrate` (0002_sites_locations), `npm run
+  typecheck`, `npm run lint`, `npm test`, `npm run test:e2e`, `npm run build`
+- **Automated results:** vitest **27/27** (adds: site duplicate-name reject,
+  site-archive cascades to locations, tree assembly, cross-site parent
+  reject, re-parent cycle prevention (self + descendant), subtree archive
+  cascade, archived-parent child reject, picker excludes archived + depth).
+  Playwright **11/11** (adds: admin creates site + nested locations via UI,
+  archive location via UI shows badge, technician read-only view, requester
+  403 on /sites, manager 403 on /sites/new).
+- **Browser:** Chromium desktop + Pixel 7 (auth mobile test still green)
+- **Test user roles:** admin, manager, technician, requester
+- **Failures found & fixes:** e2e submit locator matched the nav Sign-out
+  button (strict mode) → scoped to `main form button[type=submit]`. TS null
+  annotation in getLocationPath.
+- **Final result:** PASS — all suites green.

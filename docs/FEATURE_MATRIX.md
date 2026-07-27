@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 1)
+Last updated: 2026-07-27 (Phase 2)
 
 ## P0 — Must work
 
@@ -14,8 +14,8 @@ Last updated: 2026-07-27 (Phase 1)
 | Authentication (sessions, scrypt, expiry) | P0 | Verified | src/server/auth/{password,session,guards}.ts, src/app/(auth)/login, src/app/setup | — | Login/logout/expiry e2e; wrong password rejected | PASS 2026-07-27 (18 unit + 6 e2e) | TEST_LOG.md Phase 1 |
 | Roles + backend permissions (admin/manager/technician/requester) | P0 | Partially working | src/server/auth/guards.ts | Guard pattern + admin-page enforcement verified; full role×action matrix grows with each module (Scenario F in Phase 12) | Vitest permission matrix; Scenario F | PASS for auth/admin surfaces 2026-07-27 | TEST_LOG.md Phase 1 |
 | Users & teams admin (deactivation revokes sessions) | P0 | Verified | src/app/(app)/admin/{users,teams}, src/server/services/{users,teams}.ts | — | Deactivated user's live session rejected immediately; last-admin guards | PASS 2026-07-27 | TEST_LOG.md Phase 1 |
-| Sites | P0 | Missing | src/app/sites/ (planned) | Build in Phase 2 | CRUD via UI; archival blocks new references | — | — |
-| Nested locations (parent/child, history-safe archival) | P0 | Missing | src/app/locations/ (planned) | Build in Phase 2 | Tree CRUD via UI; child re-parenting; filters | — | — |
+| Sites | P0 | Verified | src/app/(app)/sites, src/server/services/sites.ts | — | CRUD via UI; archival cascades + blocks new references | PASS 2026-07-27 | TEST_LOG.md Phase 2 |
+| Nested locations (parent/child, history-safe archival) | P0 | Verified | src/server/services/locations.ts, src/app/(app)/locations | — | Tree CRUD via UI; cycle-safe re-parenting; archive cascades | PASS 2026-07-27 | TEST_LOG.md Phase 2 |
 | Assets (full field set, parent/sub-assets, statuses) | P0 | Missing | src/app/assets/ (planned) | Build in Phase 3 | Create/edit/archive via UI; sub-asset tree renders | — | — |
 | Asset location history + transfers | P0 | Missing | (planned) | Build in Phase 3 | Transfer writes history row + audit event; history panel shows it | — | — |
 | Asset status history | P0 | Missing | (planned) | Build in Phase 3 | Status change writes history + audit; panel shows it | — | — |

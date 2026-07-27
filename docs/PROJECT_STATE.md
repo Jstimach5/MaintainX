@@ -1,47 +1,47 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 1 complete)
+Last updated: 2026-07-27 (Phase 2 complete)
 
 ## Current phase
 
-Phase 1 complete — auth, RBAC, users/teams, audit plumbing all verified.
-Next up: Phase 2 (sites + nested locations).
+Phase 2 complete — sites + nested locations verified (tree, cycles,
+archive cascades, role boundaries). Next up: Phase 3 (assets).
 
 ## Last completed task
 
-Phase 1: session auth (scrypt + DB tokens with sha256-at-rest), four roles,
-requireRole()/assertRole() guard pattern, first-run /setup door (verified in
-prod mode both directions), users/teams admin UI, deactivation + password
-reset revoke sessions in-transaction, append-only audit plumbing.
+Phase 2: sites + nested locations — services with cycle prevention and
+archive cascades, admin CRUD UI with location tree, read-only views for
+manager/technician, requester blocked; 9 new vitest + 5 new e2e tests.
 
 ## Current task
 
-Begin Phase 2: sites + nested locations (schema, services with archival
-rules, CRUD UI, list/filter primitives to be reused app-wide).
+Begin Phase 3: assets — schema (full §6 field set, parent/sub-assets,
+status/location history tables), storage adapter + picture uploads, QR
+values, asset pages with history panels.
 
 ## Next three tasks
 
-1. Phase 2: sites + nested locations CRUD with archival rules.
-2. Phase 3: assets with status/location history, storage adapter, pictures,
+1. Phase 3: assets with status/location history, storage adapter, pictures,
    QR values.
-3. Phase 4: work orders core (fields, numbering, statuses + history,
+2. Phase 4: work orders core (fields, numbering, statuses + history,
    assignments, comments, attachments, mobile cards).
+3. Phase 5: procedures (templates, versioned snapshots, execution UI).
 
 ## Known failures
 
-None. All suites green (18 vitest, 6 playwright).
+None. All suites green (27 vitest, 11 playwright).
 
 ## Current test results
 
-- `npm test`: 18/18 pass (scrypt, sessions, revocation, admin guards, audit)
-- `npm run test:e2e`: 6/6 pass (desktop + mobile projects)
+- `npm test`: 27/27 pass (auth, sessions, guards, audit, sites, locations)
+- `npm run test:e2e`: 11/11 pass (desktop + mobile projects)
 - `npm run build && typecheck && lint`: clean
 - Prod-mode /setup door: verified by hand both directions (TEST_LOG Phase 1)
 
 ## Database migration status
 
-Migrations 0000 (org_settings) + 0001 (users, sessions, teams, team_members,
-audit_events) applied cleanly to cmms_dev/cmms_test/cmms_e2e.
+Migrations 0000–0002 (org_settings; users/sessions/teams/audit; sites/
+locations) applied cleanly to cmms_dev/cmms_test/cmms_e2e.
 Dev DB: postgres://cmms@localhost:5432/cmms_dev (sandbox local Postgres 16).
 
 ## Manual testing status

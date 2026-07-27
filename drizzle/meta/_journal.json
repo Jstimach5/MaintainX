@@ -15,6 +15,13 @@
       "when": 1785156371034,
       "tag": "0001_auth_users_teams_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785157899573,
+      "tag": "0002_sites_locations",
+      "breakpoints": true
     }
   ]
 }
