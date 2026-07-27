@@ -362,3 +362,32 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
 - **Browser:** Chromium desktop + Pixel 7
 - **Test user roles:** admin, technician
 - **Final result:** PASS — all suites green.
+
+---
+
+## Phase 11 — Audit browser, backups, seed data, mobile pass
+
+### 2026-07-27 — Full verification cycle
+
+- **Feature tested:** admin audit-log browser (filters by record type,
+  action prefix, user, date; read-only by design), backup script + restore
+  procedure, §20 seed data, sample import file, DEPLOYMENT/ADMIN_GUIDE/
+  USER_GUIDE/BACKUP_AND_RESTORE docs, clean-DB migration re-verification,
+  additional mobile checks.
+- **Commands run:** typecheck, lint, `npm test`, `npm run test:e2e`, build,
+  `npm run db:seed`, `scripts/backup.sh`, `pg_restore` into a scratch DB,
+  clean-database migrate+seed (`cmms_clean`).
+- **Backup/restore evidence:** seeded dev DB (7 WOs, 5 assets,
+  2 attachments) dumped with pg_dump custom format; restored into scratch
+  `cmms_restore`; counts identical (7/5/2); storage dir tarred alongside.
+- **Clean-DB evidence:** `cmms_clean` created → migrations 0000–0009
+  applied → seed loaded (7 WOs) → dropped.
+- **Automated results:** vitest **135/135**; Playwright **54/54** (adds 4:
+  audit browser filter by action prefix returns only matching events,
+  manager 403 on /admin/audit, @mobile requester submits + tracks a
+  request with no horizontal scroll, @mobile manager schedule view scrolls
+  its table inside the card, not the page).
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** admin, manager, requester
+- **Final result:** PASS — all suites green; backup/restore and clean-DB
+  procedures executed, not just documented.

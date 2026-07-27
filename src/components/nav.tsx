@@ -24,6 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/imports", label: "Imports", roles: ["admin"] },
   { href: "/admin/users", label: "Users", roles: ["admin"] },
   { href: "/admin/teams", label: "Teams", roles: ["admin"] },
+  { href: "/admin/audit", label: "Audit", roles: ["admin"] },
 ];
 
 export async function AppNav({ user }: { user: SessionUser }) {

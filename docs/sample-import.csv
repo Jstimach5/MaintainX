@@ -1,0 +1,5 @@
+External ID,Title,Description,Status,Priority,Work type,Site,Location,Asset,Assigned user,Due date,Completion date,Estimated minutes,Tags
+LEGACY-001,Replace hydraulic hose,Hose on boom showing wear,done,high,repair,Main Plant,Building A,Packaging Line 1,taylor,2026-05-10,2026-05-11,90,hydraulics
+LEGACY-002,Monthly fire extinguisher check,,done,medium,inspection,Main Plant,,,terry,2026-06-01,2026-06-01,30,safety
+LEGACY-003,Fix dock door limit switch,Door reverses at half height,open,high,repair,West Depot,Loading Dock,Forklift 3,,2026-08-15,,60,doors
+LEGACY-004,Paint safety lines,,open,low,other,Main Plant,,,,2026-09-30,,240,

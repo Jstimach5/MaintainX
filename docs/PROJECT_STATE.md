@@ -1,43 +1,44 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 10 complete)
+Last updated: 2026-07-27 (Phase 11 complete)
 
 ## Current phase
 
-Phase 10 complete — bulk importer verified (Scenario D, 10k rows,
-idempotent, safe rollback). Every §22 P0 module now exists. Next up:
-Phase 11 (audit browser, backups, mobile pass, seed data).
+Phase 11 complete — audit browser, tested backups, §20 seed data,
+operator docs, clean-DB verification, extra mobile checks. ALL §22 P0
+features are now Verified in FEATURE_MATRIX.md. Next up: Phase 12 (P1:
+timeline/calendar, downtime planning, QR request flow, saved dashboards,
+print reports, notification completeness, Scenario E/F e2e).
 
 ## Last completed task
 
-Phase 10: bulk imports — import_jobs/rows/mappings schema, CSV+XLSX
-parsing (formula cells import their cached result only), normalization
-maps, whole-file in-memory validation against preloaded lookups, dry-run,
-skip/update/new strategies, atomic-claim background processing with
-per-row outcomes + progress, issues CSV, audit trail, rollback that keeps
-touched WOs; 13 new vitest (incl. 10k rows) + 4 new e2e (Scenario D).
+Phase 11: audit browser (/admin/audit, filterable, read-only), backup
+script + VERIFIED restore, §20 seed (npm run db:seed, logins in
+ADMIN_GUIDE), docs/sample-import.csv, DEPLOYMENT/ADMIN_GUIDE/USER_GUIDE/
+BACKUP_AND_RESTORE docs, clean-DB migrate+seed re-verified, 4 new e2e.
 
 ## Current task
 
-Begin Phase 11: audit-log browser (admin), backup script + restore doc
-+ BACKUP_AND_RESTORE.md, §20 seed data, §21 mobile pass, clean-DB
-migration re-verification.
+Begin Phase 12 (P1): timeline + calendar views on /schedule, downtime
+planning surfacing (Scenario E), QR scan → limited public request flow,
+saved report filters/dashboards, print-friendly reports, notification
+mentions, Scenario E/F e2e coverage.
 
 ## Next three tasks
 
-1. Phase 11: audit browser + backups + mobile pass + seed data.
-2. Phase 12: P1 set (timeline/calendar, downtime, corrective, dashboards,
-   QR flows, docs).
-3. Phase 13: definition-of-done sweep + §24 delivery report.
+1. Phase 12: P1 set (timeline/calendar, downtime surfacing, QR request
+   flow, saved dashboards, print reports).
+2. Phase 13: definition-of-done sweep + §24 delivery report.
 
 ## Known failures
 
-None. All suites green (135 vitest, 50 playwright).
+None. All suites green (135 vitest, 54 playwright).
 
 ## Current test results
 
 - `npm test`: 135/135 pass (…, reports, bulk imports incl. 10k rows)
-- `npm run test:e2e`: 50/50 pass (desktop + mobile projects)
+- `npm run test:e2e`: 54/54 pass (desktop + mobile projects)
+- Backup/restore + clean-DB migrate+seed: executed and verified
 - `npm run build && typecheck && lint`: clean
 - Prod-mode /setup door: verified by hand both directions (TEST_LOG Phase 1)
 

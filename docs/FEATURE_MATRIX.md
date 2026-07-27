@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 10)
+Last updated: 2026-07-27 (Phase 11)
 
 ## P0 — Must work
 
@@ -33,10 +33,10 @@ Last updated: 2026-07-27 (Phase 10)
 | Manager progress view (filters + warnings) | P0 | Verified | src/app/(app)/schedule, src/server/services/reports.ts (managerWarnings) | — | §11 filters work; warning set renders and links | PASS 2026-07-27 | TEST_LOG.md Phase 9 |
 | Bulk WO import (CSV/XLSX, ≥10k rows, dry-run, idempotent) | P0 | Verified | src/app/(app)/imports, src/server/services/imports.ts | — | Scenario D e2e; 10k-row import test green; rollback safe | PASS 2026-07-27 | TEST_LOG.md Phase 10 |
 | Basic reporting (§13 list, CSV export, KPI tests) | P0 | Verified | src/app/(app)/reports, src/server/services/reports.ts | — | Reports agree with records; canceled ≠ completed unit-tested; CSV sanitized | PASS 2026-07-27 | TEST_LOG.md Phase 9 |
-| Audit logging (append-only, admin browser) | P0 | Partially working | src/server/services/audit.ts | Plumbing live (user/team/org actions write events in-tx); admin browser in Phase 11 | Every §14 action writes an event; not editable in app | Plumbing PASS 2026-07-27 | TEST_LOG.md Phase 1 |
-| Mobile usability (technician flows on phone-sized browser) | P0 | Missing | all UI | Continuous; pass in Phase 11 | Playwright mobile project on technician flows | — | — |
-| Reliable database migrations | P0 | Partially working | drizzle/, src/server/db/migrate.ts | Prove on clean DB every phase | Clean-DB migrate in TEST_LOG each phase | pending | — |
-| Backups (documented + scripted) | P0 | Missing | scripts/backup.sh (planned) | Build in Phase 11 | Backup + restore actually executed and logged | — | — |
+| Audit logging (append-only, admin browser) | P0 | Verified | src/server/services/audit.ts, src/app/(app)/admin/audit | — | Every §14 action writes an event; browser filters; no edit path exists | PASS 2026-07-27 | TEST_LOG.md Phases 1–11 |
+| Mobile usability (technician flows on phone-sized browser) | P0 | Verified | all UI (@mobile Playwright project) | — | Mobile e2e: login, photo upload, WO flow, request submit, schedule — no horizontal scroll | PASS 2026-07-27 | TEST_LOG.md Phases 1–11 |
+| Reliable database migrations | P0 | Verified | drizzle/ (0000–0009), src/server/db/migrate.ts | — | Clean-DB migrate + seed executed and verified | PASS 2026-07-27 | TEST_LOG.md Phase 11 |
+| Backups (documented + scripted) | P0 | Verified | scripts/backup.sh, docs/BACKUP_AND_RESTORE.md | — | Backup + restore executed with matching row counts | PASS 2026-07-27 | TEST_LOG.md Phase 11 |
 
 ## P1 — Required before final completion
 
@@ -51,7 +51,7 @@ Last updated: 2026-07-27 (Phase 10)
 | Import rollback where safe | P1 | Verified | src/server/services/imports.ts (rollbackImport) | — | Rollback removes only untouched import-created WOs; touched ones kept + reported | PASS 2026-07-27 | TEST_LOG.md Phase 10 |
 | Notifications completeness (mentions, all §8 events) | P1 | Missing | (planned) | Phase 12 | Each §8 event notifies the right users | — | — |
 | E2E coverage of critical workflows (Scenarios A–F) | P1 | Missing | e2e/ | Built per phase; all green Phase 12 | `npm run test:e2e` green | — | — |
-| Deployment + admin documentation | P1 | Partially working | docs/, docker-compose.yml | Finalize Phase 12 | Docs match reality; commands verified | — | — |
+| Deployment + admin documentation | P1 | Verified | docs/DEPLOYMENT.md, ADMIN_GUIDE.md, USER_GUIDE.md, BACKUP_AND_RESTORE.md | — | Docs written against the real commands used in TEST_LOG | PASS 2026-07-27 | TEST_LOG.md Phase 11 |
 
 ## P2 — Deferred (do not build now)
 
