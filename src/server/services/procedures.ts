@@ -357,6 +357,20 @@ export async function respondToStep(
 
   const correctiveRequested = isFailure && !!step.failure?.createCorrective;
 
+  // Only create ONE corrective request per step, even when the answer is
+  // updated repeatedly.
+  const priorResponse = await db
+    .select()
+    .from(procedureResponses)
+    .where(
+      and(
+        eq(procedureResponses.instanceId, instanceId),
+        eq(procedureResponses.stepIndex, stepIndex),
+      ),
+    )
+    .limit(1);
+  const alreadyFailed = priorResponse[0]?.isFailure === true;
+
   await db.transaction(async (tx) => {
     await tx
       .insert(procedureResponses)
@@ -392,6 +406,16 @@ export async function respondToStep(
       summary: `${isFailure ? "FAILED" : "Answered"} step "${step.label}"${value.comment ? ` — ${value.comment}` : ""}`,
     });
   });
+
+  if (correctiveRequested && !alreadyFailed) {
+    const { createCorrectiveRequest } = await import("./requests");
+    await createCorrectiveRequest(
+      actor,
+      inst.workOrderId,
+      step.label,
+      value.comment,
+    );
+  }
 
   return { failed: isFailure, correctiveRequested };
 }

@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 5)
+Last updated: 2026-07-27 (Phase 6)
 
 ## P0 — Must work
 
@@ -21,12 +21,12 @@ Last updated: 2026-07-27 (Phase 5)
 | Asset status history | P0 | Verified | src/server/services/assets.ts (changeAssetStatus) | — | Status change writes history + audit; panel shows it | PASS 2026-07-27 | TEST_LOG.md Phase 3 |
 | Work orders (fields, numbering, lifecycle statuses + history) | P0 | Verified | src/app/(app)/work-orders, src/server/services/workOrders.ts | — | Full lifecycle via UI; status history complete with user+timestamp | PASS 2026-07-27 | TEST_LOG.md Phase 4 |
 | WO assignments (users/team) | P0 | Verified | src/server/services/workOrders.ts | — | Assign/unassign; tech sees Mine filter; Scenario-F boundaries enforced | PASS 2026-07-27 | TEST_LOG.md Phase 4 |
-| Pictures & files on WOs/assets/requests (survive restart) | P0 | Partially working | src/server/storage/, src/server/services/attachments.ts | Asset + WO uploads verified (mobile, reload, disk roundtrip); request wiring in Phase 6 | Upload via mobile viewport; picture visible after reload/restart | Asset+WO paths PASS 2026-07-27 | TEST_LOG.md Phases 3–4 |
+| Pictures & files on WOs/assets/requests (survive restart) | P0 | Verified | src/server/storage/, src/server/services/attachments.ts | — | Upload via mobile viewport; survives reload; requester scoping enforced; portal uploads anonymous | PASS 2026-07-27 | TEST_LOG.md Phases 3–6 |
 | Procedures (templates, versioned snapshots, all step types) | P0 | Verified | src/app/(app)/procedures, src/server/services/procedures.ts | — | Template edit never mutates completed WO's procedure; required steps block completion | PASS 2026-07-27 | TEST_LOG.md Phase 5 |
-| Failed inspection → flag + corrective request | P0 | Partially working | src/server/services/procedures.ts | Flag + required comment verified; corrective request creation wires up in Phase 6 (requests module) | Fail a step → WO flagged, corrective request created | Flag path PASS 2026-07-27 | TEST_LOG.md Phase 5 |
-| Work requests + approval + convert (no duplicate conversion) | P0 | Missing | src/app/requests/ (planned) | Build in Phase 6 | Scenario A end-to-end | — | — |
-| Public request portal (per-site, rate-limited) | P0 | Missing | src/app/portal/ (planned) | Build in Phase 6 | Submit without account; no internal data exposed | — | — |
-| In-app notifications (adapter for email later) | P0 | Missing | (planned) | Build in Phase 6 | Request lifecycle notifications appear | — | — |
+| Failed inspection → flag + corrective request | P0 | Verified | src/server/services/{procedures,requests}.ts | — | Fail a step → WO flagged, corrective request created exactly once | PASS 2026-07-27 | TEST_LOG.md Phases 5–6 |
+| Work requests + approval + convert (no duplicate conversion) | P0 | Verified | src/app/(app)/requests, src/server/services/requests.ts | — | Scenario A end-to-end | PASS 2026-07-27 | TEST_LOG.md Phase 6 |
+| Public request portal (per-site, rate-limited) | P0 | Verified | src/app/portal/[token] | — | Submit without account (w/ photo); no internal data exposed; 5/hr/IP limit | PASS 2026-07-27 | TEST_LOG.md Phase 6 |
+| In-app notifications (adapter for email later) | P0 | Verified | src/server/services/notifications.ts, src/app/(app)/notifications | — | Request lifecycle notifications appear (badge + page); email stub behind SMTP_URL | PASS 2026-07-27 | TEST_LOG.md Phase 6 |
 | Preventive maintenance generation (idempotent, fixed+floating) | P0 | Missing | src/server/jobs/ (planned) | Build in Phase 7 | Scenario B; double-run creates no duplicates | — | — |
 | Meter readings + validation + correction w/ audit | P0 | Missing | src/app/meters/ (planned) | Build in Phase 8 | Reading history + trend; impossible readings rejected | — | — |
 | Meter-triggered WOs (exactly once) | P0 | Missing | (planned) | Build in Phase 8 | Scenario C; reprocessing creates no duplicate | — | — |

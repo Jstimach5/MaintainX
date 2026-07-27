@@ -52,6 +52,28 @@ export async function createSite(
   });
 }
 
+/** Enable (mint token) or disable the public request portal (§8). */
+export async function setPortalEnabled(
+  actorId: number,
+  siteId: number,
+  enabled: boolean,
+): Promise<void> {
+  const site = await getSite(siteId);
+  if (!site) throw new ServiceError("Site not found.");
+  const crypto = await import("crypto");
+  const token = enabled ? crypto.randomBytes(24).toString("base64url") : null;
+  await db.transaction(async (tx) => {
+    await tx.update(sites).set({ portalToken: token }).where(eq(sites.id, siteId));
+    await recordAudit(tx, {
+      userId: actorId,
+      action: enabled ? "site.portal_enabled" : "site.portal_disabled",
+      entityType: "site",
+      entityId: siteId,
+      summary: `${enabled ? "Enabled" : "Disabled"} public request portal for "${site.name}"`,
+    });
+  });
+}
+
 export async function updateSite(
   actorId: number,
   siteId: number,

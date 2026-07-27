@@ -13,6 +13,7 @@ import {
   EmptyState,
   PageHeader,
 } from "@/components/ui";
+import { togglePortalAction } from "../actions";
 
 export const metadata = { title: "Site" };
 
@@ -116,6 +117,44 @@ export default async function SiteDetailPage({
       {site.description ? (
         <Card>
           <p className="text-sm whitespace-pre-wrap">{site.description}</p>
+        </Card>
+      ) : null}
+      {canManage ? (
+        <Card>
+          <h2 className="mb-1 font-semibold">Public request portal</h2>
+          {site.portalToken ? (
+            <div className="space-y-2 text-sm">
+              <p>
+                Anyone with this link can submit a maintenance request for this
+                site — no account needed. Post it or print a QR of it where
+                people work:
+              </p>
+              <p className="break-all rounded bg-gray-100 px-2 py-1 font-mono text-xs">
+                /portal/{site.portalToken}
+              </p>
+              <form action={togglePortalAction}>
+                <input type="hidden" name="siteId" value={site.id} />
+                <input type="hidden" name="enable" value="false" />
+                <button
+                  type="submit"
+                  className="text-sm text-red-700 hover:underline"
+                >
+                  Disable portal (invalidates the link)
+                </button>
+              </form>
+            </div>
+          ) : (
+            <form action={togglePortalAction}>
+              <input type="hidden" name="siteId" value={site.id} />
+              <input type="hidden" name="enable" value="true" />
+              <button
+                type="submit"
+                className="text-sm font-medium text-blue-700 hover:underline"
+              >
+                Enable public request portal
+              </button>
+            </form>
+          )}
         </Card>
       ) : null}
       <Card>

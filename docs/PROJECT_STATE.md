@@ -1,50 +1,50 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 5 complete)
+Last updated: 2026-07-27 (Phase 6 complete)
 
 ## Current phase
 
-Phase 5 complete — procedures verified (immutable versions, snapshots,
-step-through UI, completion gate, failure flags). Next up: Phase 6 (work
-requests + portal + notifications, incl. corrective-request wiring).
+Phase 6 complete — work requests + portal + notifications verified
+(Scenario A e2e green). Next up: Phase 7 (preventive maintenance engine,
+Scenario B).
 
 ## Last completed task
 
-Phase 5: procedures — templates + immutable versions (JSONB steps),
-per-WO snapshots at attach time, all §7 step types with conditional
-visibility and failure responses, response upserts with per-type
-validation, WO completion gate, failed-inspection flag + required comment,
-builder UI + step-through panel; 13 new vitest + 5 new e2e tests.
+Phase 6: work requests — §8 lifecycle with duplicate-conversion guard
+(conditional-UPDATE claim + unique index), corrective requests from failed
+inspections, per-site tokenized portal (rate-limited, anonymous photos),
+requester visibility rules, notification adapter (in-app + SMTP stub) with
+badge and page; 10 new vitest + 5 new e2e (Scenario A).
 
 ## Current task
 
-Begin Phase 6: work requests — schema + statuses, authenticated requester
-flow, per-site public portal (tokenized, rate-limited), manager review/
-approve/decline/convert with duplicate-conversion guard, request↔WO links,
-in-app notifications adapter, corrective-request creation from failed
-inspection steps. Scenario A e2e.
+Begin Phase 7: preventive maintenance — pm_plans/pm_occurrences schema,
+generation function with unique occurrence keys, fixed vs floating
+recurrence in org timezone (DST-safe), horizon + advance windows, pg-boss
+scheduled job + lazy tick, pause/resume, upcoming preview, Scenario B e2e
+with double-run duplicate test.
 
 ## Next three tasks
 
-1. Phase 6: work requests + portal + notifications (Scenario A).
-2. Phase 7: preventive maintenance engine (Scenario B).
-3. Phase 8: meters + readings + triggers (Scenario C).
+1. Phase 7: preventive maintenance engine (Scenario B).
+2. Phase 8: meters + readings + triggers (Scenario C).
+3. Phase 9: manager progress view + reporting core.
 
 ## Known failures
 
-None. All suites green (75 vitest, 28 playwright).
+None. All suites green (85 vitest, 33 playwright).
 
 ## Current test results
 
-- `npm test`: 75/75 pass (auth, sites, assets, attachments, WOs, procedures)
-- `npm run test:e2e`: 28/28 pass (desktop + mobile projects)
+- `npm test`: 85/85 pass (…, procedures, requests, notifications)
+- `npm run test:e2e`: 33/33 pass (desktop + mobile projects)
 - `npm run build && typecheck && lint`: clean
 - Prod-mode /setup door: verified by hand both directions (TEST_LOG Phase 1)
 
 ## Database migration status
 
-Migrations 0000–0005 (…; work orders; procedures + versions/instances/
-responses + WO flagged column) applied cleanly to
+Migrations 0000–0006 (…; procedures; work requests + notifications +
+site portal tokens + nullable attachment uploader) applied cleanly to
 cmms_dev/cmms_test/cmms_e2e.
 Dev DB: postgres://cmms@localhost:5432/cmms_dev (sandbox local Postgres 16).
 

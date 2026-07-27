@@ -428,6 +428,12 @@ export async function changeWorkOrderStatus(
       newValue: { status },
     });
   });
+
+  // Tell the requester when the work their request spawned is finished (§8).
+  if (status === "completed") {
+    const { notifyRequestClosedForWo } = await import("./requests");
+    await notifyRequestClosedForWo(workOrderId);
+  }
 }
 
 export async function addComment(

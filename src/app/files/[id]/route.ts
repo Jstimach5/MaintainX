@@ -38,8 +38,15 @@ export async function GET(
   }
 
   if (user.role === "requester") {
-    // Refined in Phase 6 (own-request attachments); deny for now.
-    return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    // Requesters see only attachments on their own requests (§8).
+    if (row.entityType !== "request") {
+      return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    }
+    const { getRequest } = await import("@/server/services/requests");
+    const req = await getRequest(row.entityId);
+    if (!req || req.requesterId !== user.id) {
+      return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    }
   }
 
   if (!ALLOWED_TYPES[row.mimeType]) {

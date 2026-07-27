@@ -66,7 +66,8 @@ export async function getAttachment(id: number) {
  * file is removed again — invariant: file on disk ⟺ row in attachments.
  */
 export async function createAttachment(input: {
-  actorId: number;
+  /** Null for anonymous portal uploads. */
+  actorId: number | null;
   entityType: AttachmentEntityType;
   entityId: number;
   category?: AttachmentCategory;

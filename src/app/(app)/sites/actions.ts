@@ -72,6 +72,20 @@ export async function updateSiteAction(
   redirect(`/sites/${siteId}`);
 }
 
+const portalSchema = z.object({
+  siteId: z.coerce.number().int().positive(),
+  enable: z.enum(["true", "false"]),
+});
+
+/** Enable/disable the public request portal for a site (§8). */
+export async function togglePortalAction(formData: FormData): Promise<void> {
+  const actor = await assertRole("admin");
+  const parsed = portalSchema.parse(Object.fromEntries(formData));
+  const { setPortalEnabled } = await import("@/server/services/sites");
+  await setPortalEnabled(actor.id, parsed.siteId, parsed.enable === "true");
+  revalidatePath(`/sites/${parsed.siteId}`);
+}
+
 const locationSchema = z.object({
   siteId: z.coerce.number().int().positive(),
   parentId: z

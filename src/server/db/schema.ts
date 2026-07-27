@@ -138,6 +138,8 @@ export const sites = pgTable("sites", {
   address: text("address"),
   description: text("description"),
   isActive: boolean("is_active").notNull().default(true),
+  /** When set, /portal/<token> is this site's public request form (§8). */
+  portalToken: text("portal_token").unique(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -208,9 +210,8 @@ export const attachments = pgTable(
     mimeType: text("mime_type").notNull(),
     sizeBytes: integer("size_bytes").notNull(),
     caption: text("caption"),
-    uploadedBy: integer("uploaded_by")
-      .notNull()
-      .references(() => users.id),
+    /** Null for anonymous portal uploads. */
+    uploadedBy: integer("uploaded_by").references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -635,6 +636,95 @@ export const procedureResponses = pgTable(
   },
   (table) => [
     uniqueIndex("procedure_responses_uq").on(table.instanceId, table.stepIndex),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// Work requests (§8) + notifications
+// ---------------------------------------------------------------------------
+
+export const requestStatus = pgEnum("request_status", [
+  "submitted",
+  "under_review",
+  "approved",
+  "declined",
+  "converted",
+  "canceled",
+]);
+
+export const requestSource = pgEnum("request_source", [
+  "internal",
+  "portal",
+  "inspection",
+]);
+
+export const workRequests = pgTable(
+  "work_requests",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    requestNumber: text("request_number").notNull().unique(),
+    title: text("title").notNull(),
+    description: text("description"),
+    /** Null for anonymous portal submissions; name/contact cover those. */
+    requesterId: integer("requester_id").references(() => users.id),
+    requesterName: text("requester_name"),
+    requesterContact: text("requester_contact"),
+    siteId: integer("site_id")
+      .notNull()
+      .references(() => sites.id),
+    locationId: integer("location_id").references(() => locations.id),
+    assetId: integer("asset_id").references(() => assets.id),
+    priority: woPriority("priority").notNull().default("medium"),
+    category: text("category"),
+    requestedCompletionDate: date("requested_completion_date"),
+    status: requestStatus("status").notNull().default("submitted"),
+    declineReason: text("decline_reason"),
+    /** Set exactly once on conversion — the duplicate-conversion guard. */
+    convertedWorkOrderId: integer("converted_work_order_id").references(
+      () => workOrders.id,
+    ),
+    /** WO that spawned this request (corrective from failed inspection). */
+    originWorkOrderId: integer("origin_work_order_id").references(
+      () => workOrders.id,
+    ),
+    source: requestSource("source").notNull().default("internal"),
+    decidedBy: integer("decided_by").references(() => users.id),
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("requests_status_idx").on(table.status),
+    index("requests_site_idx").on(table.siteId),
+    index("requests_requester_idx").on(table.requesterId),
+    uniqueIndex("requests_converted_wo_uq")
+      .on(table.convertedWorkOrderId)
+      .where(sql`${table.convertedWorkOrderId} IS NOT NULL`),
+  ],
+);
+
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(), // e.g. "request.submitted"
+    title: text("title").notNull(),
+    body: text("body"),
+    link: text("link"),
+    isRead: boolean("is_read").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("notifications_user_idx").on(table.userId, table.isRead),
   ],
 );
 

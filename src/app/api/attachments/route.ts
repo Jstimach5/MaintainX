@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { assertRole, AuthError } from "@/server/auth/guards";
+import { assertUser, AuthError } from "@/server/auth/guards";
 import {
   createAttachment,
   type AttachmentCategory,
@@ -27,13 +27,14 @@ const metaSchema = z.object({
 
 /**
  * Multipart upload endpoint used by the app UI (route handler rather than a
- * server action to avoid action body-size limits). Requesters are handled
- * separately via the portal flow (Phase 6) — internal roles only here.
+ * server action to avoid action body-size limits). Requesters may only
+ * upload to their OWN work requests; internal roles anywhere. Anonymous
+ * portal uploads flow through the portal action, not this route.
  */
 export async function POST(request: Request): Promise<Response> {
   let actor;
   try {
-    actor = await assertRole("admin", "manager", "technician");
+    actor = await assertUser();
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
@@ -56,6 +57,17 @@ export async function POST(request: Request): Promise<Response> {
       { error: parsed.error.issues[0]?.message ?? "Invalid input" },
       { status: 400 },
     );
+  }
+
+  if (actor.role === "requester") {
+    if (parsed.data.entityType !== "request") {
+      return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    }
+    const { getRequest } = await import("@/server/services/requests");
+    const req = await getRequest(parsed.data.entityId);
+    if (!req || req.requesterId !== actor.id) {
+      return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    }
   }
 
   const files = form

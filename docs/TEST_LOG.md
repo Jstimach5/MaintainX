@@ -204,3 +204,40 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
 - **Failures found & fixes:** Playwright selectOption regex label is not
   supported → literal option label.
 - **Final result:** PASS — all suites green.
+
+---
+
+## Phase 6 — Work requests, portal, notifications
+
+### 2026-07-27 — Full verification cycle
+
+- **Feature tested:** request lifecycle (§8 statuses), manager review/
+  approve/decline-with-reason/convert with duplicate-conversion guard,
+  request↔WO links both directions, corrective requests from failed
+  inspection steps (once per step), per-site tokenized public portal with
+  IP rate limiting + anonymous photo upload, requester visibility rules
+  (own requests only, no internal notes), in-app notification adapter
+  (submit → managers; decide/convert/complete → requester) with unread
+  badge + notifications page.
+- **Commands run:** db:migrate (0006_requests_notifications), typecheck,
+  lint, `npm test`, `npm run test:e2e`, build
+- **Automated results:** vitest **85/85** (adds 10: request numbering +
+  manager notify audience, decline-requires-reason + requester notify,
+  convert-requires-approval, exactly-one conversion + repeat reject +
+  source/requester on the WO, WO-completion notifies requester, cross-site
+  asset validation, requester-scoped listing, corrective request created
+  once with high priority + origin/asset links, unread counts/mark-read,
+  decided-after-converted guard). Playwright **33/33** (adds 5 — Scenario A
+  end to end: requester submits w/ photo; manager notification → review →
+  internal note → approve → convert → assign tech; tech completes; requester
+  sees completed status w/o internal notes + completion notification;
+  requester 404 on someone else's request; anonymous portal submission with
+  photo lands for managers marked "portal").
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** admin, manager, technician, requester, anonymous
+- **Failures found & fixes:** upload/file-serving routes had excluded
+  requesters entirely — now scoped to their own requests; attachment
+  uploadedBy made nullable for anonymous portal uploads; convertRequest
+  rewritten to avoid nesting transactions across pool connections
+  (conditional-UPDATE claim + cancel-stray-WO on lost race).
+- **Final result:** PASS — all suites green.
