@@ -19,6 +19,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/procedures", label: "Procedures", roles: ["admin", "manager"] },
   { href: "/pm-plans", label: "PM", roles: ["admin", "manager"] },
   { href: "/meters", label: "Meters", roles: ["admin", "manager", "technician"] },
+  { href: "/schedule", label: "Schedule", roles: ["admin", "manager"] },
+  { href: "/reports", label: "Reports", roles: ["admin", "manager"] },
   { href: "/admin/users", label: "Users", roles: ["admin"] },
   { href: "/admin/teams", label: "Teams", roles: ["admin"] },
 ];

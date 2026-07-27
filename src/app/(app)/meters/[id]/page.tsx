@@ -16,6 +16,7 @@ import { listUsers } from "@/server/services/users";
 import { getOrgSettings } from "@/server/services/org";
 import { formatDateTime } from "@/lib/format";
 import { Badge, Card, PageHeader } from "@/components/ui";
+import { LineChart } from "@/components/charts";
 import {
   CorrectionForm,
   MeterForm,
@@ -167,6 +168,21 @@ export default async function MeterDetailPage({
           </ul>
         </Card>
       ) : null}
+
+      <Card>
+        <h2 className="mb-2 font-semibold">Trend</h2>
+        <LineChart
+          unit={meter.unit}
+          points={[...readings]
+            .filter((r) => !r.isVoided)
+            .reverse()
+            .map((r, i) => ({
+              x: i,
+              label: formatDateTime(r.readingAt, tz),
+              value: Number(r.value),
+            }))}
+        />
+      </Card>
 
       <Card>
         <h2 className="mb-2 font-semibold">Reading history</h2>

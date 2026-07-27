@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 8)
+Last updated: 2026-07-27 (Phase 9)
 
 ## P0 — Must work
 
@@ -30,9 +30,9 @@ Last updated: 2026-07-27 (Phase 8)
 | Preventive maintenance generation (idempotent, fixed+floating) | P0 | Verified | src/server/services/pm.ts, src/app/(app)/pm-plans, src/worker | — | Scenario B; double-run creates no duplicates (unique occurrence keys) | PASS 2026-07-27 | TEST_LOG.md Phase 7 |
 | Meter readings + validation + correction w/ audit | P0 | Verified | src/app/(app)/meters, src/server/services/meters.ts | — | Reading history; impossible/decreasing readings rejected; corrections audited | PASS 2026-07-27 | TEST_LOG.md Phase 8 |
 | Meter-triggered WOs (exactly once) | P0 | Verified | src/server/services/meters.ts (evaluateTriggers) | — | Scenario C; reprocessing creates no duplicate (unique trigger+reading) | PASS 2026-07-27 | TEST_LOG.md Phase 8 |
-| Manager progress view (filters + warnings) | P0 | Missing | src/app/schedule/ (planned) | Build in Phase 9 | All §11 filters work; warning set renders | — | — |
+| Manager progress view (filters + warnings) | P0 | Verified | src/app/(app)/schedule, src/server/services/reports.ts (managerWarnings) | — | §11 filters work; warning set renders and links | PASS 2026-07-27 | TEST_LOG.md Phase 9 |
 | Bulk WO import (CSV/XLSX, ≥10k rows, dry-run, idempotent) | P0 | Missing | src/app/imports/ (planned) | Build in Phase 10 | Scenario D; 10k-row background import test | — | — |
-| Basic reporting (§13 list, CSV export, KPI tests) | P0 | Missing | src/app/reports/ (planned) | Build in Phase 9 | Reports agree with seeded records; canceled ≠ completed | — | — |
+| Basic reporting (§13 list, CSV export, KPI tests) | P0 | Verified | src/app/(app)/reports, src/server/services/reports.ts | — | Reports agree with records; canceled ≠ completed unit-tested; CSV sanitized | PASS 2026-07-27 | TEST_LOG.md Phase 9 |
 | Audit logging (append-only, admin browser) | P0 | Partially working | src/server/services/audit.ts | Plumbing live (user/team/org actions write events in-tx); admin browser in Phase 11 | Every §14 action writes an event; not editable in app | Plumbing PASS 2026-07-27 | TEST_LOG.md Phase 1 |
 | Mobile usability (technician flows on phone-sized browser) | P0 | Missing | all UI | Continuous; pass in Phase 11 | Playwright mobile project on technician flows | — | — |
 | Reliable database migrations | P0 | Partially working | drizzle/, src/server/db/migrate.ts | Prove on clean DB every phase | Clean-DB migrate in TEST_LOG each phase | pending | — |

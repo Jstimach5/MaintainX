@@ -1,42 +1,46 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 8 complete)
+Last updated: 2026-07-27 (Phase 9 complete)
 
 ## Current phase
 
-Phase 8 complete — meters + triggers verified (Scenario C e2e green;
-exactly-once firing, corrections with audit). Next up: Phase 9 (manager
-progress view + reporting core).
+Phase 9 complete — schedule view + warnings, reports + CSV, real
+dashboard, meter trend chart all verified. Next up: Phase 10 (bulk
+imports, Scenario D).
 
 ## Last completed task
 
-Phase 8: meters — readings with monotonic/rollover/magnitude validation,
-void-and-replace corrections (audited, recompute current), threshold
-triggers (crossing + re-arm + skip-while-open), interval triggers
-(watermark + collapse), exactly-once via UNIQUE(trigger,reading), meter
-pages with reading entry/history/trigger management; 11 new vitest + 4 new
-e2e (Scenario C).
+Phase 9: reporting core — reports service with unit-tested KPI
+definitions (canceled never counts as completed), §11 manager warnings
+(overdue PM, offline-after-completion, downtime conflicts, past-due
+planning, archived assets, inactive assignees), /schedule table view,
+/reports with tiles + bar breakdowns + CSV export (formula-sanitized),
+role-aware dashboard, meter trend LineChart; 10 new vitest + 5 new e2e.
 
 ## Current task
 
-Begin Phase 9: manager progress view + reporting core — §11 table view
-with full filter set and warning panel; §13 reports with KPI definitions,
-CSV export, drill-down; dashboard with real counts.
+Begin Phase 10: bulk CSV/XLSX imports — import_jobs/import_rows schema,
+upload + header detection + column mapping with reusable templates,
+whole-file validation with dry-run preview, duplicate strategies
+(external-id/skip/update/new), background processing via pg-boss with live
+progress, row-error download, idempotent re-runs, safe rollback, 10k-row
+test, Scenario D e2e.
 
 ## Next three tasks
 
-1. Phase 9: manager progress view + reporting core.
-2. Phase 10: bulk CSV/XLSX imports (Scenario D).
-3. Phase 11: audit browser + backups + mobile pass + seed data.
+1. Phase 10: bulk CSV/XLSX imports (Scenario D).
+2. Phase 11: audit browser + backups + mobile pass + seed data.
+3. Phase 12: P1 set (timeline/calendar, downtime, corrective, dashboards,
+   QR flows, docs).
 
 ## Known failures
 
-None. All suites green (112 vitest, 41 playwright).
+None. All suites green (122 vitest, 46 playwright).
 
 ## Current test results
 
-- `npm test`: 112/112 pass (…, PM engine, meters/triggers)
-- `npm run test:e2e`: 41/41 pass (desktop + mobile projects)
+- `npm test`: 122/122 pass (…, meters/triggers, report KPIs/warnings)
+- `npm run test:e2e`: 46/46 pass (desktop + mobile projects)
 - `npm run build && typecheck && lint`: clean
 - Prod-mode /setup door: verified by hand both directions (TEST_LOG Phase 1)
 

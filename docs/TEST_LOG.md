@@ -298,3 +298,38 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
 - **Browser:** Chromium desktop + Pixel 7
 - **Test user roles:** manager, technician
 - **Final result:** PASS — all suites green.
+
+---
+
+## Phase 9 — Manager progress view + reporting core
+
+### 2026-07-27 — Full verification cycle
+
+- **Feature tested:** /schedule manager table (§11) with status/priority/
+  type/site/assignee/include-finished filters and the warnings panel
+  (overdue PM, asset-still-offline-after-completion, double-downtime on
+  critical assets, planned-start-after-due, archived-asset work, inactive
+  assignees, unassigned indicator); /reports (§13) with KPI tiles, single-
+  hue bar breakdowns, completed-by-tech/team/site, estimated-vs-actual,
+  PM compliance, preventive-vs-reactive, downtime-by-asset, repeat
+  failures, request stats, meter-triggered count; CSV export with formula-
+  injection sanitization; real dashboard (role-aware incl. requester
+  variant); meter trend line chart with hover.
+- **Commands run:** typecheck, lint, `npm test`, `npm run test:e2e`, build
+  (no schema changes this phase)
+- **Automated results:** vitest **122/122** (adds 10 KPI-definition tests:
+  canceled-never-completed across three report functions, backlog open/
+  overdue/unassigned, per-tech labor aggregation, preventive-vs-reactive
+  buckets, downtime sums, repeat-failure threshold, approval rate excludes
+  undecided, PM compliance open→on-time transition, offline-after-
+  completion fires only when all the asset's work is finished, plus
+  downtime-conflict detection). Playwright **46/46** (adds 5: dashboard
+  tiles, schedule filters persist + completed rows show, reports tiles +
+  CSV export content-type/sections, technician 403 on schedule/reports/
+  export, meter trend chart renders).
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** manager, technician
+- **Failures found & fixes:** three strict-mode locator ambiguities in the
+  new spec (tile label vs heading, option element, heading prefix) —
+  locators scoped/exact-matched.
+- **Final result:** PASS — all suites green.
