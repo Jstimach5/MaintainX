@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 12)
+Last updated: 2026-07-27 (Phase 13 — final; every P0 and P1 row Verified)
 
 ## P0 — Must work
 
@@ -12,7 +12,7 @@ Last updated: 2026-07-27 (Phase 12)
 |---|---|---|---|---|---|---|---|
 | Project scaffold (build/typecheck/lint/migrations on clean DB) | P0 | Verified | package.json, next.config.ts, drizzle/, src/server/db/ | — | `npm run build && npm run typecheck && npm run lint && npm run db:migrate` all succeed on clean DB | PASS 2026-07-27 | TEST_LOG.md Phase 0 |
 | Authentication (sessions, scrypt, expiry) | P0 | Verified | src/server/auth/{password,session,guards}.ts, src/app/(auth)/login, src/app/setup | — | Login/logout/expiry e2e; wrong password rejected | PASS 2026-07-27 (18 unit + 6 e2e) | TEST_LOG.md Phase 1 |
-| Roles + backend permissions (admin/manager/technician/requester) | P0 | Partially working | src/server/auth/guards.ts | Guard pattern + admin-page enforcement verified; full role×action matrix grows with each module (Scenario F in Phase 12) | Vitest permission matrix; Scenario F | PASS for auth/admin surfaces 2026-07-27 | TEST_LOG.md Phase 1 |
+| Roles + backend permissions (admin/manager/technician/requester) | P0 | Verified | src/server/auth/guards.ts | — | Vitest permission matrix; Scenario F (role boundaries, anonymous 401, portal isolation) | PASS 2026-07-27 (Scenario F 5/5 + per-module permission tests) | TEST_LOG.md Phases 1, 12, 13 |
 | Users & teams admin (deactivation revokes sessions) | P0 | Verified | src/app/(app)/admin/{users,teams}, src/server/services/{users,teams}.ts | — | Deactivated user's live session rejected immediately; last-admin guards | PASS 2026-07-27 | TEST_LOG.md Phase 1 |
 | Sites | P0 | Verified | src/app/(app)/sites, src/server/services/sites.ts | — | CRUD via UI; archival cascades + blocks new references | PASS 2026-07-27 | TEST_LOG.md Phase 2 |
 | Nested locations (parent/child, history-safe archival) | P0 | Verified | src/server/services/locations.ts, src/app/(app)/locations | — | Tree CRUD via UI; cycle-safe re-parenting; archive cascades | PASS 2026-07-27 | TEST_LOG.md Phase 2 |

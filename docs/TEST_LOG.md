@@ -424,3 +424,40 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
   a stale asset status from an earlier spec surfaced the (correct)
   don't-override-manual-state behavior and the test now resets it.
 - **Final result:** PASS — Scenarios A–F all green.
+
+---
+
+## Phase 13 — Definition-of-done sweep (§23) + delivery report (§24)
+
+### 2026-07-27 — Final verification cycle (clean database)
+
+- **Feature tested:** the whole system, end to end, from nothing: a brand
+  new database (`cmms_final`) taken through migrate → seed → build →
+  typecheck → lint → worker boot → full unit suite → full e2e suite.
+- **Commands run and results:**
+  - `createdb cmms_final` + `npm run db:migrate` → "Migrations complete."
+  - `npm run db:seed` → "Seed complete."
+  - `npm run build` → ✓ Compiled successfully
+  - `npm run typecheck` → clean
+  - `npm run lint` → clean
+  - worker boot against the clean DB → `[worker] started; waiting for
+    jobs`; PM scheduler startup pass ran; `pm_occurrences` count stayed at
+    exactly 1 after the catch-up tick (idempotency holds on a cold start);
+    graceful SIGTERM shutdown.
+  - `npm test` → **139/139 passed** (12 files)
+  - `npm run test:e2e` → **61/61 passed** — Scenarios A–F all green
+    (Chromium desktop + Pixel 7 mobile project)
+  - `dropdb cmms_final` (scratch DB removed after the sweep)
+- **Feature matrix:** the last non-Verified P0 row (backend RBAC) flipped
+  to Verified — the full role×action matrix is covered by the Vitest
+  permission tests plus Scenario F (requester/technician/manager
+  boundaries, anonymous attachment 401, portal data isolation), all green
+  in this sweep. Every P0 and P1 row is now **Verified**; P2 rows are
+  **Deferred** by design.
+- **Unexplained errors:** none in server logs, worker logs, or the browser
+  console during the sweep.
+- **Docs:** DELIVERY_REPORT.md written with all §24 sections;
+  PROJECT_STATE.md updated to final state.
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** admin, manager, technician, requester, anonymous
+- **Final result:** PASS — definition of done (§23) met.
