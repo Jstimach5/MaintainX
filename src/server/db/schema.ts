@@ -7,6 +7,7 @@ import {
   boolean,
   text,
   jsonb,
+  date,
   timestamp,
   primaryKey,
   uniqueIndex,
@@ -171,6 +172,165 @@ export const locations = pgTable(
       name: "locations_parent_fk",
     }),
   ],
+);
+
+// ---------------------------------------------------------------------------
+// Attachments (polymorphic pictures/files for every module)
+// ---------------------------------------------------------------------------
+
+export const attachmentCategory = pgEnum("attachment_category", [
+  "general",
+  "main",
+  "before",
+  "during",
+  "after",
+  "inspection",
+  "damage",
+]);
+
+/**
+ * One attachment table for the whole app. `entityType` is app-validated text
+ * (asset, work_order, request, procedure_response, meter_reading, comment)
+ * so future modules (parts, POs) need no schema change. Files live on disk
+ * via the storage adapter under `storedName`; DB row and file are created
+ * and deleted together (services/attachments.ts).
+ */
+export const attachments = pgTable(
+  "attachments",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    entityType: text("entity_type").notNull(),
+    entityId: integer("entity_id").notNull(),
+    category: attachmentCategory("category").notNull().default("general"),
+    storedName: text("stored_name").notNull().unique(),
+    originalName: text("original_name"),
+    mimeType: text("mime_type").notNull(),
+    sizeBytes: integer("size_bytes").notNull(),
+    caption: text("caption"),
+    uploadedBy: integer("uploaded_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("attachments_entity_idx").on(table.entityType, table.entityId)],
+);
+
+// ---------------------------------------------------------------------------
+// Assets (§6) + status/location history
+// ---------------------------------------------------------------------------
+
+export const assetStatus = pgEnum("asset_status", [
+  "online",
+  "offline",
+  "limited",
+  "planned_downtime",
+  "unplanned_downtime",
+  "out_for_repair",
+  "retired",
+  "not_tracked",
+]);
+
+export const criticality = pgEnum("criticality", [
+  "low",
+  "medium",
+  "high",
+  "critical",
+]);
+
+export const assets = pgTable(
+  "assets",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    assetNumber: text("asset_number").notNull().unique(),
+    name: text("name").notNull(),
+    description: text("description"),
+    assetType: text("asset_type"),
+    siteId: integer("site_id")
+      .notNull()
+      .references(() => sites.id),
+    locationId: integer("location_id").references(() => locations.id),
+    parentAssetId: integer("parent_asset_id"), // self-FK below
+    status: assetStatus("status").notNull().default("online"),
+    make: text("make"),
+    model: text("model"),
+    serialNumber: text("serial_number"),
+    year: integer("year"),
+    purchaseDate: date("purchase_date"),
+    inServiceDate: date("in_service_date"),
+    warrantyInfo: text("warranty_info"),
+    criticality: criticality("criticality").notNull().default("medium"),
+    responsibleTeamId: integer("responsible_team_id").references(() => teams.id),
+    responsibleUserId: integer("responsible_user_id").references(() => users.id),
+    mainAttachmentId: integer("main_attachment_id").references(
+      () => attachments.id,
+    ),
+    notes: text("notes"),
+    tags: text("tags").array(),
+    /** Stable QR token; printed labels resolve /a/<qrToken> to this asset. */
+    qrToken: text("qr_token").notNull().unique(),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("assets_site_idx").on(table.siteId),
+    index("assets_location_idx").on(table.locationId),
+    index("assets_status_idx").on(table.status),
+    index("assets_parent_idx").on(table.parentAssetId),
+    foreignKey({
+      columns: [table.parentAssetId],
+      foreignColumns: [table.id],
+      name: "assets_parent_fk",
+    }),
+  ],
+);
+
+export const assetStatusHistory = pgTable(
+  "asset_status_history",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    assetId: integer("asset_id")
+      .notNull()
+      .references(() => assets.id),
+    status: assetStatus("status").notNull(),
+    previousStatus: assetStatus("previous_status"),
+    note: text("note"),
+    changedBy: integer("changed_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("asset_status_hist_idx").on(table.assetId)],
+);
+
+export const assetLocationHistory = pgTable(
+  "asset_location_history",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    assetId: integer("asset_id")
+      .notNull()
+      .references(() => assets.id),
+    siteId: integer("site_id")
+      .notNull()
+      .references(() => sites.id),
+    locationId: integer("location_id").references(() => locations.id),
+    note: text("note"),
+    movedBy: integer("moved_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("asset_location_hist_idx").on(table.assetId)],
 );
 
 // ---------------------------------------------------------------------------

@@ -106,3 +106,34 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
   button (strict mode) → scoped to `main form button[type=submit]`. TS null
   annotation in getLocationPath.
 - **Final result:** PASS — all suites green.
+
+---
+
+## Phase 3 — Assets, histories, storage adapter, QR values
+
+### 2026-07-27 — Full verification cycle
+
+- **Feature tested:** asset CRUD (full §6 field set), auto/manual asset
+  numbers, sub-asset hierarchy, status changes + history, location transfers
+  + history, archive/restore, picture/file uploads via storage adapter,
+  auth-gated file serving, QR tokens + printable label, /a/<token> resolver.
+- **Commands run:** db:migrate (0003_assets_attachments), typecheck, lint,
+  `npm test`, `npm run test:e2e`, build
+- **Automated results:** vitest **46/46** (adds 19: asset numbering +
+  duplicate reject, initial location-history entry, cross-site + archived
+  location rejects, unique QR tokens, sub-asset cycle prevention, status
+  history + audit + no-op dedupe + archived guard, transfer history + no-op +
+  cross-site reject, list filters; attachments: file+row invariant with
+  content roundtrip from disk, executable/HTML type rejection, empty-file
+  reject, delete removes row+file, per-entity listing). Playwright **17/17**
+  (adds 6: create asset via UI with dependent site→location select, status
+  change shows history entry, photo upload appears + survives reload + served
+  as image/png with 200, QR label renders, technician can change status but
+  gets 403 on /assets/new, @mobile photo upload with no horizontal scroll).
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** admin, technician
+- **Failures found & fixes:** new spec filename sorted before auth.spec and
+  its fixture pre-seeded users, breaking the first-run test → specs renamed
+  with numeric prefixes (00-auth, 10-sites, 20-assets) for deterministic
+  order.
+- **Final result:** PASS — all suites green.

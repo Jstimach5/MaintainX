@@ -1,47 +1,49 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 2 complete)
+Last updated: 2026-07-27 (Phase 3 complete)
 
 ## Current phase
 
-Phase 2 complete — sites + nested locations verified (tree, cycles,
-archive cascades, role boundaries). Next up: Phase 3 (assets).
+Phase 3 complete — assets with status/location histories, storage adapter
++ uploads, QR labels all verified. Next up: Phase 4 (work orders core).
 
 ## Last completed task
 
-Phase 2: sites + nested locations — services with cycle prevention and
-archive cascades, admin CRUD UI with location tree, read-only views for
-manager/technician, requester blocked; 9 new vitest + 5 new e2e tests.
+Phase 3: assets — full §6 field set, auto asset numbers, sub-asset
+hierarchy with cycle guard, status + location histories (in-tx with audit),
+archive/restore, storage adapter with validated uploads + auth-gated
+serving, shared AttachmentSection UI, QR tokens + printable labels +
+/a/<token> resolver; 19 new vitest + 6 new e2e tests.
 
 ## Current task
 
-Begin Phase 3: assets — schema (full §6 field set, parent/sub-assets,
-status/location history tables), storage adapter + picture uploads, QR
-values, asset pages with history panels.
+Begin Phase 4: work orders core — schema (§7 fields, numbering, status
+history, assignments, multi-asset), lifecycle service, list/detail UI with
+quick actions, comments, attachments reuse, labor time.
 
 ## Next three tasks
 
-1. Phase 3: assets with status/location history, storage adapter, pictures,
-   QR values.
-2. Phase 4: work orders core (fields, numbering, statuses + history,
+1. Phase 4: work orders core (fields, numbering, statuses + history,
    assignments, comments, attachments, mobile cards).
-3. Phase 5: procedures (templates, versioned snapshots, execution UI).
+2. Phase 5: procedures (templates, versioned snapshots, execution UI).
+3. Phase 6: work requests + portal + notifications (Scenario A).
 
 ## Known failures
 
-None. All suites green (27 vitest, 11 playwright).
+None. All suites green (46 vitest, 17 playwright).
 
 ## Current test results
 
-- `npm test`: 27/27 pass (auth, sessions, guards, audit, sites, locations)
-- `npm run test:e2e`: 11/11 pass (desktop + mobile projects)
+- `npm test`: 46/46 pass (auth, sites/locations, assets, attachments)
+- `npm run test:e2e`: 17/17 pass (desktop + mobile projects)
 - `npm run build && typecheck && lint`: clean
 - Prod-mode /setup door: verified by hand both directions (TEST_LOG Phase 1)
 
 ## Database migration status
 
-Migrations 0000–0002 (org_settings; users/sessions/teams/audit; sites/
-locations) applied cleanly to cmms_dev/cmms_test/cmms_e2e.
+Migrations 0000–0003 (org_settings; users/sessions/teams/audit; sites/
+locations; assets/attachments/histories) applied cleanly to
+cmms_dev/cmms_test/cmms_e2e.
 Dev DB: postgres://cmms@localhost:5432/cmms_dev (sandbox local Postgres 16).
 
 ## Manual testing status

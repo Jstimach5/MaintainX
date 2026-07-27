@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 2)
+Last updated: 2026-07-27 (Phase 3)
 
 ## P0 — Must work
 
@@ -16,12 +16,12 @@ Last updated: 2026-07-27 (Phase 2)
 | Users & teams admin (deactivation revokes sessions) | P0 | Verified | src/app/(app)/admin/{users,teams}, src/server/services/{users,teams}.ts | — | Deactivated user's live session rejected immediately; last-admin guards | PASS 2026-07-27 | TEST_LOG.md Phase 1 |
 | Sites | P0 | Verified | src/app/(app)/sites, src/server/services/sites.ts | — | CRUD via UI; archival cascades + blocks new references | PASS 2026-07-27 | TEST_LOG.md Phase 2 |
 | Nested locations (parent/child, history-safe archival) | P0 | Verified | src/server/services/locations.ts, src/app/(app)/locations | — | Tree CRUD via UI; cycle-safe re-parenting; archive cascades | PASS 2026-07-27 | TEST_LOG.md Phase 2 |
-| Assets (full field set, parent/sub-assets, statuses) | P0 | Missing | src/app/assets/ (planned) | Build in Phase 3 | Create/edit/archive via UI; sub-asset tree renders | — | — |
-| Asset location history + transfers | P0 | Missing | (planned) | Build in Phase 3 | Transfer writes history row + audit event; history panel shows it | — | — |
-| Asset status history | P0 | Missing | (planned) | Build in Phase 3 | Status change writes history + audit; panel shows it | — | — |
+| Assets (full field set, parent/sub-assets, statuses) | P0 | Verified | src/app/(app)/assets, src/server/services/assets.ts | — | Create/edit/archive via UI; sub-assets + cycle guard | PASS 2026-07-27 | TEST_LOG.md Phase 3 |
+| Asset location history + transfers | P0 | Verified | src/server/services/assets.ts (transferAsset) | — | Transfer writes history + audit; panel shows it | PASS 2026-07-27 | TEST_LOG.md Phase 3 |
+| Asset status history | P0 | Verified | src/server/services/assets.ts (changeAssetStatus) | — | Status change writes history + audit; panel shows it | PASS 2026-07-27 | TEST_LOG.md Phase 3 |
 | Work orders (fields, numbering, lifecycle statuses + history) | P0 | Missing | src/app/work-orders/ (planned) | Build in Phase 4 | Full lifecycle via UI; status history complete with user+timestamp | — | — |
 | WO assignments (users/team) | P0 | Missing | (planned) | Build in Phase 4 | Assign/unassign; technician sees assigned work | — | — |
-| Pictures & files on WOs/assets/requests (survive restart) | P0 | Missing | src/server/storage/ (planned) | Build in Phases 3–4 | Upload via mobile viewport; picture visible after logout + server restart | — | — |
+| Pictures & files on WOs/assets/requests (survive restart) | P0 | Partially working | src/server/storage/, src/server/services/attachments.ts, src/app/api/attachments, src/app/files/[id] | Asset uploads verified (incl. mobile + reload + disk roundtrip); WO/request wiring in Phases 4/6 | Upload via mobile viewport; picture visible after reload/restart | Asset path PASS 2026-07-27 | TEST_LOG.md Phase 3 |
 | Procedures (templates, versioned snapshots, all step types) | P0 | Missing | src/app/procedures/ (planned) | Build in Phase 5 | Template edit never mutates completed WO's procedure; required steps block completion | — | — |
 | Failed inspection → flag + corrective request | P0 | Missing | (planned) | Build in Phase 5 | Fail a step → WO flagged, corrective request created | — | — |
 | Work requests + approval + convert (no duplicate conversion) | P0 | Missing | src/app/requests/ (planned) | Build in Phase 6 | Scenario A end-to-end | — | — |
@@ -47,7 +47,7 @@ Last updated: 2026-07-27 (Phase 2)
 | Corrective WOs from failed inspections (auto, configured) | P1 | Missing | (planned) | Phase 12 | Configured failure creates corrective WO linked back | — | — |
 | Saved reporting filters / dashboards | P1 | Missing | (planned) | Phase 12 | Save + reload a dashboard; share internal link | — | — |
 | PDF / print-friendly reporting | P1 | Missing | (planned) | Phase 12 | Print stylesheet output readable | — | — |
-| QR-code asset access (scan → asset page / request form) | P1 | Missing | (planned) | Values in Phase 3; flows Phase 12 | Scan URL opens asset page; unauthenticated scan → limited request page | — | — |
+| QR-code asset access (scan → asset page / request form) | P1 | Partially working | src/app/(app)/assets/[id]/label, src/app/a/[token] | Label + authenticated scan verified; public limited request flow in Phase 12 | Scan URL opens asset page; unauthenticated scan → limited request page | Label+resolver PASS 2026-07-27 | TEST_LOG.md Phase 3 |
 | Import rollback where safe | P1 | Missing | (planned) | Phase 10 basic, Phase 12 polish | Rollback removes only import-created rows; refused after external edits | — | — |
 | Notifications completeness (mentions, all §8 events) | P1 | Missing | (planned) | Phase 12 | Each §8 event notifies the right users | — | — |
 | E2E coverage of critical workflows (Scenarios A–F) | P1 | Missing | e2e/ | Built per phase; all green Phase 12 | `npm run test:e2e` green | — | — |
