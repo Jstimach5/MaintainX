@@ -1,50 +1,49 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 7 complete)
+Last updated: 2026-07-27 (Phase 8 complete)
 
 ## Current phase
 
-Phase 7 complete — PM engine verified (Scenario B e2e green; idempotent
-generation, fixed/floating, catch-up collapse, crash repair). Next up:
-Phase 8 (meters + triggers, Scenario C).
+Phase 8 complete — meters + triggers verified (Scenario C e2e green;
+exactly-once firing, corrections with audit). Next up: Phase 9 (manager
+progress view + reporting core).
 
 ## Last completed task
 
-Phase 7: preventive maintenance — pm_plans + pm_occurrences (UNIQUE
-plan+key = idempotency), DST-safe recurrence lib, fixed vs floating
-semantics, lead windows, one-catch-up collapse, orphan repair, procedure
-auto-attach, worker cron + Run-now, plan pages with projection preview and
-history; 16 new vitest + 4 new e2e (Scenario B).
+Phase 8: meters — readings with monotonic/rollover/magnitude validation,
+void-and-replace corrections (audited, recompute current), threshold
+triggers (crossing + re-arm + skip-while-open), interval triggers
+(watermark + collapse), exactly-once via UNIQUE(trigger,reading), meter
+pages with reading entry/history/trigger management; 11 new vitest + 4 new
+e2e (Scenario C).
 
 ## Current task
 
-Begin Phase 8: meters — schema (meters, readings, triggers with
-last-fired watermarks), manual readings + validation + correction w/
-audit, trend display, threshold/interval triggers generating exactly one
-WO, PM-by-usage hook, Scenario C e2e.
+Begin Phase 9: manager progress view + reporting core — §11 table view
+with full filter set and warning panel; §13 reports with KPI definitions,
+CSV export, drill-down; dashboard with real counts.
 
 ## Next three tasks
 
-1. Phase 8: meters + readings + triggers (Scenario C).
-2. Phase 9: manager progress view + reporting core.
-3. Phase 10: bulk CSV/XLSX imports (Scenario D).
+1. Phase 9: manager progress view + reporting core.
+2. Phase 10: bulk CSV/XLSX imports (Scenario D).
+3. Phase 11: audit browser + backups + mobile pass + seed data.
 
 ## Known failures
 
-None. All suites green (101 vitest, 37 playwright).
+None. All suites green (112 vitest, 41 playwright).
 
 ## Current test results
 
-- `npm test`: 101/101 pass (…, requests, notifications, PM engine)
-- `npm run test:e2e`: 37/37 pass (desktop + mobile projects)
+- `npm test`: 112/112 pass (…, PM engine, meters/triggers)
+- `npm run test:e2e`: 41/41 pass (desktop + mobile projects)
 - `npm run build && typecheck && lint`: clean
 - Prod-mode /setup door: verified by hand both directions (TEST_LOG Phase 1)
 
 ## Database migration status
 
-Migrations 0000–0007 (…; work requests/notifications; pm_plans +
-pm_occurrences + WO pm_plan_id) applied cleanly to
-cmms_dev/cmms_test/cmms_e2e.
+Migrations 0000–0008 (…; PM; meters + readings + triggers + trigger
+events) applied cleanly to cmms_dev/cmms_test/cmms_e2e.
 Dev DB: postgres://cmms@localhost:5432/cmms_dev (sandbox local Postgres 16).
 
 ## Manual testing status

@@ -823,6 +823,128 @@ export const pmOccurrences = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// Meters (§10)
+// ---------------------------------------------------------------------------
+
+/**
+ * Numeric measurements on an asset or location (hours, miles, cycles,
+ * temperature, …). `source` on readings is the adapter seam for future IoT
+ * ingestion — automated feeds insert rows the same way manual entry does.
+ */
+export const meters = pgTable(
+  "meters",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    name: text("name").notNull(),
+    description: text("description"),
+    unit: text("unit").notNull(), // e.g. "hours", "miles", "°F"
+    assetId: integer("asset_id").references(() => assets.id),
+    locationId: integer("location_id").references(() => locations.id),
+    /** Monotonic meters (hours/miles) reject decreasing readings. */
+    mustIncrease: boolean("must_increase").notNull().default(true),
+    currentValue: numeric("current_value", { precision: 14, scale: 3 }),
+    currentReadingAt: timestamp("current_reading_at", { withTimezone: true }),
+    warnThreshold: numeric("warn_threshold", { precision: 14, scale: 3 }),
+    criticalThreshold: numeric("critical_threshold", { precision: 14, scale: 3 }),
+    isActive: boolean("is_active").notNull().default(true),
+    createdBy: integer("created_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("meters_asset_idx").on(table.assetId)],
+);
+
+export const meterReadings = pgTable(
+  "meter_readings",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    meterId: integer("meter_id")
+      .notNull()
+      .references(() => meters.id, { onDelete: "cascade" }),
+    value: numeric("value", { precision: 14, scale: 3 }).notNull(),
+    readingAt: timestamp("reading_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    source: text("source").notNull().default("manual"),
+    note: text("note"),
+    /** Explicit odometer-style rollover acknowledgment. */
+    isRollover: boolean("is_rollover").notNull().default(false),
+    /** Corrections point at the reading they fix; originals stay (§10). */
+    correctsReadingId: integer("corrects_reading_id"),
+    isVoided: boolean("is_voided").notNull().default(false),
+    recordedBy: integer("recorded_by").references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("meter_readings_meter_idx").on(table.meterId, table.readingAt)],
+);
+
+export const triggerType = pgEnum("trigger_type", ["threshold", "interval"]);
+
+/**
+ * Meter-driven WO generation (§10). Exactly-once: the watermark
+ * (lastFiredValue) advances in the same transaction as the fired event, and
+ * UNIQUE (trigger, reading) makes reprocessing a reading a no-op.
+ */
+export const meterTriggers = pgTable(
+  "meter_triggers",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    meterId: integer("meter_id")
+      .notNull()
+      .references(() => meters.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    type: triggerType("type").notNull(),
+    /** threshold type: fire when a reading crosses this value upward. */
+    threshold: numeric("threshold", { precision: 14, scale: 3 }),
+    /** interval type: fire every N units of usage. */
+    intervalValue: numeric("interval_value", { precision: 14, scale: 3 }),
+    lastFiredValue: numeric("last_fired_value", { precision: 14, scale: 3 }),
+    /** Skip firing while the last generated WO is still open. */
+    skipIfOpen: boolean("skip_if_open").notNull().default(true),
+    woTitle: text("wo_title").notNull(),
+    woDescription: text("wo_description"),
+    priority: woPriority("priority").notNull().default("medium"),
+    procedureTemplateId: integer("procedure_template_id").references(
+      () => procedureTemplates.id,
+    ),
+    assignedTeamId: integer("assigned_team_id").references(() => teams.id),
+    isActive: boolean("is_active").notNull().default(true),
+    createdBy: integer("created_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("meter_triggers_meter_idx").on(table.meterId)],
+);
+
+export const meterTriggerEvents = pgTable(
+  "meter_trigger_events",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    triggerId: integer("trigger_id")
+      .notNull()
+      .references(() => meterTriggers.id, { onDelete: "cascade" }),
+    readingId: integer("reading_id")
+      .notNull()
+      .references(() => meterReadings.id, { onDelete: "cascade" }),
+    workOrderId: integer("work_order_id").references(() => workOrders.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("meter_trigger_events_uq").on(table.triggerId, table.readingId),
+  ],
+);
+
+// ---------------------------------------------------------------------------
 // Audit trail (append-only; the application role never updates or deletes)
 // ---------------------------------------------------------------------------
 

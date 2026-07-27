@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 7)
+Last updated: 2026-07-27 (Phase 8)
 
 ## P0 — Must work
 
@@ -28,8 +28,8 @@ Last updated: 2026-07-27 (Phase 7)
 | Public request portal (per-site, rate-limited) | P0 | Verified | src/app/portal/[token] | — | Submit without account (w/ photo); no internal data exposed; 5/hr/IP limit | PASS 2026-07-27 | TEST_LOG.md Phase 6 |
 | In-app notifications (adapter for email later) | P0 | Verified | src/server/services/notifications.ts, src/app/(app)/notifications | — | Request lifecycle notifications appear (badge + page); email stub behind SMTP_URL | PASS 2026-07-27 | TEST_LOG.md Phase 6 |
 | Preventive maintenance generation (idempotent, fixed+floating) | P0 | Verified | src/server/services/pm.ts, src/app/(app)/pm-plans, src/worker | — | Scenario B; double-run creates no duplicates (unique occurrence keys) | PASS 2026-07-27 | TEST_LOG.md Phase 7 |
-| Meter readings + validation + correction w/ audit | P0 | Missing | src/app/meters/ (planned) | Build in Phase 8 | Reading history + trend; impossible readings rejected | — | — |
-| Meter-triggered WOs (exactly once) | P0 | Missing | (planned) | Build in Phase 8 | Scenario C; reprocessing creates no duplicate | — | — |
+| Meter readings + validation + correction w/ audit | P0 | Verified | src/app/(app)/meters, src/server/services/meters.ts | — | Reading history; impossible/decreasing readings rejected; corrections audited | PASS 2026-07-27 | TEST_LOG.md Phase 8 |
+| Meter-triggered WOs (exactly once) | P0 | Verified | src/server/services/meters.ts (evaluateTriggers) | — | Scenario C; reprocessing creates no duplicate (unique trigger+reading) | PASS 2026-07-27 | TEST_LOG.md Phase 8 |
 | Manager progress view (filters + warnings) | P0 | Missing | src/app/schedule/ (planned) | Build in Phase 9 | All §11 filters work; warning set renders | — | — |
 | Bulk WO import (CSV/XLSX, ≥10k rows, dry-run, idempotent) | P0 | Missing | src/app/imports/ (planned) | Build in Phase 10 | Scenario D; 10k-row background import test | — | — |
 | Basic reporting (§13 list, CSV export, KPI tests) | P0 | Missing | src/app/reports/ (planned) | Build in Phase 9 | Reports agree with seeded records; canceled ≠ completed | — | — |

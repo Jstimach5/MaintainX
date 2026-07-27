@@ -271,3 +271,30 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
 - **Browser:** Chromium desktop + Pixel 7
 - **Test user roles:** manager, technician
 - **Final result:** PASS — all suites green.
+
+---
+
+## Phase 8 — Meters, readings, triggers
+
+### 2026-07-27 — Full verification cycle
+
+- **Feature tested:** meters (§10) on assets/locations, manual readings with
+  monotonic validation + explicit rollover + impossible-magnitude rejection,
+  corrections that void-and-replace with a required note and full audit
+  trail, threshold triggers (upward-crossing fire, re-arm after dropping
+  below, skip-while-open guard), interval triggers (usage-based PM with
+  watermark + multi-interval collapse), exactly-once firing via UNIQUE
+  (trigger, reading), generated WOs linking back to meter + asset.
+- **Commands run:** db:migrate (0008_meters), typecheck, lint, `npm test`,
+  `npm run test:e2e`, build
+- **Automated results:** vitest **112/112** (adds 11 across readings/
+  corrections/threshold/interval incl. the Scenario-C truth table:
+  below-threshold silence, exactly-one WO, reprocess no-op, re-arm,
+  skipIfOpen, disabled triggers, interval collapse). Playwright **41/41**
+  (adds 4 — Scenario C: manager creates meter + 500h threshold trigger;
+  tech's 300h reading creates nothing; 250h decreasing reading rejected;
+  510h fires exactly one WO that links back to meter and asset, 520h does
+  not re-fire; manager corrects 520→515 with audit note visible).
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** manager, technician
+- **Final result:** PASS — all suites green.

@@ -57,6 +57,13 @@
       "when": 1785161962534,
       "tag": "0007_pm_plans",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785162666749,
+      "tag": "0008_meters",
+      "breakpoints": true
     }
   ]
 }
