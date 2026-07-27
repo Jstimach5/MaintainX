@@ -403,6 +403,8 @@ export const workOrders = pgTable(
     laborCost: numeric("labor_cost", { precision: 12, scale: 2 }),
     otherCost: numeric("other_cost", { precision: 12, scale: 2 }),
     completionNotes: text("completion_notes"),
+    /** Set by a failed inspection step (§7); cleared manually by a manager. */
+    flagged: boolean("flagged").notNull().default(false),
     source: woSource("source").notNull().default("manual"),
     /** Stable identifier for imported/external records (§12). */
     externalId: text("external_id"),
@@ -536,6 +538,104 @@ export const comments = pgTable(
       .defaultNow(),
   },
   (table) => [index("comments_entity_idx").on(table.entityType, table.entityId)],
+);
+
+// ---------------------------------------------------------------------------
+// Procedures (§7): reusable templates, immutable versions, per-WO snapshots
+// ---------------------------------------------------------------------------
+
+export const procedureTemplates = pgTable("procedure_templates", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  name: text("name").notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  /** Latest version number; versions themselves are immutable rows. */
+  currentVersion: integer("current_version").notNull().default(0),
+  createdBy: integer("created_by")
+    .notNull()
+    .references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * Every save of a template's steps creates a NEW immutable version row; the
+ * steps live here as JSONB (see ProcedureStep in services/procedures.ts).
+ */
+export const procedureVersions = pgTable(
+  "procedure_versions",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    templateId: integer("template_id")
+      .notNull()
+      .references(() => procedureTemplates.id, { onDelete: "cascade" }),
+    version: integer("version").notNull(),
+    steps: jsonb("steps").notNull(),
+    createdBy: integer("created_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("procedure_versions_uq").on(table.templateId, table.version),
+  ],
+);
+
+/**
+ * A procedure attached to a work order. `stepsSnapshot` is a full copy taken
+ * at attach time — later template edits NEVER change what a historical WO
+ * shows or what was answered (§7).
+ */
+export const woProcedureInstances = pgTable(
+  "wo_procedure_instances",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    workOrderId: integer("work_order_id")
+      .notNull()
+      .references(() => workOrders.id, { onDelete: "cascade" }),
+    templateId: integer("template_id").references(() => procedureTemplates.id, {
+      onDelete: "set null",
+    }),
+    templateVersion: integer("template_version"),
+    name: text("name").notNull(),
+    stepsSnapshot: jsonb("steps_snapshot").notNull(),
+    attachedBy: integer("attached_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("wo_proc_wo_idx").on(table.workOrderId)],
+);
+
+/** One row per answered step; re-answering upserts (§7 responses). */
+export const procedureResponses = pgTable(
+  "procedure_responses",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    instanceId: integer("instance_id")
+      .notNull()
+      .references(() => woProcedureInstances.id, { onDelete: "cascade" }),
+    stepIndex: integer("step_index").notNull(),
+    value: jsonb("value").notNull(),
+    isFailure: boolean("is_failure").notNull().default(false),
+    respondedBy: integer("responded_by")
+      .notNull()
+      .references(() => users.id),
+    respondedAt: timestamp("responded_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("procedure_responses_uq").on(table.instanceId, table.stepIndex),
+  ],
 );
 
 // ---------------------------------------------------------------------------

@@ -14,6 +14,19 @@ import { AttachmentSection } from "@/components/attachments";
 import { IMAGE_TYPES } from "@/server/storage";
 import { WoPriorityBadge, WoStatusBadge } from "../wo-badges";
 import { CommentForm, LaborForm, QuickStatusBar } from "../wo-forms";
+import {
+  AttachProcedureForm,
+  ProcedureInstancePanel,
+  type StepView,
+} from "../procedure-panel";
+import {
+  isStepVisible,
+  listInstancesForWo,
+  listTemplates,
+  type ProcedureStep,
+  type ResponseValue,
+} from "@/server/services/procedures";
+import { listUsers } from "@/server/services/users";
 
 export const metadata = { title: "Work order" };
 
@@ -50,6 +63,37 @@ export default async function WorkOrderDetailPage({
   const attachments = await listAttachments("work_order", woId);
   const canManage = user.role === "admin" || user.role === "manager";
   const canAct = await canActOnWorkOrder(user, woId);
+  const instances = await listInstancesForWo(woId);
+  const templates = canManage ? await listTemplates() : [];
+  const allUsers = await listUsers();
+  const nameOf = (id: number) =>
+    allUsers.find((u) => u.id === id)?.displayName ?? `user ${id}`;
+
+  const woIsOpen = wo.status !== "completed" && wo.status !== "canceled";
+  const panels = instances.map(({ instance, steps, responses }) => {
+    const stepViews: StepView[] = (steps as ProcedureStep[]).map((s, i) => {
+      const resp = responses.find((r) => r.stepIndex === i);
+      const value = resp?.value as ResponseValue | undefined;
+      return {
+        index: i,
+        type: s.type,
+        label: s.label,
+        instructions: s.instructions,
+        expectedResult: s.expectedResult,
+        required: s.required,
+        min: s.min,
+        max: s.max,
+        options: s.options,
+        visible: isStepVisible(steps, i, responses),
+        answered: resp !== undefined,
+        isFailure: resp?.isFailure ?? false,
+        valueDisplay: value != null ? String(value.v) : null,
+        comment: value?.comment ?? null,
+        respondedByName: resp ? nameOf(resp.respondedBy) : undefined,
+      };
+    });
+    return { instance, stepViews };
+  });
   const overdue =
     wo.dueAt &&
     wo.dueAt < new Date() &&
@@ -77,6 +121,7 @@ export default async function WorkOrderDetailPage({
         <WoPriorityBadge priority={wo.priority} />
         <Badge tone="gray">{wo.workType}</Badge>
         {overdue ? <Badge tone="red">overdue</Badge> : null}
+        {wo.flagged ? <Badge tone="red">flagged — inspection failure</Badge> : null}
         {wo.tags?.map((t) => (
           <Badge key={t} tone="blue">
             {t}
@@ -229,6 +274,37 @@ export default async function WorkOrderDetailPage({
                   </li>
                 ))}
               </ul>
+            </Card>
+          ) : null}
+
+          {panels.length > 0 || (canManage && woIsOpen && templates.length > 0) ? (
+            <Card>
+              <h2 className="mb-2 font-semibold">Procedures</h2>
+              <div className="space-y-5">
+                {panels.map(({ instance, stepViews }) => (
+                  <ProcedureInstancePanel
+                    key={instance.id}
+                    workOrderId={wo.id}
+                    instanceId={instance.id}
+                    name={instance.name}
+                    version={instance.templateVersion}
+                    steps={stepViews}
+                    canAct={canAct && woIsOpen}
+                  />
+                ))}
+                {canManage && woIsOpen ? (
+                  <AttachProcedureForm
+                    workOrderId={wo.id}
+                    templates={templates
+                      .filter((t) => t.isActive && t.currentVersion > 0)
+                      .map((t) => ({
+                        id: t.id,
+                        name: t.name,
+                        version: t.currentVersion,
+                      }))}
+                  />
+                ) : null}
+              </div>
             </Card>
           ) : null}
 

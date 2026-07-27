@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 4)
+Last updated: 2026-07-27 (Phase 5)
 
 ## P0 — Must work
 
@@ -22,8 +22,8 @@ Last updated: 2026-07-27 (Phase 4)
 | Work orders (fields, numbering, lifecycle statuses + history) | P0 | Verified | src/app/(app)/work-orders, src/server/services/workOrders.ts | — | Full lifecycle via UI; status history complete with user+timestamp | PASS 2026-07-27 | TEST_LOG.md Phase 4 |
 | WO assignments (users/team) | P0 | Verified | src/server/services/workOrders.ts | — | Assign/unassign; tech sees Mine filter; Scenario-F boundaries enforced | PASS 2026-07-27 | TEST_LOG.md Phase 4 |
 | Pictures & files on WOs/assets/requests (survive restart) | P0 | Partially working | src/server/storage/, src/server/services/attachments.ts | Asset + WO uploads verified (mobile, reload, disk roundtrip); request wiring in Phase 6 | Upload via mobile viewport; picture visible after reload/restart | Asset+WO paths PASS 2026-07-27 | TEST_LOG.md Phases 3–4 |
-| Procedures (templates, versioned snapshots, all step types) | P0 | Missing | src/app/procedures/ (planned) | Build in Phase 5 | Template edit never mutates completed WO's procedure; required steps block completion | — | — |
-| Failed inspection → flag + corrective request | P0 | Missing | (planned) | Build in Phase 5 | Fail a step → WO flagged, corrective request created | — | — |
+| Procedures (templates, versioned snapshots, all step types) | P0 | Verified | src/app/(app)/procedures, src/server/services/procedures.ts | — | Template edit never mutates completed WO's procedure; required steps block completion | PASS 2026-07-27 | TEST_LOG.md Phase 5 |
+| Failed inspection → flag + corrective request | P0 | Partially working | src/server/services/procedures.ts | Flag + required comment verified; corrective request creation wires up in Phase 6 (requests module) | Fail a step → WO flagged, corrective request created | Flag path PASS 2026-07-27 | TEST_LOG.md Phase 5 |
 | Work requests + approval + convert (no duplicate conversion) | P0 | Missing | src/app/requests/ (planned) | Build in Phase 6 | Scenario A end-to-end | — | — |
 | Public request portal (per-site, rate-limited) | P0 | Missing | src/app/portal/ (planned) | Build in Phase 6 | Submit without account; no internal data exposed | — | — |
 | In-app notifications (adapter for email later) | P0 | Missing | (planned) | Build in Phase 6 | Request lifecycle notifications appear | — | — |

@@ -381,6 +381,17 @@ export async function changeWorkOrderStatus(
   }
   if (existing.status === status) return;
 
+  // Completion gate (§7): required procedure steps must be answered first.
+  if (status === "completed") {
+    const { getCompletionBlockers } = await import("./procedures");
+    const blockers = await getCompletionBlockers(workOrderId);
+    if (blockers.length > 0) {
+      throw new ServiceError(
+        `Cannot complete yet — required procedure steps are missing: ${blockers.join("; ")}`,
+      );
+    }
+  }
+
   const now = new Date();
   await db.transaction(async (tx) => {
     const patch: Partial<typeof workOrders.$inferInsert> = {

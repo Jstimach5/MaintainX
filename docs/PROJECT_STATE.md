@@ -1,49 +1,50 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 4 complete)
+Last updated: 2026-07-27 (Phase 5 complete)
 
 ## Current phase
 
-Phase 4 complete — work orders core verified end to end (lifecycle,
-assignments, Scenario-F boundaries, labor, comments, photos, org-timezone
-datetimes). Next up: Phase 5 (procedures).
+Phase 5 complete — procedures verified (immutable versions, snapshots,
+step-through UI, completion gate, failure flags). Next up: Phase 6 (work
+requests + portal + notifications, incl. corrective-request wiring).
 
 ## Last completed task
 
-Phase 4: work orders — §7 schema (28 cols) + assignments/assets/status-
-history/labor/comments tables, lifecycle service with first-start/completion
-timestamp semantics, canActOnWorkOrder boundaries, org-TZ datetime-local
-handling (wallTimeToUtc), list with persistent filters, detail page with
-quick-status bar + activity, asset work-history panel; 16 new vitest + 6
-new e2e tests.
+Phase 5: procedures — templates + immutable versions (JSONB steps),
+per-WO snapshots at attach time, all §7 step types with conditional
+visibility and failure responses, response upserts with per-type
+validation, WO completion gate, failed-inspection flag + required comment,
+builder UI + step-through panel; 13 new vitest + 5 new e2e tests.
 
 ## Current task
 
-Begin Phase 5: procedures — template builder (all §7 step types,
-conditional follow-ups, min/max), versioned snapshot on attach, technician
-step-through UI, completion blocking, failed-inspection flow.
+Begin Phase 6: work requests — schema + statuses, authenticated requester
+flow, per-site public portal (tokenized, rate-limited), manager review/
+approve/decline/convert with duplicate-conversion guard, request↔WO links,
+in-app notifications adapter, corrective-request creation from failed
+inspection steps. Scenario A e2e.
 
 ## Next three tasks
 
-1. Phase 5: procedures (templates, versioned snapshots, execution UI).
-2. Phase 6: work requests + portal + notifications (Scenario A).
-3. Phase 7: preventive maintenance engine (Scenario B).
+1. Phase 6: work requests + portal + notifications (Scenario A).
+2. Phase 7: preventive maintenance engine (Scenario B).
+3. Phase 8: meters + readings + triggers (Scenario C).
 
 ## Known failures
 
-None. All suites green (62 vitest, 23 playwright).
+None. All suites green (75 vitest, 28 playwright).
 
 ## Current test results
 
-- `npm test`: 62/62 pass (auth, sites/locations, assets, attachments, WOs)
-- `npm run test:e2e`: 23/23 pass (desktop + mobile projects)
+- `npm test`: 75/75 pass (auth, sites, assets, attachments, WOs, procedures)
+- `npm run test:e2e`: 28/28 pass (desktop + mobile projects)
 - `npm run build && typecheck && lint`: clean
 - Prod-mode /setup door: verified by hand both directions (TEST_LOG Phase 1)
 
 ## Database migration status
 
-Migrations 0000–0004 (…; assets/attachments; work orders + assignments/
-assets/status-history/labor/comments) applied cleanly to
+Migrations 0000–0005 (…; work orders; procedures + versions/instances/
+responses + WO flagged column) applied cleanly to
 cmms_dev/cmms_test/cmms_e2e.
 Dev DB: postgres://cmms@localhost:5432/cmms_dev (sandbox local Postgres 16).
 

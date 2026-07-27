@@ -174,3 +174,33 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
   visible display name. (3) mid-test re-login hit the /login→dashboard
   redirect → login helper signs out first.
 - **Final result:** PASS — all suites green.
+
+---
+
+## Phase 5 — Procedures
+
+### 2026-07-27 — Full verification cycle
+
+- **Feature tested:** procedure templates with all §7 step types (incl.
+  conditional follow-ups, min/max ranges, failure responses), immutable
+  versioning, per-WO snapshots, technician step-through, completion gate,
+  failed-inspection flow (flag + required comment; corrective request lands
+  with Phase 6 requests).
+- **Commands run:** db:migrate (0005_procedures), typecheck, lint, `npm
+  test`, `npm run test:e2e`, build
+- **Automated results:** vitest **75/75** (adds 13: v1 create + version
+  bump, forward-conditional reject, snapshot immune to template edits,
+  response upsert, per-type validation, fail-requires-comment + WO flag +
+  corrective request signal, out-of-range-number failure, unassigned-tech
+  reject, conditional visibility truth table, completion gate incl.
+  conditional reveal + checkbox-must-be-true + finished-WO reject).
+  Playwright **28/28** (adds 5: manager builds a 2-step procedure in the UI,
+  attaches to a WO (0/2 badge), completion blocked then unblocked through
+  the real forms, failure requires comment + flags WO, template edit → v2
+  leaves the completed WO's v1 snapshot untouched, technician 403 on
+  /procedures).
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** manager, technician
+- **Failures found & fixes:** Playwright selectOption regex label is not
+  supported → literal option label.
+- **Final result:** PASS — all suites green.
