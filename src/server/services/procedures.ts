@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/server/db";
 import {
@@ -43,7 +43,10 @@ export const stepSchema = z.object({
     .object({
       requireComment: z.boolean().default(false),
       requirePhoto: z.boolean().default(false),
+      /** File a corrective work REQUEST for managers to triage. */
       createCorrective: z.boolean().default(false),
+      /** Immediately create a corrective work ORDER (P1, §7). */
+      createWorkOrder: z.boolean().optional(),
     })
     .optional(),
   /** Conditional follow-up: only show when a prior step's value matches. */
@@ -415,6 +418,27 @@ export async function respondToStep(
       step.label,
       value.comment,
     );
+  }
+
+  // Configured corrective WORK ORDER (P1): created once, linked back as a
+  // sub-work-order of the inspection WO.
+  if (isFailure && step.failure?.createWorkOrder && !alreadyFailed) {
+    const { createWorkOrder } = await import("./workOrders");
+    const primary = await db.execute(
+      sql`SELECT asset_id FROM work_order_assets WHERE work_order_id = ${inst.workOrderId} AND is_primary LIMIT 1`,
+    );
+    const assetId = (primary.rows[0]?.asset_id as number | undefined) ?? null;
+    await createWorkOrder(actor.id, {
+      title: `Corrective: ${step.label} (${wo.woNumber})`,
+      description: `Failed inspection step "${step.label}"${value.comment ? `:\n${value.comment}` : "."}`,
+      siteId: wo.siteId,
+      locationId: wo.locationId,
+      parentWorkOrderId: inst.workOrderId,
+      assetIds: assetId ? [assetId] : [],
+      workType: "corrective",
+      priority: "high",
+      assignedTeamId: wo.assignedTeamId,
+    });
   }
 
   return { failed: isFailure, correctiveRequested };

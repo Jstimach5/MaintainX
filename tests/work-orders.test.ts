@@ -295,3 +295,68 @@ describe("update and listing", () => {
     expect(byAsset.map((r) => r.wo.id)).toEqual([a]);
   });
 });
+
+describe("Phase 12: downtime automation + notifications", () => {
+  it("starting a downtime WO takes the asset down; completing restores it (Scenario E)", async () => {
+    const { getAsset } = await import("@/server/services/assets");
+    const id = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      title: "Gearbox swap",
+      assetIds: [assetId],
+      plannedDowntimeMinutes: 120,
+      assigneeIds: [tech.id],
+    });
+    expect((await getAsset(assetId))?.status).toBe("online");
+
+    await changeWorkOrderStatus(tech, id, "in_progress");
+    expect((await getAsset(assetId))?.status).toBe("planned_downtime");
+
+    await changeWorkOrderStatus(tech, id, "completed", {
+      actualDowntimeMinutes: 90,
+    });
+    expect((await getAsset(assetId))?.status).toBe("online");
+    expect((await getWorkOrder(id))?.actualDowntimeMinutes).toBe(90);
+  });
+
+  it("downtime automation never overrides a manually-set asset state", async () => {
+    const { changeAssetStatus, getAsset } = await import("@/server/services/assets");
+    const id = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      assetIds: [assetId],
+      plannedDowntimeMinutes: 60,
+    });
+    // Asset already down for another reason — starting must not relabel it.
+    await changeAssetStatus(admin.id, assetId, "unplanned_downtime");
+    await changeWorkOrderStatus(admin, id, "in_progress");
+    expect((await getAsset(assetId))?.status).toBe("unplanned_downtime");
+    // And completing must not force it online either.
+    await changeWorkOrderStatus(admin, id, "completed");
+    expect((await getAsset(assetId))?.status).toBe("unplanned_downtime");
+  });
+
+  it("assignment notifies the assignee (create + update paths)", async () => {
+    const { notifications } = await import("@/server/db/schema");
+    const id = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      assigneeIds: [tech.id],
+    });
+    let notes = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, tech.id));
+    expect(notes.some((n) => n.type === "work_order.assigned")).toBe(true);
+
+    await updateWorkOrder(admin.id, id, {
+      title: "Fix the pump",
+      siteId,
+      workType: "reactive",
+      priority: "medium",
+      assigneeIds: [tech.id, otherTech.id],
+    });
+    notes = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, otherTech.id));
+    expect(notes.some((n) => n.type === "work_order.assigned")).toBe(true);
+  });
+});

@@ -239,6 +239,15 @@ export async function createWorkOrder(
           assignedBy: actorId,
         })),
       );
+      const { notifyUsers } = await import("./notifications");
+      await notifyUsers(
+        assigneeIds.filter((id) => id !== actorId),
+        {
+          type: "work_order.assigned",
+          title: `Assigned to you: ${input.title}`,
+          link: `/work-orders/${row.id}`,
+        },
+      );
     }
     await tx.insert(workOrderStatusHistory).values({
       workOrderId: row.id,
@@ -336,6 +345,15 @@ export async function updateWorkOrder(
           userId,
           assignedBy: actorId,
         })),
+      );
+      const { notifyUsers } = await import("./notifications");
+      await notifyUsers(
+        added.filter((id) => id !== actorId),
+        {
+          type: "work_order.assigned",
+          title: `Assigned to you: ${input.title}`,
+          link: `/work-orders/${workOrderId}`,
+        },
       );
     }
     if (added.length > 0 || removed.length > 0) {
@@ -437,6 +455,48 @@ export async function changeWorkOrderStatus(
     const { onPmWorkOrderCompleted } = await import("./pm");
     await onPmWorkOrderCompleted(workOrderId);
   }
+
+  // Downtime automation (§11/Scenario E): starting a WO that plans downtime
+  // takes its primary asset into planned_downtime; finishing brings an asset
+  // this workflow took down back online. Manual status changes still win —
+  // we only flip states this workflow itself set.
+  if (
+    (status === "in_progress" || status === "completed" || status === "canceled") &&
+    (existing.plannedDowntimeMinutes ?? 0) > 0
+  ) {
+    const { changeAssetStatus, getAsset } = await import("./assets");
+    const [primary] = await db
+      .select({ assetId: workOrderAssets.assetId })
+      .from(workOrderAssets)
+      .where(
+        and(
+          eq(workOrderAssets.workOrderId, workOrderId),
+          eq(workOrderAssets.isPrimary, true),
+        ),
+      )
+      .limit(1);
+    if (primary) {
+      const asset = await getAsset(primary.assetId);
+      if (status === "in_progress" && asset?.status === "online") {
+        await changeAssetStatus(
+          actor.id,
+          primary.assetId,
+          "planned_downtime",
+          `${existing.woNumber} started (planned downtime)`,
+        );
+      } else if (
+        (status === "completed" || status === "canceled") &&
+        asset?.status === "planned_downtime"
+      ) {
+        await changeAssetStatus(
+          actor.id,
+          primary.assetId,
+          "online",
+          `${existing.woNumber} ${status === "completed" ? "completed" : "canceled"}`,
+        );
+      }
+    }
+  }
 }
 
 export async function addComment(
@@ -466,6 +526,30 @@ export async function addComment(
       summary: isInternal ? "Added internal note" : "Added comment",
     });
   });
+
+  // Comment notifications (§8): on a request, tell the other side —
+  // never for internal notes.
+  if (entityType === "request" && !isInternal) {
+    const { getRequest } = await import("./requests");
+    const { managerAudience, notifyUsers } = await import("./notifications");
+    const req = await getRequest(entityId);
+    if (req) {
+      const audience =
+        req.requesterId === actor.id
+          ? await managerAudience()
+          : req.requesterId
+            ? [req.requesterId]
+            : [];
+      await notifyUsers(
+        audience.filter((id) => id !== actor.id),
+        {
+          type: "request.comment",
+          title: `New comment on "${req.title}"`,
+          link: `/requests/${entityId}`,
+        },
+      );
+    }
+  }
 }
 
 export async function addLabor(

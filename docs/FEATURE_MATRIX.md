@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 11)
+Last updated: 2026-07-27 (Phase 12)
 
 ## P0 — Must work
 
@@ -42,15 +42,15 @@ Last updated: 2026-07-27 (Phase 11)
 
 | Feature | Priority | Status | Relevant files | Required work | Acceptance test | Last test result | Evidence |
 |---|---|---|---|---|---|---|---|
-| Timeline + calendar views | P1 | Missing | src/app/schedule/ (planned) | Phase 12 | Grouped views render; overdue/conflicts visible | — | — |
-| Downtime planning (planned/actual, conflicts) | P1 | Missing | (planned) | Phase 12 | Scenario E | — | — |
-| Corrective WOs from failed inspections (auto, configured) | P1 | Missing | (planned) | Phase 12 | Configured failure creates corrective WO linked back | — | — |
-| Saved reporting filters / dashboards | P1 | Missing | (planned) | Phase 12 | Save + reload a dashboard; share internal link | — | — |
-| PDF / print-friendly reporting | P1 | Missing | (planned) | Phase 12 | Print stylesheet output readable | — | — |
-| QR-code asset access (scan → asset page / request form) | P1 | Partially working | src/app/(app)/assets/[id]/label, src/app/a/[token] | Label + authenticated scan verified; public limited request flow in Phase 12 | Scan URL opens asset page; unauthenticated scan → limited request page | Label+resolver PASS 2026-07-27 | TEST_LOG.md Phase 3 |
+| Timeline + calendar views | P1 | Verified | src/app/(app)/schedule/views.tsx | — | Calendar + grouped timeline render; downtime highlighted | PASS 2026-07-27 | TEST_LOG.md Phase 12 |
+| Downtime planning (planned/actual, conflicts) | P1 | Verified | workOrders.ts downtime hook, schedule views, reports | — | Scenario E e2e green | PASS 2026-07-27 | TEST_LOG.md Phase 12 |
+| Corrective WOs from failed inspections (auto, configured) | P1 | Verified | procedures.ts respondToStep | — | Configured failure creates one corrective sub-WO linked back | PASS 2026-07-27 | TEST_LOG.md Phase 12 |
+| Saved reporting filters / dashboards | P1 | Verified | report_views table, /reports | — | Save/load/delete named views; URLs shareable | PASS 2026-07-27 | TEST_LOG.md Phase 12 |
+| PDF / print-friendly reporting | P1 | Verified | globals.css @media print, PrintButton | — | Print/PDF hides chrome, keeps report content | PASS 2026-07-27 | TEST_LOG.md Phase 12 |
+| QR-code asset access (scan → asset page / request form) | P1 | Verified | src/app/a/[token], portal asset prefill | — | Staff scan → asset page; anonymous scan → portal request form with asset preselected | PASS 2026-07-27 | TEST_LOG.md Phases 3+12 |
 | Import rollback where safe | P1 | Verified | src/server/services/imports.ts (rollbackImport) | — | Rollback removes only untouched import-created WOs; touched ones kept + reported | PASS 2026-07-27 | TEST_LOG.md Phase 10 |
-| Notifications completeness (mentions, all §8 events) | P1 | Missing | (planned) | Phase 12 | Each §8 event notifies the right users | — | — |
-| E2E coverage of critical workflows (Scenarios A–F) | P1 | Missing | e2e/ | Built per phase; all green Phase 12 | `npm run test:e2e` green | — | — |
+| Notifications completeness (mentions, all §8 events) | P1 | Verified | notifications.ts + hooks in workOrders/requests | — | Submit/decide/convert/complete/comment/assign all notify the right users | PASS 2026-07-27 | TEST_LOG.md Phases 6+12 |
+| E2E coverage of critical workflows (Scenarios A–F) | P1 | Verified | e2e/ (10 spec files, 61 tests) | — | Scenarios A–F all green in one run | PASS 2026-07-27 | TEST_LOG.md Phase 12 |
 | Deployment + admin documentation | P1 | Verified | docs/DEPLOYMENT.md, ADMIN_GUIDE.md, USER_GUIDE.md, BACKUP_AND_RESTORE.md | — | Docs written against the real commands used in TEST_LOG | PASS 2026-07-27 | TEST_LOG.md Phase 11 |
 
 ## P2 — Deferred (do not build now)

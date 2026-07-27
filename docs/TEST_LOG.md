@@ -391,3 +391,36 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
 - **Test user roles:** admin, manager, requester
 - **Final result:** PASS — all suites green; backup/restore and clean-DB
   procedures executed, not just documented.
+
+---
+
+## Phase 12 — P1 set
+
+### 2026-07-27 — Full verification cycle
+
+- **Feature tested:** calendar month view + 14-day timeline (grouped by
+  site/team/assignee, downtime bars highlighted) on /schedule; downtime
+  automation (start → asset planned_downtime, complete/cancel → back
+  online, never overriding manually-set states); corrective work ORDERS
+  from failed inspection steps (once, linked as sub-WO); saved report
+  views (per-user, shareable URLs) + print/PDF stylesheet; QR scan →
+  portal request form with asset preselected (staff still land on the
+  asset page); notification completeness (WO assignment on create+update,
+  request comments notify the other side, never internal notes).
+- **Commands run:** db:migrate (0010_report_views), typecheck, lint,
+  `npm test`, `npm run test:e2e`, build
+- **Automated results:** vitest **139/139** (adds 4: Scenario-E service
+  path incl. manual-state precedence, assignment notifications on both
+  paths, corrective-WO once with parent/priority/title). Playwright
+  **61/61** (adds 7 — Scenario E: downtime WO shows purple on timeline +
+  calendar; start takes the asset down, complete restores it, 3h30m actual
+  downtime recorded, transition visible in asset history. Scenario F:
+  requester blocked from 11 paths, technician from 8, manager from 5
+  admin-only paths; anonymous attachment fetch → 401; portal page source
+  contains no WO numbers, user names, or request ids.)
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** admin, manager, technician, requester, anonymous
+- **Failures found & fixes:** e2e only — option-element locator ambiguity;
+  a stale asset status from an earlier spec surfaced the (correct)
+  don't-override-manual-state behavior and the test now resets it.
+- **Final result:** PASS — Scenarios A–F all green.

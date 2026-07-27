@@ -19,10 +19,10 @@ export default async function PortalPage({
   searchParams,
 }: {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ submitted?: string }>;
+  searchParams: Promise<{ submitted?: string; asset?: string }>;
 }) {
   const { token } = await params;
-  const { submitted } = await searchParams;
+  const { submitted, asset: assetParam } = await searchParams;
   if (!/^[a-zA-Z0-9_-]{16,64}$/.test(token)) notFound();
   const rows = await db
     .select()
@@ -68,6 +68,11 @@ export default async function PortalPage({
           id: r.asset.id,
           label: `${r.asset.assetNumber} · ${r.asset.name}`,
         }))}
+        defaultAssetId={
+          assetParam && Number.isInteger(Number(assetParam))
+            ? Number(assetParam)
+            : undefined
+        }
       />
     </main>
   );

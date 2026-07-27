@@ -9,10 +9,12 @@ export function PortalForm({
   token,
   locations,
   assets,
+  defaultAssetId,
 }: {
   token: string;
   locations: { id: number; label: string; depth: number }[];
   assets: { id: number; label: string }[];
+  defaultAssetId?: number;
 }) {
   const [state, formAction] = useActionState(portalSubmitAction, undefined);
   return (
@@ -46,7 +48,11 @@ export function PortalForm({
         </Select>
       </Field>
       <Field label="Equipment (if known)" htmlFor="assetId">
-        <Select id="assetId" name="assetId" defaultValue="">
+        <Select
+          id="assetId"
+          name="assetId"
+          defaultValue={defaultAssetId != null ? String(defaultAssetId) : ""}
+        >
           <option value="">— Not sure —</option>
           {assets.map((a) => (
             <option key={a.id} value={a.id}>

@@ -241,3 +241,33 @@ describe("completion gate", () => {
     ).rejects.toThrow(ServiceError);
   });
 });
+
+describe("Phase 12: corrective work order from failed step", () => {
+  it("creates one corrective sub-WO when configured, only once", async () => {
+    const tplId = await createTemplate(admin.id, {
+      name: "Guard check",
+      steps: [
+        {
+          type: "pass_fail",
+          label: "Guard bolted",
+          required: true,
+          failure: { requireComment: false, requirePhoto: false, createCorrective: false, createWorkOrder: true },
+        },
+      ],
+    });
+    const instId = await attachProcedure(admin.id, woId, tplId);
+    await respondToStep(tech, instId, 0, { v: "fail", comment: "loose" });
+    await respondToStep(tech, instId, 0, { v: "fail", comment: "still loose" });
+
+    const { workOrders: woTable } = await import("@/server/db/schema");
+    const { eq: eqOp } = await import("drizzle-orm");
+    const corrective = await db
+      .select()
+      .from(woTable)
+      .where(eqOp(woTable.workType, "corrective"));
+    expect(corrective).toHaveLength(1);
+    expect(corrective[0].parentWorkOrderId).toBe(woId);
+    expect(corrective[0].priority).toBe("high");
+    expect(corrective[0].title).toContain("Guard bolted");
+  });
+});

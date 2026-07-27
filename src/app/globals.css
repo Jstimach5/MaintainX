@@ -13,3 +13,20 @@ html {
 body {
   @apply bg-gray-50 text-gray-900 antialiased;
 }
+
+/* Print-friendly reporting (§13 P1): hide chrome, keep content clean. */
+@media print {
+  header,
+  nav,
+  form,
+  button,
+  a[href^="/reports/export"] {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  .shadow-sm {
+    box-shadow: none !important;
+  }
+}

@@ -18,8 +18,14 @@ import {
 } from "@/server/services/reports";
 import { listSites } from "@/server/services/sites";
 import { woStatusLabel, type WoStatusValue } from "@/server/services/workOrders";
+import Link from "next/link";
+import { eq } from "drizzle-orm";
+import { db } from "@/server/db";
+import { reportViews } from "@/server/db/schema";
 import { Card, PageHeader } from "@/components/ui";
 import { BarRows, StatTile } from "@/components/charts";
+import { PrintButton } from "@/components/print-button";
+import { deleteReportViewAction, saveReportViewAction } from "./actions";
 
 export const metadata = { title: "Reports" };
 
@@ -33,7 +39,7 @@ export default async function ReportsPage({
 }: {
   searchParams: Promise<{ from?: string; to?: string; site?: string }>;
 }) {
-  await requireRole("admin", "manager");
+  const user = await requireRole("admin", "manager");
   const params = await searchParams;
   const filters: ReportFilters = {};
   if (params.from && /^\d{4}-\d{2}-\d{2}$/.test(params.from)) {
@@ -79,6 +85,10 @@ export default async function ReportsPage({
     requestStats(filters),
     meterTriggeredCount(filters),
   ]);
+  const savedViews = await db
+    .select()
+    .from(reportViews)
+    .where(eq(reportViews.userId, user.id));
 
   const exportQs = new URLSearchParams(
     Object.entries(params).filter(([, v]) => v) as [string, string][],
@@ -117,7 +127,41 @@ export default async function ReportsPage({
         >
           Export CSV
         </a>
+        <PrintButton />
       </form>
+
+      <div className="flex flex-wrap items-center gap-2 print:hidden">
+        {savedViews.map((v) => (
+          <span key={v.id} className="flex items-center gap-1 rounded-full bg-gray-100 pl-3 text-sm">
+            <Link
+              href={`/reports?${new URLSearchParams(v.params as Record<string, string>).toString()}`}
+              className="py-1 font-medium text-blue-800 hover:underline"
+            >
+              {v.name}
+            </Link>
+            <form action={deleteReportViewAction}>
+              <input type="hidden" name="viewId" value={v.id} />
+              <button type="submit" aria-label={`Delete saved view ${v.name}`} className="rounded-full px-2 py-1 text-gray-400 hover:text-red-600">
+                ✕
+              </button>
+            </form>
+          </span>
+        ))}
+        <form action={saveReportViewAction} className="flex items-center gap-1">
+          <input type="hidden" name="from" value={params.from ?? ""} />
+          <input type="hidden" name="to" value={params.to ?? ""} />
+          <input type="hidden" name="site" value={params.site ?? ""} />
+          <input
+            name="name"
+            placeholder="Save this view as…"
+            required
+            className="min-h-9 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+          />
+          <button type="submit" className="min-h-9 rounded-md border border-gray-300 bg-white px-2.5 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            Save
+          </button>
+        </form>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <StatTile label="Open backlog" value={backlogStats.open} href="/work-orders" />

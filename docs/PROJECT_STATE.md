@@ -1,43 +1,38 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 11 complete)
+Last updated: 2026-07-27 (Phase 12 complete)
 
 ## Current phase
 
-Phase 11 complete — audit browser, tested backups, §20 seed data,
-operator docs, clean-DB verification, extra mobile checks. ALL §22 P0
-features are now Verified in FEATURE_MATRIX.md. Next up: Phase 12 (P1:
-timeline/calendar, downtime planning, QR request flow, saved dashboards,
-print reports, notification completeness, Scenario E/F e2e).
+Phase 12 complete — every P1 feature is now Verified (calendar/timeline,
+downtime automation, corrective WOs, saved views, print reports, QR
+request flow, notification completeness, Scenarios A–F green). Next up:
+Phase 13 (definition-of-done sweep + §24 delivery report).
 
 ## Last completed task
 
-Phase 11: audit browser (/admin/audit, filterable, read-only), backup
-script + VERIFIED restore, §20 seed (npm run db:seed, logins in
-ADMIN_GUIDE), docs/sample-import.csv, DEPLOYMENT/ADMIN_GUIDE/USER_GUIDE/
-BACKUP_AND_RESTORE docs, clean-DB migrate+seed re-verified, 4 new e2e.
+Phase 12: P1 set — calendar + grouped timeline views, Scenario-E
+downtime automation (manual states win), corrective sub-WOs from failed
+steps, saved report views + print CSS, QR→portal flow with asset
+preselect, assignment/comment notifications; 4 new vitest + 7 new e2e.
 
 ## Current task
 
-Begin Phase 12 (P1): timeline + calendar views on /schedule, downtime
-planning surfacing (Scenario E), QR scan → limited public request flow,
-saved report filters/dashboards, print-friendly reports, notification
-mentions, Scenario E/F e2e coverage.
+Begin Phase 13: §23 definition-of-done sweep on a clean database and the
+§24 final delivery report.
 
 ## Next three tasks
 
-1. Phase 12: P1 set (timeline/calendar, downtime surfacing, QR request
-   flow, saved dashboards, print reports).
-2. Phase 13: definition-of-done sweep + §24 delivery report.
+1. Phase 13: definition-of-done sweep + §24 delivery report.
 
 ## Known failures
 
-None. All suites green (135 vitest, 54 playwright).
+None. All suites green (139 vitest, 61 playwright).
 
 ## Current test results
 
-- `npm test`: 135/135 pass (…, reports, bulk imports incl. 10k rows)
-- `npm run test:e2e`: 54/54 pass (desktop + mobile projects)
+- `npm test`: 139/139 pass
+- `npm run test:e2e`: 61/61 pass — Scenarios A–F all green
 - Backup/restore + clean-DB migrate+seed: executed and verified
 - `npm run build && typecheck && lint`: clean
 - Prod-mode /setup door: verified by hand both directions (TEST_LOG Phase 1)

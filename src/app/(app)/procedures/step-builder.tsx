@@ -18,6 +18,7 @@ type StepDraft = {
     requireComment: boolean;
     requirePhoto: boolean;
     createCorrective: boolean;
+    createWorkOrder?: boolean;
   };
   showIf?: { step: number; equals: string };
 };
@@ -248,12 +249,31 @@ export function ProcedureBuilder({
                           requireComment: step.failure?.requireComment ?? false,
                           requirePhoto: step.failure?.requirePhoto ?? false,
                           createCorrective: e.target.checked,
+                          createWorkOrder: step.failure?.createWorkOrder ?? false,
                         },
                       })
                     }
                     className="h-4 w-4"
                   />
                   Create corrective request
+                </label>
+                <label className="flex items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    checked={step.failure?.createWorkOrder ?? false}
+                    onChange={(e) =>
+                      patch(i, {
+                        failure: {
+                          requireComment: step.failure?.requireComment ?? false,
+                          requirePhoto: step.failure?.requirePhoto ?? false,
+                          createCorrective: step.failure?.createCorrective ?? false,
+                          createWorkOrder: e.target.checked,
+                        },
+                      })
+                    }
+                    className="h-4 w-4"
+                  />
+                  Create corrective work order
                 </label>
               </div>
             ) : null}

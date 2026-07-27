@@ -1035,6 +1035,27 @@ export const importMappings = pgTable("import_mappings", {
 });
 
 // ---------------------------------------------------------------------------
+// Saved report views (§13 P1)
+// ---------------------------------------------------------------------------
+
+export const reportViews = pgTable(
+  "report_views",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    name: text("name").notNull(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** Querystring params of /reports (from/to/site). */
+    params: jsonb("params").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [uniqueIndex("report_views_uq").on(table.userId, table.name)],
+);
+
+// ---------------------------------------------------------------------------
 // Audit trail (append-only; the application role never updates or deletes)
 // ---------------------------------------------------------------------------
 

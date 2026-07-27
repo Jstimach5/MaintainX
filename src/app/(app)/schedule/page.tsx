@@ -16,6 +16,8 @@ import { getOrgSettings } from "@/server/services/org";
 import { formatDate, formatDateTime, todayInTimezone } from "@/lib/format";
 import { Badge, Card, PageHeader } from "@/components/ui";
 import { WoPriorityBadge, WoStatusBadge } from "../work-orders/wo-badges";
+import Link2 from "next/link";
+import { CalendarView, TimelineView } from "./views";
 
 export const metadata = { title: "Schedule" };
 
@@ -66,6 +68,10 @@ export default async function SchedulePage({
   const siteId = params.site ? Number(params.site) : undefined;
   const assigneeId = params.assignee ? Number(params.assignee) : undefined;
 
+  const view =
+    params.view === "calendar" || params.view === "timeline"
+      ? params.view
+      : "table";
   const [rows, sites, people, warnings] = await Promise.all([
     listWorkOrders({
       status,
@@ -73,7 +79,8 @@ export default async function SchedulePage({
       workType,
       siteId: Number.isInteger(siteId) ? siteId : undefined,
       assigneeId: Number.isInteger(assigneeId) ? assigneeId : undefined,
-      includeDone: params.done === "1" || status !== undefined,
+      includeDone:
+        params.done === "1" || status !== undefined || view === "calendar",
     }),
     listSites({ activeOnly: true }),
     listUsers(),
@@ -126,6 +133,59 @@ export default async function SchedulePage({
         </Card>
       ) : null}
 
+      <div className="mb-3 flex gap-1 rounded-md bg-gray-100 p-1 text-sm font-medium w-fit">
+        {(["table", "calendar", "timeline"] as const).map((v) => (
+          <Link2
+            key={v}
+            href={`/schedule?view=${v}`}
+            className={`rounded px-3 py-1.5 capitalize ${view === v ? "bg-white shadow-sm text-blue-800" : "text-gray-600 hover:text-gray-900"}`}
+          >
+            {v}
+          </Link2>
+        ))}
+      </div>
+
+      {view === "calendar" ? (
+        <CalendarView
+          rows={rows}
+          month={
+            params.month && /^\d{4}-\d{2}$/.test(params.month)
+              ? params.month
+              : today.slice(0, 7)
+          }
+          timeZone={tz}
+          today={today}
+          baseQs=""
+        />
+      ) : null}
+      {view === "timeline" ? (
+        <TimelineView
+          rows={rows}
+          timeZone={tz}
+          today={today}
+          group={
+            params.group === "team" || params.group === "assignee"
+              ? params.group
+              : "site"
+          }
+        />
+      ) : null}
+      {view === "timeline" ? (
+        <p className="mt-2 mb-4 text-sm text-gray-500">
+          Group by:{" "}
+          {(["site", "team", "assignee"] as const).map((g) => (
+            <Link2
+              key={g}
+              href={`/schedule?view=timeline&group=${g}`}
+              className={`mr-2 ${params.group === g || (!params.group && g === "site") ? "font-semibold text-blue-800" : "text-blue-600 hover:underline"}`}
+            >
+              {g}
+            </Link2>
+          ))}
+        </p>
+      ) : null}
+
+      {view !== "table" ? null : (
       <form method="get" className="mb-4 flex flex-wrap items-end gap-2">
         <select name="status" defaultValue={params.status ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
           <option value="">All open</option>
@@ -177,7 +237,9 @@ export default async function SchedulePage({
           Filter
         </button>
       </form>
+      )}
 
+      {view !== "table" ? null : (
       <Card className="overflow-x-auto p-0">
         <table className="w-full min-w-[720px] text-sm">
           <thead>
@@ -235,6 +297,7 @@ export default async function SchedulePage({
           <p className="p-4 text-sm text-gray-500">Nothing matches these filters.</p>
         ) : null}
       </Card>
+      )}
     </div>
   );
 }
