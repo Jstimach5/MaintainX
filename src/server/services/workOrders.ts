@@ -11,6 +11,7 @@ import {
   workOrderAssets,
   workOrderAssignments,
   workOrderLabor,
+  workOrderParts,
   workOrders,
   workOrderStatusHistory,
 } from "@/server/db/schema";
@@ -583,6 +584,75 @@ export async function addLabor(
   });
 }
 
+/**
+ * Document a part or material used on the work — free-form name + cost, no
+ * catalog required (parts *inventory* stays deferred, DECISIONS.md #4).
+ * Same access rule as labor: assignees, their team, or a manager.
+ */
+export async function addPart(
+  actor: SessionUser,
+  workOrderId: number,
+  input: { name: string; quantity: number; unitCost?: number | null; note?: string | null },
+): Promise<void> {
+  const wo = await getWorkOrder(workOrderId);
+  if (!wo) throw new ServiceError("Work order not found.");
+  if (!(await canActOnWorkOrder(actor, workOrderId))) {
+    throw new ServiceError("This work order is assigned to someone else.");
+  }
+  const name = input.name.trim();
+  if (!name) throw new ServiceError("Part name is required.");
+  if (!(input.quantity > 0) || input.quantity > 100000) {
+    throw new ServiceError("Quantity must be a positive number.");
+  }
+  if (input.unitCost != null && (input.unitCost < 0 || input.unitCost > 1e9)) {
+    throw new ServiceError("Unit cost must be zero or more.");
+  }
+  await db.transaction(async (tx) => {
+    await tx.insert(workOrderParts).values({
+      workOrderId,
+      name,
+      quantity: input.quantity.toString(),
+      unitCost: input.unitCost != null ? input.unitCost.toFixed(2) : null,
+      note: input.note || null,
+      addedBy: actor.id,
+    });
+    await recordAudit(tx, {
+      userId: actor.id,
+      action: "work_order.part",
+      entityType: "work_order",
+      entityId: workOrderId,
+      summary: `Used ${input.quantity} × ${name}${input.unitCost != null ? ` @ ${input.unitCost.toFixed(2)}` : ""}`,
+    });
+  });
+}
+
+/** Remove a mistaken part line — only whoever added it, or a manager. */
+export async function removePart(actor: SessionUser, partId: number): Promise<void> {
+  const [row] = await db
+    .select()
+    .from(workOrderParts)
+    .where(eq(workOrderParts.id, partId))
+    .limit(1);
+  if (!row) throw new ServiceError("Part entry not found.");
+  const isManager = actor.role === "admin" || actor.role === "manager";
+  if (!isManager && row.addedBy !== actor.id) {
+    throw new ServiceError("Only the person who added a part (or a manager) can remove it.");
+  }
+  if (!(await canActOnWorkOrder(actor, row.workOrderId))) {
+    throw new ServiceError("This work order is assigned to someone else.");
+  }
+  await db.transaction(async (tx) => {
+    await tx.delete(workOrderParts).where(eq(workOrderParts.id, partId));
+    await recordAudit(tx, {
+      userId: actor.id,
+      action: "work_order.part_removed",
+      entityType: "work_order",
+      entityId: row.workOrderId,
+      summary: `Removed part line "${row.name}"`,
+    });
+  });
+}
+
 export type WorkOrderListFilters = {
   q?: string;
   status?: WoStatusValue | "open_group";
@@ -730,6 +800,18 @@ export async function getWorkOrderDetail(workOrderId: number) {
     .where(eq(workOrderLabor.workOrderId, workOrderId))
     .orderBy(asc(workOrderLabor.createdAt));
   const laborTotal = labor.reduce((sum, l) => sum + l.entry.minutes, 0);
+  const parts = await db
+    .select({ entry: workOrderParts, userName: users.displayName })
+    .from(workOrderParts)
+    .innerJoin(users, eq(workOrderParts.addedBy, users.id))
+    .where(eq(workOrderParts.workOrderId, workOrderId))
+    .orderBy(asc(workOrderParts.createdAt));
+  // Total only over costed lines; uncosted parts still appear in the list.
+  const partsCostTotal = parts.reduce((sum, p) => {
+    const qty = Number(p.entry.quantity);
+    const cost = p.entry.unitCost != null ? Number(p.entry.unitCost) : null;
+    return cost != null ? sum + qty * cost : sum;
+  }, 0);
   const requester = wo.requesterId
     ? (
         await db
@@ -766,6 +848,8 @@ export async function getWorkOrderDetail(workOrderId: number) {
     comments: commentRows,
     labor,
     laborTotal,
+    parts,
+    partsCostTotal,
     requester,
     parent,
     children,

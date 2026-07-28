@@ -20,6 +20,11 @@ export default defineConfig({
     trace: "retain-on-failure",
     launchOptions: executablePath ? { executablePath } : {},
   },
+  // Tag conventions:
+  //   @mobile — phone-viewport flow tests; run once, on Pixel 7.
+  //   @field  — read-only layout checks; run at EVERY width below, so they
+  //             must stay mutation-free (the same assertions execute four
+  //             times against shared data).
   projects: [
     {
       name: "desktop",
@@ -29,7 +34,22 @@ export default defineConfig({
     {
       name: "mobile",
       use: { ...devices["Pixel 7"] },
-      grep: /@mobile/,
+      grep: /@mobile|@field/,
+    },
+    {
+      name: "iphone",
+      use: { ...devices["iPhone 14"] },
+      grep: /@field/,
+    },
+    {
+      name: "android-small",
+      use: { ...devices["Galaxy S8"] },
+      grep: /@field/,
+    },
+    {
+      name: "tablet",
+      use: { ...devices["iPad Mini"] },
+      grep: /@field/,
     },
   ],
   webServer: {

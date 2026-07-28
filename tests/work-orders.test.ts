@@ -8,12 +8,14 @@ import { createTeam, updateTeam } from "@/server/services/teams";
 import {
   addComment,
   addLabor,
+  addPart,
   canActOnWorkOrder,
   changeWorkOrderStatus,
   createWorkOrder,
   getWorkOrder,
   getWorkOrderDetail,
   listWorkOrders,
+  removePart,
   updateWorkOrder,
 } from "@/server/services/workOrders";
 import { ServiceError } from "@/server/services/users";
@@ -23,7 +25,8 @@ import type { SessionUser } from "@/server/auth/session";
 async function reset() {
   await truncateAll();
   await db.execute(sql`
-    TRUNCATE TABLE comments, work_order_labor, work_order_status_history,
+    TRUNCATE TABLE comments, work_order_parts, work_order_labor,
+      work_order_status_history,
       work_order_assignments, work_order_assets, work_orders,
       asset_location_history, asset_status_history, attachments, assets,
       locations, sites, team_members, teams RESTART IDENTITY CASCADE
@@ -358,5 +361,69 @@ describe("Phase 12: downtime automation + notifications", () => {
       .from(notifications)
       .where(eq(notifications.userId, otherTech.id));
     expect(notes.some((n) => n.type === "work_order.assigned")).toBe(true);
+  });
+});
+
+describe("Phase 14: parts & materials documentation", () => {
+  it("assignee documents parts; costed lines total, uncosted still listed", async () => {
+    const woId = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      assigneeIds: [tech.id],
+    });
+    await addPart(tech, woId, { name: "Oil filter", quantity: 2, unitCost: 12.5 });
+    await addPart(tech, woId, { name: "Shop rag", quantity: 1 });
+    const detail = await getWorkOrderDetail(woId);
+    expect(detail?.parts).toHaveLength(2);
+    expect(detail?.partsCostTotal).toBe(25);
+  });
+
+  it("unassigned technician cannot add or remove parts", async () => {
+    const woId = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      assigneeIds: [tech.id],
+    });
+    await expect(
+      addPart(otherTech, woId, { name: "Belt", quantity: 1 }),
+    ).rejects.toThrow(/assigned to someone else/i);
+    await addPart(tech, woId, { name: "Belt", quantity: 1, unitCost: 30 });
+    const partId = (await getWorkOrderDetail(woId))!.parts[0].entry.id;
+    await expect(removePart(otherTech, partId)).rejects.toThrow(ServiceError);
+  });
+
+  it("author or manager can remove a line; totals update", async () => {
+    const woId = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      assigneeIds: [tech.id],
+    });
+    await addPart(tech, woId, { name: "Gasket", quantity: 4, unitCost: 5 });
+    await addPart(tech, woId, { name: "Sealant", quantity: 1, unitCost: 8 });
+    let detail = (await getWorkOrderDetail(woId))!;
+    expect(detail.partsCostTotal).toBe(28);
+    await removePart(tech, detail.parts[0].entry.id); // author removes own line
+    await removePart(manager, detail.parts[1].entry.id); // manager removes any
+    detail = (await getWorkOrderDetail(woId))!;
+    expect(detail.parts).toHaveLength(0);
+    expect(detail.partsCostTotal).toBe(0);
+  });
+
+  it("rejects bad quantities and negative costs, and audits additions", async () => {
+    const woId = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      assigneeIds: [tech.id],
+    });
+    await expect(
+      addPart(tech, woId, { name: "Bolt", quantity: 0 }),
+    ).rejects.toThrow(/positive/i);
+    await expect(
+      addPart(tech, woId, { name: "Bolt", quantity: 1, unitCost: -4 }),
+    ).rejects.toThrow(/zero or more/i);
+    await addPart(tech, woId, { name: "Bolt", quantity: 8, unitCost: 0.35 });
+    const { auditEvents } = await import("@/server/db/schema");
+    const events = await db
+      .select()
+      .from(auditEvents)
+      .where(eq(auditEvents.action, "work_order.part"));
+    expect(events).toHaveLength(1);
+    expect(events[0].summary).toContain("Bolt");
   });
 });

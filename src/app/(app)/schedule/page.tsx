@@ -50,7 +50,10 @@ export default async function SchedulePage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const user = await requireRole("admin", "manager");
+  // Technicians get the same calendar/timeline, scoped to their own
+  // assigned work; the operation-wide view and warnings stay manager-only.
+  const user = await requireRole("admin", "manager", "technician");
+  const isTech = user.role === "technician";
   const params = await searchParams;
   const org = await getOrgSettings();
   const tz = org.timezone;
@@ -66,7 +69,13 @@ export default async function SchedulePage({
     ? (params.type as WoTypeValue)
     : undefined;
   const siteId = params.site ? Number(params.site) : undefined;
-  const assigneeId = params.assignee ? Number(params.assignee) : undefined;
+  // Technicians are pinned to their own work; the assignee filter is
+  // enforced here, not just hidden in the UI below.
+  const assigneeId = isTech
+    ? user.id
+    : params.assignee
+      ? Number(params.assignee)
+      : undefined;
 
   const view =
     params.view === "calendar" || params.view === "timeline"
@@ -83,12 +92,11 @@ export default async function SchedulePage({
         params.done === "1" || status !== undefined || view === "calendar",
     }),
     listSites({ activeOnly: true }),
-    listUsers(),
-    managerWarnings(today),
+    isTech ? Promise.resolve([]) : listUsers(),
+    isTech ? Promise.resolve(null) : managerWarnings(today),
   ]);
-  void user;
 
-  const warningItems = [
+  const warningItems = warnings === null ? [] : [
     ...warnings.overduePm.map((p) => ({
       text: `Overdue PM: ${p.name} (due ${formatDate(p.nextDue, tz)})`,
       href: `/pm-plans/${p.id}`,
@@ -118,8 +126,12 @@ export default async function SchedulePage({
   return (
     <div>
       <PageHeader
-        title="Schedule & progress"
-        subtitle="All work across the operation, with the problems surfaced first."
+        title={isTech ? "My schedule" : "Schedule & progress"}
+        subtitle={
+          isTech
+            ? "Your assigned work, on a calendar you can check from your phone."
+            : "All work across the operation, with the problems surfaced first."
+        }
       />
 
       {warningItems.length > 0 ? (
@@ -219,16 +231,18 @@ export default async function SchedulePage({
             </option>
           ))}
         </select>
-        <select name="assignee" defaultValue={params.assignee ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
-          <option value="">Anyone</option>
-          {people
-            .filter((p) => p.isActive && p.role !== "requester")
-            .map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.displayName}
-              </option>
-            ))}
-        </select>
+        {isTech ? null : (
+          <select name="assignee" defaultValue={params.assignee ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
+            <option value="">Anyone</option>
+            {people
+              .filter((p) => p.isActive && p.role !== "requester")
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.displayName}
+                </option>
+              ))}
+          </select>
+        )}
         <label className="flex min-h-11 items-center gap-1.5 text-sm text-gray-600">
           <input type="checkbox" name="done" value="1" defaultChecked={params.done === "1"} className="h-4 w-4" />
           Include finished

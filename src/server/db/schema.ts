@@ -522,6 +522,39 @@ export const workOrderLabor = pgTable(
 );
 
 /**
+ * Parts & materials used on a work order — documentation only. The
+ * technician types the part name and cost; nothing here depends on a parts
+ * catalog or stock levels existing. The future inventory module
+ * (DECISIONS.md #4) will link stock records to these lines without a
+ * rewrite: it adds a nullable part_id FK and leaves name/cost as the
+ * denormalized as-used snapshot.
+ */
+export const workOrderParts = pgTable(
+  "work_order_parts",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    workOrderId: integer("work_order_id")
+      .notNull()
+      .references(() => workOrders.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    quantity: numeric("quantity", { precision: 12, scale: 2 }).notNull().default("1"),
+    /** Cost per unit as entered; null = used but not costed. */
+    unitCost: numeric("unit_cost", { precision: 12, scale: 2 }),
+    note: text("note"),
+    addedBy: integer("added_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("wo_parts_wo_idx").on(table.workOrderId),
+    check("wo_parts_qty_positive", sql`${table.quantity} > 0`),
+  ],
+);
+
+/**
  * Comments — polymorphic (work_order, request) so the request module reuses
  * it. `isInternal` marks manager-only notes that requesters must never see.
  */

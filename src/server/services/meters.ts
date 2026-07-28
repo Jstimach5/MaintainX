@@ -39,6 +39,21 @@ export async function listMeters() {
     .orderBy(asc(meters.name));
 }
 
+/**
+ * Active meters on any of the given assets — powers the reading-entry panel
+ * on a work order so technicians record hour/mile/fuel readings during the
+ * job instead of on a separate screen.
+ */
+export async function listMetersForAssets(assetIds: number[]) {
+  if (assetIds.length === 0) return [];
+  return db
+    .select({ meter: meters, assetName: assets.name, assetNumber: assets.assetNumber })
+    .from(meters)
+    .innerJoin(assets, eq(meters.assetId, assets.id))
+    .where(and(inArray(meters.assetId, assetIds), eq(meters.isActive, true)))
+    .orderBy(asc(meters.name));
+}
+
 export type MeterInput = {
   name: string;
   description?: string | null;

@@ -8,10 +8,13 @@ import { ServiceError } from "@/server/services/users";
 import {
   addComment,
   addLabor,
+  addPart,
   changeWorkOrderStatus,
   createWorkOrder,
+  removePart,
   updateWorkOrder,
 } from "@/server/services/workOrders";
+import { addReading } from "@/server/services/meters";
 import { getOrgSettings } from "@/server/services/org";
 import { wallTimeToUtc } from "@/lib/format";
 import type { ActionResult } from "@/components/forms";
@@ -236,6 +239,107 @@ export async function addLaborAction(
       minutes: totalMinutes,
       note: parsed.data.note,
       workDate: parsed.data.workDate || null,
+    });
+  } catch (err) {
+    return friendly(err);
+  }
+  revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
+  redirect(`/work-orders/${parsed.data.workOrderId}`);
+}
+
+const partSchema = z.object({
+  workOrderId: z.coerce.number().int().positive(),
+  name: z.string().trim().min(1, "Part name is required").max(300),
+  quantity: z.coerce.number().positive("Quantity must be positive").max(100000),
+  unitCost: z
+    .union([z.literal(""), z.coerce.number().min(0).max(1e9)])
+    .optional()
+    .transform((v) => (v === "" || v === undefined ? null : v)),
+  note: z.string().trim().max(1000).optional(),
+});
+
+export async function addPartAction(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  const actor = await assertRole("admin", "manager", "technician").catch(
+    () => null,
+  );
+  if (!actor) return { error: "Not allowed." };
+  const parsed = partSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  try {
+    await addPart(actor, parsed.data.workOrderId, {
+      name: parsed.data.name,
+      quantity: parsed.data.quantity,
+      unitCost: parsed.data.unitCost,
+      note: parsed.data.note,
+    });
+  } catch (err) {
+    return friendly(err);
+  }
+  revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
+  redirect(`/work-orders/${parsed.data.workOrderId}`);
+}
+
+const removePartSchema = z.object({
+  workOrderId: z.coerce.number().int().positive(),
+  partId: z.coerce.number().int().positive(),
+});
+
+export async function removePartAction(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  const actor = await assertRole("admin", "manager", "technician").catch(
+    () => null,
+  );
+  if (!actor) return { error: "Not allowed." };
+  const parsed = removePartSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  try {
+    await removePart(actor, parsed.data.partId);
+  } catch (err) {
+    return friendly(err);
+  }
+  revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
+  redirect(`/work-orders/${parsed.data.workOrderId}`);
+}
+
+const woReadingSchema = z.object({
+  workOrderId: z.coerce.number().int().positive(),
+  meterId: z.coerce.number().int().positive(),
+  value: z.coerce.number(),
+  isRollover: z.string().optional(),
+  note: z.string().trim().max(1000).optional(),
+});
+
+/**
+ * Record a meter reading from the work-order page. Same service path as the
+ * meter screen (validation, audit, triggers) — the WO id is only used to
+ * return the technician to the job they're documenting.
+ */
+export async function addWoMeterReadingAction(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  const actor = await assertRole("admin", "manager", "technician").catch(
+    () => null,
+  );
+  if (!actor) return { error: "Not allowed." };
+  const parsed = woReadingSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  try {
+    await addReading(actor, parsed.data.meterId, {
+      value: parsed.data.value,
+      note: parsed.data.note,
+      isRollover: parsed.data.isRollover === "1",
     });
   } catch (err) {
     return friendly(err);

@@ -13,7 +13,15 @@ import { Badge, ButtonLink, Card, PageHeader } from "@/components/ui";
 import { AttachmentSection } from "@/components/attachments";
 import { IMAGE_TYPES } from "@/server/storage";
 import { WoPriorityBadge, WoStatusBadge } from "../wo-badges";
-import { CommentForm, LaborForm, QuickStatusBar } from "../wo-forms";
+import {
+  CommentForm,
+  LaborForm,
+  MeterReadingForm,
+  PartsForm,
+  QuickStatusBar,
+  RemovePartButton,
+} from "../wo-forms";
+import { listMetersForAssets } from "@/server/services/meters";
 import {
   AttachProcedureForm,
   ProcedureInstancePanel,
@@ -46,6 +54,15 @@ function minutesLabel(min: number): string {
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
+function money(n: number): string {
+  return `$${n.toFixed(2)}`;
+}
+
+/** "2 × Oil filter" but "2.5 × Grease (lbs)" — trim trailing zeros. */
+function qtyLabel(q: string): string {
+  return String(Number(q));
+}
+
 export default async function WorkOrderDetailPage({
   params,
 }: {
@@ -63,6 +80,7 @@ export default async function WorkOrderDetailPage({
   const attachments = await listAttachments("work_order", woId);
   const canManage = user.role === "admin" || user.role === "manager";
   const canAct = await canActOnWorkOrder(user, woId);
+  const woMeters = await listMetersForAssets(detail.assets.map((a) => a.asset.id));
   const instances = await listInstancesForWo(woId);
   const templates = canManage ? await listTemplates() : [];
   const allUsers = await listUsers();
@@ -193,6 +211,10 @@ export default async function WorkOrderDetailPage({
               <InfoRow
                 label="Actual labor"
                 value={detail.laborTotal > 0 ? minutesLabel(detail.laborTotal) : null}
+              />
+              <InfoRow
+                label="Parts cost"
+                value={detail.partsCostTotal > 0 ? money(detail.partsCostTotal) : null}
               />
               <InfoRow
                 label="Planned downtime"
@@ -365,6 +387,96 @@ export default async function WorkOrderDetailPage({
                   ))}
                 </ul>
               ) : null}
+            </Card>
+          ) : null}
+
+          {canAct || detail.parts.length > 0 ? (
+            <Card>
+              <h2 className="mb-2 font-semibold">Parts &amp; materials used</h2>
+              {detail.parts.length === 0 ? (
+                <p className="mb-2 text-sm text-gray-500">
+                  Nothing documented yet.
+                </p>
+              ) : (
+                <ul className="mb-2 space-y-1">
+                  {detail.parts.map(({ entry, userName }) => {
+                    const cost =
+                      entry.unitCost != null ? Number(entry.unitCost) : null;
+                    return (
+                      <li
+                        key={entry.id}
+                        className="flex items-start justify-between gap-2 text-sm"
+                      >
+                        <span>
+                          <span className="font-medium">
+                            {qtyLabel(entry.quantity)} × {entry.name}
+                          </span>
+                          <span className="text-gray-500">
+                            {cost != null
+                              ? ` — ${money(Number(entry.quantity) * cost)}`
+                              : ""}
+                            {` · ${userName}`}
+                          </span>
+                        </span>
+                        {canAct ? (
+                          <RemovePartButton workOrderId={wo.id} partId={entry.id} />
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {detail.partsCostTotal > 0 ? (
+                <p className="mb-2 border-t border-gray-100 pt-2 text-sm font-semibold">
+                  Parts total: {money(detail.partsCostTotal)}
+                </p>
+              ) : null}
+              {canAct && woIsOpen ? <PartsForm workOrderId={wo.id} /> : null}
+            </Card>
+          ) : null}
+
+          {canAct && woMeters.length > 0 ? (
+            <Card>
+              <h2 className="mb-2 font-semibold">Meter readings</h2>
+              <p className="mb-3 text-xs text-gray-500">
+                Record the current hours / miles / fuel while at the machine.
+                Readings save to the meter&apos;s history.
+              </p>
+              <div className="space-y-4">
+                {woMeters.map(({ meter, assetNumber }) => (
+                  <div key={meter.id}>
+                    <p className="text-sm font-medium">
+                      <Link
+                        href={`/meters/${meter.id}`}
+                        className="text-blue-700 hover:underline"
+                      >
+                        {meter.name}
+                      </Link>{" "}
+                      <span className="text-gray-400">({assetNumber})</span>
+                    </p>
+                    <p className="mb-1 text-xs text-gray-500">
+                      {meter.currentValue != null
+                        ? `Last: ${Number(meter.currentValue)} ${meter.unit}${
+                            meter.currentReadingAt
+                              ? ` on ${formatDate(meter.currentReadingAt, tz)}`
+                              : ""
+                          }`
+                        : "No readings yet"}
+                    </p>
+                    <MeterReadingForm
+                      workOrderId={wo.id}
+                      meterId={meter.id}
+                      unit={meter.unit}
+                      mustIncrease={meter.mustIncrease}
+                      lastValue={
+                        meter.currentValue != null
+                          ? String(Number(meter.currentValue))
+                          : null
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
             </Card>
           ) : null}
 

@@ -78,6 +78,13 @@
       "when": 1785165851503,
       "tag": "0010_report_views",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1785240563241,
+      "tag": "0011_work_order_parts",
+      "breakpoints": true
     }
   ]
 }

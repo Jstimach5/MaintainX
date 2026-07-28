@@ -3,9 +3,12 @@
 import { useActionState, useState } from "react";
 import {
   addLaborAction,
+  addPartAction,
   addWoCommentAction,
+  addWoMeterReadingAction,
   changeWoStatusAction,
   createWorkOrderAction,
+  removePartAction,
   updateWorkOrderAction,
 } from "./actions";
 import { Button, Field, Input, Select, Textarea } from "@/components/ui";
@@ -396,6 +399,116 @@ export function LaborForm({ workOrderId }: { workOrderId: number }) {
         <SubmitButton variant="secondary">Log time</SubmitButton>
       </div>
       <Input name="note" placeholder="What did you work on? (optional)" />
+      <FormError message={state?.error} />
+    </form>
+  );
+}
+
+export function PartsForm({ workOrderId }: { workOrderId: number }) {
+  const [state, formAction] = useActionState(addPartAction, undefined);
+  return (
+    <form action={formAction} className="space-y-2">
+      <input type="hidden" name="workOrderId" value={workOrderId} />
+      <Field label="Part or material" htmlFor="part-name">
+        <Input
+          id="part-name"
+          name="name"
+          placeholder="e.g. Oil filter P/N 51348"
+          required
+        />
+      </Field>
+      <div className="flex flex-wrap items-end gap-2">
+        <Field label="Qty" htmlFor="part-qty">
+          <Input
+            id="part-qty"
+            name="quantity"
+            type="number"
+            step="0.01"
+            min={0.01}
+            defaultValue={1}
+            className="w-20"
+          />
+        </Field>
+        <Field label="Cost each ($)" htmlFor="part-cost">
+          <Input
+            id="part-cost"
+            name="unitCost"
+            type="number"
+            step="0.01"
+            min={0}
+            placeholder="0.00"
+            className="w-28"
+          />
+        </Field>
+        <SubmitButton variant="secondary">Add part</SubmitButton>
+      </div>
+      <FormError message={state?.error} />
+    </form>
+  );
+}
+
+export function RemovePartButton({
+  workOrderId,
+  partId,
+}: {
+  workOrderId: number;
+  partId: number;
+}) {
+  const [state, formAction] = useActionState(removePartAction, undefined);
+  return (
+    <form action={formAction} className="inline">
+      <input type="hidden" name="workOrderId" value={workOrderId} />
+      <input type="hidden" name="partId" value={partId} />
+      <button
+        type="submit"
+        aria-label="Remove part line"
+        title={state?.error ?? "Remove"}
+        className="rounded px-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+      >
+        ✕
+      </button>
+    </form>
+  );
+}
+
+export function MeterReadingForm({
+  workOrderId,
+  meterId,
+  unit,
+  mustIncrease,
+  lastValue,
+}: {
+  workOrderId: number;
+  meterId: number;
+  unit: string;
+  mustIncrease: boolean;
+  lastValue: string | null;
+}) {
+  const [state, formAction] = useActionState(addWoMeterReadingAction, undefined);
+  return (
+    <form action={formAction} className="space-y-1.5">
+      <input type="hidden" name="workOrderId" value={workOrderId} />
+      <input type="hidden" name="meterId" value={meterId} />
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          name="value"
+          type="number"
+          step="any"
+          required
+          inputMode="decimal"
+          placeholder={lastValue != null ? `last ${lastValue}` : "reading"}
+          aria-label={`New reading (${unit})`}
+          className="w-32"
+        />
+        <span className="text-sm text-gray-500">{unit}</span>
+        <SubmitButton variant="secondary">Record</SubmitButton>
+      </div>
+      {mustIncrease ? (
+        <label className="flex items-center gap-1.5 text-xs text-gray-500">
+          <input type="checkbox" name="isRollover" value="1" className="h-3.5 w-3.5" />
+          Meter rolled over (reading restarted from zero)
+        </label>
+      ) : null}
       <FormError message={state?.error} />
     </form>
   );

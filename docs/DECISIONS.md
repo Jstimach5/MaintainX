@@ -87,6 +87,14 @@ rewrite when it arrives.
 **Future consequence.** Adding parts is a new migration + new routes/services;
 no existing table is altered except additive columns.
 
+**Amendment (2026-07-28, Phase 14).** `work_order_parts` now exists — but as
+**usage documentation only** (free-typed name, quantity, unit cost entered by
+the technician), not inventory. Nothing references a catalog or stock level,
+so the deferral stands. When the inventory module arrives it adds a nullable
+`part_id` FK to these rows and treats name/cost as the as-used snapshot;
+no rewrite of the work-order system is needed — exactly the seam this
+decision reserved.
+
 ## 5. Timezone and calendar-date rules (2026-07-27)
 
 **Problem.** Due dates, PM occurrence dates, and "overdue" checks are

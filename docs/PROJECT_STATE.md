@@ -1,37 +1,44 @@
 # Project State
 
-Last updated: 2026-07-27 (Phase 13 complete — project done)
+Last updated: 2026-07-28 (M0 — mobile field application, in progress)
 
 ## Current phase
 
-Phase 13 complete. The definition-of-done sweep (§23) passed on a clean
-database and the final delivery report is written (DELIVERY_REPORT.md).
-Every P0 and P1 feature in FEATURE_MATRIX.md is **Verified** with recorded
-evidence in TEST_LOG.md. Remaining work is the deliberately deferred P2
-set (parts/inventory and friends — see DECISIONS.md #4).
+**Mobile field application, phase M0.** The office CMMS is complete
+(Phases 0–14; see FEATURE_MATRIX.md — every P0/P1 row Verified). A new
+specification asks for a true mobile field interface on the same backend:
+field-first navigation, full on-phone work execution, offline capture with
+safe synchronization, PWA install, secure remote access. Plan and audit:
+docs/MOBILE_IMPLEMENTATION_PLAN.md, docs/MOBILE_AUDIT.md; progress tracked
+in docs/MOBILE_FEATURE_MATRIX.md and docs/MOBILE_TEST_LOG.md.
 
 ## Last completed task
 
-Phase 13: fresh `cmms_final` DB → migrate → seed → build → typecheck →
-lint → worker boot (idempotent PM catch-up verified) → 139/139 unit →
-61/61 e2e (Scenarios A–F) → delivery report + final doc updates.
+Phase 14: technician calendar on /schedule (server-scoped to own work),
+`work_order_parts` usage + cost documentation, meter readings from the
+work-order page, docs/MOBILE_WORKFLOW.md methodology.
 
 ## Current task
 
-None — delivered. Next engagement starts with the P2 backlog or operator
-feedback from real use.
+M0 — land Phase 14 (e2e suite re-running after test-expectation fixes),
+write the mobile documentation set, add iPhone / small-Android / tablet
+Playwright viewport projects with a read-only `@field` layout spec.
 
 ## Next three tasks
 
-1. (P2, when wanted) Parts/inventory module on the documented extension
-   points.
-2. (Ops) First real deployment via docker compose; smoke-test compose on
-   the target host (daemon was unavailable in the build sandbox).
-3. (Ops) Point `scripts/backup.sh` at a cron schedule on the host.
+1. M1 — field shell: bottom navigation, field home screen, sticky
+   work-order action bar.
+2. M2 — lifecycle + time: `paused`/`waiting_approval` statuses, pause and
+   hold reasons, manager return/approval, labor timer.
+3. M3 — work-list field filters, sort, requirement badges, in-app QR
+   scanner.
 
 ## Known failures
 
-None. All suites green.
+None outstanding. Phase 14's first e2e run surfaced three stale test
+expectations (technician /schedule now permitted; fixture display-name
+drift; a calendar assertion on a work order with no due date) — all three
+corrected; confirming run in progress.
 
 ## Current test results (final sweep, clean DB — TEST_LOG Phase 13)
 

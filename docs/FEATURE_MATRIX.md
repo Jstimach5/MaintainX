@@ -4,7 +4,7 @@ Statuses: Working · Partially working · Broken · Missing · Deferred · Block
 
 **Verified requires recorded test evidence in TEST_LOG.md — code existing is not verification.**
 
-Last updated: 2026-07-27 (Phase 13 — final; every P0 and P1 row Verified)
+Last updated: 2026-07-28 (Phase 14; every P0 and P1 row Verified)
 
 ## P0 — Must work
 
@@ -52,6 +52,9 @@ Last updated: 2026-07-27 (Phase 13 — final; every P0 and P1 row Verified)
 | Notifications completeness (mentions, all §8 events) | P1 | Verified | notifications.ts + hooks in workOrders/requests | — | Submit/decide/convert/complete/comment/assign all notify the right users | PASS 2026-07-27 | TEST_LOG.md Phases 6+12 |
 | E2E coverage of critical workflows (Scenarios A–F) | P1 | Verified | e2e/ (10 spec files, 61 tests) | — | Scenarios A–F all green in one run | PASS 2026-07-27 | TEST_LOG.md Phase 12 |
 | Deployment + admin documentation | P1 | Verified | docs/DEPLOYMENT.md, ADMIN_GUIDE.md, USER_GUIDE.md, BACKUP_AND_RESTORE.md | — | Docs written against the real commands used in TEST_LOG | PASS 2026-07-27 | TEST_LOG.md Phase 11 |
+| Technician calendar (own work on /schedule) | P1 | Verified | src/app/(app)/schedule/page.tsx, nav.tsx | — | Tech sees own WOs on calendar; scope server-enforced; no warnings panel/assignee filter | PASS 2026-07-28 | TEST_LOG.md Phase 14 |
+| Parts & cost documentation on work orders (not inventory) | P1 | Verified | work_order_parts (0011), workOrders.ts addPart/removePart, WO page panel | — | Assignee adds qty×cost lines, total computed; unassigned tech refused; author/manager remove; audited | PASS 2026-07-28 | TEST_LOG.md Phase 14 |
+| Meter readings from the work-order page | P1 | Verified | meters.ts listMetersForAssets, WO page panel, addWoMeterReadingAction | — | Reading entered on the job page hits the same validated/audited service path | PASS 2026-07-28 | TEST_LOG.md Phase 14 |
 
 ## P2 — Deferred (do not build now)
 

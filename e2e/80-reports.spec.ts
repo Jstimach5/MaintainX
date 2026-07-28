@@ -61,12 +61,16 @@ test.describe.serial("schedule view and reports", () => {
     expect(body).toContain("WO-");
   });
 
-  test("technician cannot open schedule, reports, or the CSV export", async ({
+  test("technician gets own-work schedule but not reports or the CSV export", async ({
     page,
   }) => {
     await login(page, CREDS.tech);
+    // Phase 14: /schedule now serves technicians a calendar scoped to
+    // their own assignments (asserted in 85-field-docs) — no longer 403.
     await page.goto("/schedule");
-    await page.waitForURL("**/forbidden");
+    await expect(
+      page.getByRole("heading", { name: "My schedule" }),
+    ).toBeVisible();
     await page.goto("/reports");
     await page.waitForURL("**/forbidden");
     const res = await page.request.get("/reports/export");

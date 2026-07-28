@@ -461,3 +461,40 @@ here. Tests that cannot be run are recorded as **Not Tested** with a reason.
 - **Browser:** Chromium desktop + Pixel 7
 - **Test user roles:** admin, manager, technician, requester, anonymous
 - **Final result:** PASS — definition of done (§23) met.
+
+---
+
+## Phase 14 — Mobile field workflow (technician calendar, parts & cost, on-job readings)
+
+### 2026-07-28 — Full verification cycle
+
+- **Feature tested:** /schedule opened to technicians with server-enforced
+  scoping to their own assignments (no warnings panel, no assignee
+  filter); `work_order_parts` usage documentation (name, quantity, unit
+  cost) with per-WO cost totals, author/manager-only removal, and audit
+  events; meter reading entry directly on the work-order page for meters
+  attached to the job's assets, routed through the same validated,
+  audited service as the meter screen.
+- **Commands run:** `npm run db:generate` (0011_work_order_parts),
+  `npm run db:migrate` (dev/test/e2e), `npm run typecheck`, `npm run lint`,
+  `npm test`, `npx playwright test`.
+- **Automated results:** vitest **143/143** (adds 4: costed vs uncosted
+  part totals; unassigned technician refused add and remove; author and
+  manager removal with totals recomputed; invalid quantity/negative cost
+  rejected and addition audited). Playwright **64/64** (adds 3 —
+  manager schedules work and the technician sees it on their own
+  calendar with no manager chrome; technician documents costed and
+  uncosted parts, removes a line, records a meter reading on the job
+  page; @mobile technician documents a part at phone width with no
+  horizontal scroll).
+- **Failures found & fixes:** three stale test expectations, no product
+  defects. (1) `80-reports` asserted technicians get 403 on /schedule —
+  updated to assert the scoped "My schedule" heading. (2) `85-field-docs`
+  located the technician by fixture display name "E2E tech" while the
+  00-auth spec renames that user to "Terry Tech" through the UI —
+  switched to the visible name. (3) `85-field-docs` asserted a work order
+  appears on the month calendar but created it without a due date, and
+  `CalendarView` plots by due date — the test now sets one.
+- **Browser:** Chromium desktop + Pixel 7
+- **Test user roles:** admin, manager, technician
+- **Final result:** PASS — 143/143 unit, 64/64 e2e.
