@@ -36,9 +36,12 @@ export default defineConfig({
       use: { ...devices["Pixel 7"] },
       grep: /@mobile|@field/,
     },
+    // Apple device descriptors default to WebKit, which isn't installed in
+    // this environment — pin chromium so these are *viewport/touch
+    // emulations* of those devices, not real Safari engines.
     {
       name: "iphone",
-      use: { ...devices["iPhone 14"] },
+      use: { ...devices["iPhone 14"], browserName: "chromium" },
       grep: /@field/,
     },
     {
@@ -48,7 +51,7 @@ export default defineConfig({
     },
     {
       name: "tablet",
-      use: { ...devices["iPad Mini"] },
+      use: { ...devices["iPad Mini"], browserName: "chromium" },
       grep: /@field/,
     },
   ],

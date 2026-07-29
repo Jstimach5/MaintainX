@@ -20,10 +20,14 @@ test.beforeAll(async () => {
 });
 
 test.describe.serial("schedule view and reports", () => {
-  test("dashboard shows real counts and my work", async ({ page }) => {
+  test("dashboard shows the right home per role", async ({ page }) => {
+    // Technicians land on the M1 field home (tiles), not the KPI board.
     await login(page, CREDS.tech);
+    await expect(page.getByText("Due today")).toBeVisible();
+    await expect(page.getByText("Overdue").first()).toBeVisible();
+    // Managers keep the KPI dashboard with live counts.
+    await login(page, CREDS.manager);
     await expect(page.getByText("Open work orders")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Assigned to me" })).toBeVisible();
   });
 
   test("manager schedule view lists work with filters and warnings panel", async ({

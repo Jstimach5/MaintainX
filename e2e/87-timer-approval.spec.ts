@@ -75,14 +75,17 @@ test.describe.serial("M2 — pause reasons, labor timer, completion approval", (
     await login(page, CREDS.tech);
     await openJob(page, /Timer and approval run/);
 
+    // Start the JOB first — the interrupt form only exists on running work.
+    await page.getByRole("button", { name: /start work/i }).click();
+    await page.waitForURL(/\/work-orders\/\d+$/);
+    await expect(page.getByText("In progress").first()).toBeVisible();
+
     await page.getByRole("button", { name: /start timer/i }).click();
     await expect(page.getByText(/running ·/i)).toBeVisible();
 
-    // Interrupting the job demands a reason.
+    // Interrupting the job demands a reason (the input is required in the
+    // browser; the backend rule is covered by unit tests).
     await page.getByLabel(/interrupt this job/i).selectOption("paused");
-    await page.getByRole("button", { name: "Save" }).click();
-    await expect(page.getByTestId("form-error")).toContainText(/reason/i);
-
     await page.getByPlaceholder(/why\?/i).fill("Called to another line");
     await page.getByRole("button", { name: "Save" }).click();
     await page.waitForURL(/\/work-orders\/\d+$/);

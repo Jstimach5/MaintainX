@@ -66,8 +66,10 @@ test.describe("@field field screens fit the viewport", () => {
     await firstWo.click();
     await page.waitForURL(/\/work-orders\/\d+$/);
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
-    // Form controls must not be smaller than a fingertip.
-    const control = page.locator("main button[type=submit]").first();
+    // Form controls must not be smaller than a fingertip. Only measure a
+    // VISIBLE control — the page keeps desktop-only bars display:none on
+    // phones (and vice versa), and a hidden button measures 0.
+    const control = page.locator("main button[type=submit]:visible").first();
     if ((await control.count()) > 0) {
       const box = await control.boundingBox();
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(36);
@@ -79,7 +81,7 @@ test.describe("@field field screens fit the viewport", () => {
     await page.goto("/requests/new");
     await page.waitForLoadState("networkidle");
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
-    const title = page.getByLabel(/^title|what.s wrong/i).first();
+    const title = page.getByLabel(/what needs attention/i).first();
     await expect(title).toBeVisible();
     const box = await title.boundingBox();
     // 16px+ font and a full-width field keep iOS from zooming on focus.
