@@ -107,7 +107,7 @@ test.describe.serial("Scenario F — permission boundaries", () => {
     page,
   }) => {
     await login(page, CREDS.requester);
-    for (const path of ["/assets", "/assets/new", "/work-orders", "/procedures", "/pm-plans", "/meters", "/schedule", "/reports", "/imports", "/admin/users", "/admin/audit"]) {
+    for (const path of ["/assets", "/assets/new", "/work-orders", "/procedures", "/pm-plans", "/meters", "/schedule", "/reports", "/imports", "/admin/users", "/admin/audit", "/admin/settings"]) {
       await page.goto(path);
       await page.waitForURL("**/forbidden");
     }
@@ -117,7 +117,7 @@ test.describe.serial("Scenario F — permission boundaries", () => {
     page,
   }) => {
     await login(page, CREDS.tech);
-    for (const path of ["/admin/users", "/admin/teams", "/admin/audit", "/imports", "/procedures", "/pm-plans", "/assets/new", "/work-orders/new"]) {
+    for (const path of ["/admin/users", "/admin/teams", "/admin/audit", "/admin/settings", "/imports", "/procedures", "/pm-plans", "/assets/new", "/work-orders/new"]) {
       await page.goto(path);
       await page.waitForURL("**/forbidden");
     }
@@ -125,7 +125,7 @@ test.describe.serial("Scenario F — permission boundaries", () => {
 
   test("manager cannot perform administrator-only actions", async ({ page }) => {
     await login(page, CREDS.manager);
-    for (const path of ["/admin/users", "/admin/audit", "/imports", "/sites/new", "/assets/new"]) {
+    for (const path of ["/admin/users", "/admin/audit", "/admin/settings", "/imports", "/sites/new", "/assets/new"]) {
       await page.goto(path);
       await page.waitForURL("**/forbidden");
     }

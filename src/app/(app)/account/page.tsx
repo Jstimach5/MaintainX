@@ -40,6 +40,11 @@ export default async function AccountPage() {
     { href: "/reports", label: "Reports", show: isManager },
     { href: "/pm-plans", label: "Maintenance plans", show: isManager },
     { href: "/procedures", label: "Procedures", show: isManager },
+    {
+      href: "/admin/settings",
+      label: "Organization settings",
+      show: user.role === "admin",
+    },
   ];
 
   return (

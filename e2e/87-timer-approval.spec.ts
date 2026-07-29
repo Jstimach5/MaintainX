@@ -26,6 +26,36 @@ test.beforeAll(async () => {
 });
 
 test.describe.serial("M2 — pause reasons, labor timer, completion approval", () => {
+  test("admin manages the completion-approval setting on /admin/settings", async ({
+    page,
+  }) => {
+    await login(page, CREDS.admin);
+    await page.goto("/admin/settings");
+    const box = page.getByRole("checkbox", {
+      name: /require manager approval/i,
+    });
+    await expect(box).not.toBeChecked();
+    await box.check();
+    await page.locator('main form button[type="submit"]').first().click();
+    await page.waitForURL("**/admin/settings?saved=1");
+    await expect(page.getByTestId("settings-saved")).toBeVisible();
+    // Persisted — a fresh load shows it on.
+    await page.goto("/admin/settings");
+    await expect(
+      page.getByRole("checkbox", { name: /require manager approval/i }),
+    ).toBeChecked();
+    // Flip it back off through the same screen.
+    await page
+      .getByRole("checkbox", { name: /require manager approval/i })
+      .uncheck();
+    await page.locator('main form button[type="submit"]').first().click();
+    await page.waitForURL("**/admin/settings?saved=1");
+    await page.goto("/admin/settings");
+    await expect(
+      page.getByRole("checkbox", { name: /require manager approval/i }),
+    ).not.toBeChecked();
+  });
+
   test("manager creates a job for the technician", async ({ page }) => {
     await login(page, CREDS.manager);
     await page.goto("/work-orders/new");

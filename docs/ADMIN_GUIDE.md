@@ -29,6 +29,11 @@ production — the seed also WIPES all data):
 
 ## Day-to-day administration
 
+- **Organization settings** (`/admin/settings`): the organization name,
+  the timezone every due date and schedule follows, and the optional
+  "manager must approve completed work" rule (off by default; when on, a
+  technician's completion parks as *Waiting for approval* until a manager
+  approves it or sends it back with a note). Changes are audited.
 - **Users** (`/admin/users`): create accounts, set roles, reset passwords
   (resets sign the user out everywhere), deactivate on departure
   (deactivation revokes their sessions immediately). Users are never
