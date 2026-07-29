@@ -1,0 +1,16 @@
+# Never let host state leak into the image build context.
+node_modules
+.next
+out
+coverage
+test-results
+playwright-report
+storage
+.env
+.env.*
+*.log
+.git
+docs
+e2e
+tests
+/backups/

@@ -1,0 +1,26 @@
+# Reverse proxy with automatic HTTPS (Let's Encrypt). APP_DOMAIN and
+# ACME_EMAIL come from .env via docker-compose.prod.yml. HTTP→HTTPS
+# redirect is Caddy's default behavior for a named site.
+
+{
+	email {$ACME_EMAIL}
+}
+
+{$APP_DOMAIN} {
+	# Field photos: allow bodies comfortably above the app's 25 MB cap so
+	# the app, not the proxy, produces the friendly error.
+	request_body {
+		max_size 30MB
+	}
+
+	reverse_proxy app:3000
+
+	header {
+		# HSTS is enabled here because this file only ever serves HTTPS.
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+	}
+
+	encode gzip
+}

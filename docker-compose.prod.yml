@@ -1,0 +1,108 @@
+# Production deployment: Caddy (auto-HTTPS) → app → private Postgres.
+# Usage:  docker compose -f docker-compose.prod.yml up -d --build
+# Config: .env in this directory (see .env.example — APP_DOMAIN,
+#         POSTGRES_PASSWORD, APP_URL, SMTP_*, ACME_EMAIL).
+#
+# Only Caddy publishes ports (80/443). The database and the app are
+# reachable solely on the internal Docker network; deleting/recreating
+# containers never touches the named data volumes.
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cmms
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: cmms
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cmms -d cmms"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://cmms:${POSTGRES_PASSWORD}@db:5432/cmms
+      STORAGE_DIR: /data/storage
+      PORT: 3000
+      APP_URL: ${APP_URL:?set APP_URL in .env (https://your-domain)}
+      COOKIE_SECURE: "1"
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-CMMS}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-}
+    volumes:
+      - storage_data:/data/storage
+    command: sh -c "npm run db:migrate && npm run start"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  worker:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://cmms:${POSTGRES_PASSWORD}@db:5432/cmms
+      STORAGE_DIR: /data/storage
+      APP_URL: ${APP_URL}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-CMMS}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-}
+    volumes:
+      - storage_data:/data/storage
+    command: npm run worker
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?set APP_DOMAIN in .env (e.g. cmms.example.com)}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  db_data:
+  storage_data:
+  caddy_data:
+  caddy_config:
