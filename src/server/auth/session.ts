@@ -12,6 +12,8 @@ export type SessionUser = {
   displayName: string;
   email: string | null;
   role: "admin" | "manager" | "technician" | "requester";
+  /** Forces /change-password before anything else (admin-set passwords). */
+  mustChangePassword: boolean;
 };
 
 function hashToken(token: string): string {
@@ -50,6 +52,7 @@ export async function getUserBySessionToken(
       displayName: users.displayName,
       email: users.email,
       role: users.role,
+      mustChangePassword: users.mustChangePassword,
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))

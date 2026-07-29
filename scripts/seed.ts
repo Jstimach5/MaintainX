@@ -5,7 +5,7 @@
  */
 import { sql } from "drizzle-orm";
 import { db, pool } from "@/server/db";
-import { orgSettings } from "@/server/db/schema";
+import { orgSettings, users } from "@/server/db/schema";
 import { createUser, setupOrganization } from "@/server/services/users";
 import { createTeam, updateTeam } from "@/server/services/teams";
 import { createSite } from "@/server/services/sites";
@@ -33,10 +33,20 @@ const PNG = Buffer.from(
 );
 
 function asSession(id: number, name: string, role: SessionUser["role"]): SessionUser {
-  return { id, username: name, displayName: name, email: null, role };
+  return { id, username: name, displayName: name, email: null, mustChangePassword: false, role };
 }
 
 async function main() {
+  // Hard stop in production: this script TRUNCATEs every table. A real
+  // deployment loses everything if it runs. SEED_FORCE exists for the
+  // rare deliberate case (e.g. a fresh prod-mode container in a demo).
+  if (process.env.NODE_ENV === "production" && process.env.SEED_FORCE !== "1") {
+    console.error(
+      "REFUSING to seed: NODE_ENV=production. This wipes all data. " +
+        "Set SEED_FORCE=1 only if this is genuinely a throwaway database.",
+    );
+    process.exit(1);
+  }
   console.log("Seeding… (wipes existing app data)");
   await db.execute(sql`
     TRUNCATE TABLE import_rows, import_jobs, import_mappings,
@@ -287,6 +297,10 @@ async function main() {
     requesterId: req1,
     requesterName: "Riley Requester",
   });
+
+  // Demo logins are meant to be used as-is; clear the first-login force
+  // that createUser (correctly) applies to admin-created accounts.
+  await db.update(users).set({ mustChangePassword: false });
 
   console.log("Seed complete.");
   console.log("Logins (see docs/ADMIN_GUIDE.md): admin/admin-demo-123, morgan/morgan-demo-123, taylor/taylor-demo-123, riley/riley-demo-123");

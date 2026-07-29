@@ -74,7 +74,7 @@ test.describe.serial("authentication and RBAC", () => {
     await page.waitForURL("**/dashboard");
     await page.getByRole("link", { name: /^users$/i }).click();
     await page.waitForURL("**/admin/users");
-    await page.getByRole("link", { name: /add user/i }).click();
+    await page.getByRole("link", { name: /add manually/i }).click();
 
     await page.getByLabel(/username/i).fill(TECH.username);
     await page.getByLabel(/display name/i).fill("Terry Tech");
@@ -84,6 +84,23 @@ test.describe.serial("authentication and RBAC", () => {
 
     await page.waitForURL("**/admin/users");
     await expect(page.getByText("Terry Tech")).toBeVisible();
+    await logout(page);
+  });
+
+  test("an admin-set password is temporary: first login forces a change", async ({
+    page,
+  }) => {
+    await login(page, TECH);
+    await page.waitForURL("**/change-password");
+    await expect(page.getByText(/set by an administrator/i)).toBeVisible();
+    // Nothing else in the app is reachable until the password is changed.
+    await page.goto("/work-orders");
+    await page.waitForURL("**/change-password");
+    await page.getByLabel(/current password/i).fill(TECH.password);
+    await page.getByLabel(/^new password/i).fill(TECH.password);
+    await page.getByLabel(/confirm new password/i).fill(TECH.password);
+    await page.getByRole("button", { name: /save password/i }).click();
+    await page.waitForURL("**/dashboard");
     await logout(page);
   });
 

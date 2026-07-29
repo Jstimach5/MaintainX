@@ -32,6 +32,11 @@ export function LoginForm({ next }: { next?: string }) {
       <SubmitButton className="w-full" pendingText="Signing in…">
         Sign in
       </SubmitButton>
+      <p className="text-center text-sm">
+        <a href="/forgot" className="text-blue-700 hover:underline">
+          Forgot your password?
+        </a>
+      </p>
     </form>
   );
 }

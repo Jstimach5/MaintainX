@@ -44,6 +44,7 @@ function asSession(u: { id: number; username: string; role: SessionUser["role"] 
     username: u.username,
     displayName: u.username,
     email: null,
+    mustChangePassword: false,
     role: u.role,
   };
 }

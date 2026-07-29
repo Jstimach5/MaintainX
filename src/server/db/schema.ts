@@ -78,6 +78,13 @@ export const users = pgTable(
     email: text("email"),
     role: userRole("role").notNull(),
     isActive: boolean("is_active").notNull().default(true),
+    /**
+     * Set on admin-created accounts and admin password resets: the next
+     * login is forced through /change-password before anything else.
+     */
+    mustChangePassword: boolean("must_change_password")
+      .notNull()
+      .default(false),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -87,6 +94,83 @@ export const users = pgTable(
   },
   (table) => [
     uniqueIndex("users_username_lower_uq").on(sql`lower(${table.username})`),
+  ],
+);
+
+export const invitationStatus = pgEnum("invitation_status", [
+  "pending",
+  "accepted",
+  "revoked",
+]);
+
+/**
+ * User invitations (§launch). Same token discipline as sessions: the raw
+ * 256-bit token appears exactly once (in the link shown to the admin /
+ * emailed to the invitee); only its sha256 is stored. Acceptance is
+ * exactly-once by conditional UPDATE on status='pending' — the DB, not
+ * application code, prevents double account creation (DECISIONS.md #6).
+ * "expired" is not a stored status: it is pending + expiresAt < now, so
+ * clock passage never needs a writer.
+ */
+export const invitations = pgTable(
+  "invitations",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    email: text("email").notNull(),
+    displayName: text("display_name").notNull(),
+    /** Suggested username; invitee may change it at acceptance. */
+    username: text("username"),
+    role: userRole("role").notNull(),
+    teamId: integer("team_id").references(() => teams.id, {
+      onDelete: "set null",
+    }),
+    personalMessage: text("personal_message"),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    status: invitationStatus("status").notNull().default("pending"),
+    invitedBy: integer("invited_by")
+      .notNull()
+      .references(() => users.id),
+    acceptedUserId: integer("accepted_user_id").references(() => users.id),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    revokedBy: integer("revoked_by").references(() => users.id),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    /** Delivery bookkeeping: null = never attempted (copy-link only). */
+    lastSentAt: timestamp("last_sent_at", { withTimezone: true }),
+    sendCount: integer("send_count").notNull().default(0),
+    lastSendError: text("last_send_error"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("invitations_token_hash_uq").on(table.tokenHash),
+    index("invitations_email_idx").on(table.email),
+    index("invitations_status_idx").on(table.status),
+  ],
+);
+
+/**
+ * Self-serve password resets — one-shot sha256-hashed tokens, same rules
+ * as invitations. usedAt marks consumption; expiry is a timestamp check.
+ */
+export const passwordResets = pgTable(
+  "password_resets",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("password_resets_token_hash_uq").on(table.tokenHash),
+    index("password_resets_user_idx").on(table.userId),
   ],
 );
 

@@ -103,6 +103,8 @@ export async function createUser(
         displayName: input.displayName,
         email: input.email || null,
         role: input.role,
+        // Admin-typed passwords are temporary by definition.
+        mustChangePassword: true,
       })
       .returning({ id: users.id });
     await recordAudit(tx, {
@@ -172,7 +174,7 @@ export async function resetPassword(
   await db.transaction(async (tx) => {
     await tx
       .update(users)
-      .set({ passwordHash, updatedAt: new Date() })
+      .set({ passwordHash, mustChangePassword: true, updatedAt: new Date() })
       .where(eq(users.id, userId));
     await tx.delete(sessions).where(eq(sessions.userId, userId));
     await recordAudit(tx, {

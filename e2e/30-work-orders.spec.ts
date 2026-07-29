@@ -151,7 +151,25 @@ test.describe.serial("work orders", () => {
     await submit(page);
     await page.waitForURL("**/admin/users");
 
-    await login(page, { username: "tech2", password: "tech2-password-123" });
+    // tech2's first login lands on the forced change-password screen
+    // (admin-set passwords are temporary), so sign in without the helper's
+    // dashboard expectation and complete the change.
+    await page.goto("/login");
+    await page.waitForLoadState("networkidle");
+    if (!page.url().includes("/login")) {
+      await page.getByRole("button", { name: /sign out/i }).click();
+      await page.waitForURL("**/login");
+      await page.waitForLoadState("networkidle");
+    }
+    await page.getByLabel(/username/i).fill("tech2");
+    await page.getByLabel(/^password/i).fill("tech2-password-123");
+    await submit(page);
+    await page.waitForURL("**/change-password");
+    await page.getByLabel(/current password/i).fill("tech2-password-123");
+    await page.getByLabel(/^new password/i).fill("tech2-password-123");
+    await page.getByLabel(/confirm new password/i).fill("tech2-password-123");
+    await page.getByRole("button", { name: /save password/i }).click();
+    await page.waitForURL("**/dashboard");
     await page.goto(url);
     await expect(
       page.getByText(/assigned to someone else/i).first(),

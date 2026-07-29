@@ -1,11 +1,13 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db";
 import { notifications, users } from "@/server/db/schema";
+import { emailConfigured, sendEmail } from "@/server/email";
+import { appUrl } from "@/lib/app-url";
 
 /**
- * Notification adapter (§8): in-app rows always; email is a stub behind
- * SMTP_URL so credentials-less deployments still work. Additional channels
- * plug in here without touching callers.
+ * Notification adapter (§8): in-app rows always; real email fan-out when
+ * SMTP is configured (dev deployments without credentials keep working).
+ * Additional channels plug in here without touching callers.
  */
 export type NotificationInput = {
   type: string;
@@ -29,13 +31,34 @@ export async function notifyUsers(
       link: input.link ?? null,
     })),
   );
-  if (process.env.SMTP_URL) {
-    // Email adapter stub: a real SMTP client would send here. Deliberately
-    // fire-and-forget; in-app notifications are the source of truth.
-    console.log(
-      `[notify] email adapter: would send "${input.title}" to users ${unique.join(",")}`,
-    );
+  // Real email fan-out when SMTP is configured (src/server/email). Best
+  // effort by design: in-app notifications are the source of truth, so a
+  // mail failure is logged (by the adapter) and never fails the caller.
+  if (emailConfigured()) {
+    const recipients = await db
+      .select({ email: users.email, displayName: users.displayName })
+      .from(users)
+      .where(and(inArray(users.id, unique), eq(users.isActive, true)));
+    const { readOrgSettings } = await import("./org");
+    const org = await readOrgSettings();
+    for (const r of recipients) {
+      if (!r.email) continue;
+      void sendEmail({
+        to: r.email,
+        subject: `${org.name}: ${input.title}`,
+        text: `${input.title}\n\n${input.body ?? ""}${input.link ? `\n\n${appUrl(input.link)}` : ""}`,
+        html: `<p>${escapeHtml(input.title)}</p>${input.body ? `<p>${escapeHtml(input.body)}</p>` : ""}${input.link ? `<p><a href="${appUrl(input.link)}">Open in the maintenance system</a></p>` : ""}`,
+      });
+    }
   }
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 /** All active managers + admins (request review audience). */

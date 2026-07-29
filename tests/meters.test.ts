@@ -31,7 +31,7 @@ async function reset() {
 }
 
 function asSession(u: { id: number; username: string; role: SessionUser["role"] }): SessionUser {
-  return { id: u.id, username: u.username, displayName: u.username, email: null, role: u.role };
+  return { id: u.id, username: u.username, displayName: u.username, email: null, mustChangePassword: false, role: u.role };
 }
 
 let admin: SessionUser;

@@ -35,6 +35,7 @@ function asSession(u: {
     username: u.username,
     displayName: u.username,
     email: null,
+    mustChangePassword: false,
     role: u.role,
   };
 }
