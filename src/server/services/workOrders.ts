@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/server/db";
 import {
   assets,
@@ -11,6 +11,7 @@ import {
   workOrderAssets,
   workOrderAssignments,
   workOrderLabor,
+  workOrderTimers,
   workOrderParts,
   workOrders,
   workOrderStatusHistory,
@@ -33,10 +34,19 @@ export const WO_STATUSES: {
   { value: "open", label: "Open", tone: "blue" },
   { value: "assigned", label: "Assigned", tone: "purple" },
   { value: "in_progress", label: "In progress", tone: "amber" },
+  { value: "paused", label: "Paused", tone: "amber" },
   { value: "on_hold", label: "On hold", tone: "gray" },
-  { value: "waiting", label: "Waiting", tone: "gray" },
+  { value: "waiting", label: "Waiting for parts", tone: "gray" },
+  { value: "waiting_approval", label: "Waiting for approval", tone: "purple" },
   { value: "completed", label: "Completed", tone: "green" },
   { value: "canceled", label: "Canceled", tone: "red" },
+];
+
+/** Statuses a technician must give a reason for (§8). */
+export const REASON_REQUIRED_STATUSES: WoStatusValue[] = [
+  "paused",
+  "on_hold",
+  "waiting",
 ];
 
 export const WO_PRIORITIES: { value: WoPriorityValue; label: string }[] = [
@@ -400,7 +410,29 @@ export async function changeWorkOrderStatus(
   }
   if (existing.status === status) return;
 
+  const isManager = actor.role === "admin" || actor.role === "manager";
+  // Only a manager clears the approval gate — otherwise a technician could
+  // simply re-complete their way past it.
+  if (existing.status === "waiting_approval" && !isManager) {
+    throw new ServiceError(
+      "This work order is waiting for a manager to approve it.",
+    );
+  }
+  // Pausing/holding/waiting must say why — a bare status change tells the
+  // next person nothing (§8).
+  if (
+    REASON_REQUIRED_STATUSES.includes(status) &&
+    !(opts?.note && opts.note.trim())
+  ) {
+    throw new ServiceError(
+      `Say why the work is going to "${woStatusLabel(status)}" — a short reason is required.`,
+    );
+  }
+
   // Completion gate (§7): required procedure steps must be answered first.
+  // Applies to the approval hand-off too, so incomplete work never reaches
+  // a manager's queue.
+  let effectiveStatus = status;
   if (status === "completed") {
     const { getCompletionBlockers } = await import("./procedures");
     const blockers = await getCompletionBlockers(workOrderId);
@@ -409,7 +441,15 @@ export async function changeWorkOrderStatus(
         `Cannot complete yet — required procedure steps are missing: ${blockers.join("; ")}`,
       );
     }
+    // Optional approval step: a technician's completion parks for review.
+    const { readOrgSettings } = await import("./org");
+    const org = await readOrgSettings();
+    if (org.requireCompletionApproval && !isManager) {
+      effectiveStatus = "waiting_approval";
+    }
   }
+  status = effectiveStatus;
+  if (existing.status === status) return;
 
   const now = new Date();
   await db.transaction(async (tx) => {
@@ -420,12 +460,16 @@ export async function changeWorkOrderStatus(
     if (status === "in_progress" && !existing.actualStartAt) {
       patch.actualStartAt = now;
     }
-    if (status === "completed") {
-      patch.completedAt = now;
+    // The technician's write-up is captured whether the job completes
+    // outright or parks for approval — the manager reviews what was written.
+    if (status === "completed" || status === "waiting_approval") {
       if (opts?.completionNotes) patch.completionNotes = opts.completionNotes;
       if (opts?.actualDowntimeMinutes != null) {
         patch.actualDowntimeMinutes = opts.actualDowntimeMinutes;
       }
+    }
+    if (status === "completed") {
+      patch.completedAt = now;
     } else if (existing.status === "completed") {
       patch.completedAt = null;
     }
@@ -585,6 +629,173 @@ export async function addLabor(
 }
 
 /**
+ * Labor timers (§14). Start/pause/resume/stop from the phone rather than
+ * doing arithmetic at the end of the day. Stopping converts the elapsed
+ * time into an ordinary work_order_labor row, so every existing report
+ * keeps working unchanged.
+ */
+export type ActiveTimer = {
+  id: number;
+  workOrderId: number;
+  startedAt: Date;
+  accumulatedMinutes: number;
+};
+
+export async function getActiveTimer(userId: number): Promise<ActiveTimer | null> {
+  const [row] = await db
+    .select()
+    .from(workOrderTimers)
+    .where(
+      and(eq(workOrderTimers.userId, userId), isNull(workOrderTimers.stoppedAt)),
+    )
+    .limit(1);
+  return row
+    ? {
+        id: row.id,
+        workOrderId: row.workOrderId,
+        startedAt: row.startedAt,
+        accumulatedMinutes: row.accumulatedMinutes,
+      }
+    : null;
+}
+
+/** Minutes elapsed on a running timer, banked time included. */
+export function timerMinutes(timer: ActiveTimer, now: Date = new Date()): number {
+  const live = Math.floor((now.getTime() - timer.startedAt.getTime()) / 60000);
+  return timer.accumulatedMinutes + Math.max(0, live);
+}
+
+/**
+ * Minutes banked on this job by a paused timer — what a "Resume" would
+ * pick back up from. Zero once the time has been logged.
+ */
+export async function bankedTimerMinutes(
+  userId: number,
+  workOrderId: number,
+): Promise<number> {
+  const [row] = await db
+    .select({ minutes: workOrderTimers.accumulatedMinutes })
+    .from(workOrderTimers)
+    .where(
+      and(
+        eq(workOrderTimers.workOrderId, workOrderId),
+        eq(workOrderTimers.userId, userId),
+        eq(workOrderTimers.carriedForward, true),
+      ),
+    )
+    .orderBy(desc(workOrderTimers.id))
+    .limit(1);
+  return row?.minutes ?? 0;
+}
+
+export async function startTimer(
+  actor: SessionUser,
+  workOrderId: number,
+): Promise<void> {
+  const wo = await getWorkOrder(workOrderId);
+  if (!wo) throw new ServiceError("Work order not found.");
+  if (wo.status === "completed" || wo.status === "canceled") {
+    throw new ServiceError("This work order is finished.");
+  }
+  if (!(await canActOnWorkOrder(actor, workOrderId))) {
+    throw new ServiceError("This work order is assigned to someone else.");
+  }
+  const active = await getActiveTimer(actor.id);
+  if (active) {
+    if (active.workOrderId === workOrderId) return; // already running here
+    throw new ServiceError(
+      "You already have a timer running on another work order — stop it first.",
+    );
+  }
+  // Resume banked time from an earlier pause on this same job.
+  const [prior] = await db
+    .select({ minutes: workOrderTimers.accumulatedMinutes })
+    .from(workOrderTimers)
+    .where(
+      and(
+        eq(workOrderTimers.workOrderId, workOrderId),
+        eq(workOrderTimers.userId, actor.id),
+        eq(workOrderTimers.carriedForward, true),
+      ),
+    )
+    .orderBy(desc(workOrderTimers.id))
+    .limit(1);
+  await db.insert(workOrderTimers).values({
+    workOrderId,
+    userId: actor.id,
+    accumulatedMinutes: prior?.minutes ?? 0,
+  });
+}
+
+/**
+ * Pause: bank the elapsed minutes and stop the clock, keeping the total so
+ * a later start on the same job resumes from it. No labor row yet — the
+ * job isn't done being worked.
+ */
+export async function pauseTimer(actor: SessionUser): Promise<void> {
+  const active = await getActiveTimer(actor.id);
+  if (!active) throw new ServiceError("No timer is running.");
+  await db
+    .update(workOrderTimers)
+    .set({
+      stoppedAt: new Date(),
+      accumulatedMinutes: timerMinutes(active),
+      carriedForward: true,
+    })
+    .where(eq(workOrderTimers.id, active.id));
+}
+
+/**
+ * Stop: convert the elapsed time into a labor entry and clear the banked
+ * total so the next start begins at zero. Under a minute is discarded
+ * rather than rounded up to a false minute.
+ */
+export async function stopTimer(
+  actor: SessionUser,
+  note?: string | null,
+): Promise<number> {
+  const active = await getActiveTimer(actor.id);
+  if (!active) throw new ServiceError("No timer is running.");
+  const minutes = timerMinutes(active);
+  await db.transaction(async (tx) => {
+    await tx
+      .update(workOrderTimers)
+      .set({
+        stoppedAt: new Date(),
+        accumulatedMinutes: minutes,
+        carriedForward: false,
+      })
+      .where(eq(workOrderTimers.id, active.id));
+    // Clear any banked total from earlier pauses on this job.
+    await tx
+      .update(workOrderTimers)
+      .set({ carriedForward: false })
+      .where(
+        and(
+          eq(workOrderTimers.workOrderId, active.workOrderId),
+          eq(workOrderTimers.userId, actor.id),
+        ),
+      );
+    if (minutes > 0) {
+      await tx.insert(workOrderLabor).values({
+        workOrderId: active.workOrderId,
+        userId: actor.id,
+        minutes,
+        note: note?.trim() || "Timed on the job",
+      });
+      await recordAudit(tx, {
+        userId: actor.id,
+        action: "work_order.labor",
+        entityType: "work_order",
+        entityId: active.workOrderId,
+        summary: `Timer stopped: logged ${minutes} min of labor`,
+      });
+    }
+  });
+  return minutes;
+}
+
+/**
  * Document a part or material used on the work — free-form name + cost, no
  * catalog required (parts *inventory* stays deferred, DECISIONS.md #4).
  * Same access rule as labor: assignees, their team, or a manager.
@@ -668,8 +879,10 @@ const OPEN_STATUSES: WoStatusValue[] = [
   "open",
   "assigned",
   "in_progress",
+  "paused",
   "on_hold",
   "waiting",
+  "waiting_approval",
   "draft",
 ];
 

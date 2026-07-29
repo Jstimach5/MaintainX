@@ -95,6 +95,47 @@ so the deferral stands. When the inventory module arrives it adds a nullable
 no rewrite of the work-order system is needed — exactly the seam this
 decision reserved.
 
+## 4b. Mobile field application on the same backend (2026-07-28)
+
+**Problem.** Field employees need to run their whole day from a phone —
+including in areas with poor connectivity — without the office system and
+the phones drifting into two separate sources of truth.
+
+**Decision.** A responsive PWA inside the existing Next.js app: same
+routes, same session, same database, same services. Small screens get
+field-first navigation (a five-slot bottom bar) and field screens; desktop
+keeps the full chrome. Reporting, imports, and administration stay
+desktop-shaped.
+
+Offline-capable mutations will go through JSON route handlers under
+`/api/field/*` rather than server actions, because a queued change must be
+replayable and server actions are not. Each carries a client-generated
+idempotency key enforced by a unique index (the same rule as #6), so a
+retry after a dropped connection can never double-post. Conflicts return
+409 with the server's state and are surfaced, never silently merged.
+
+**Alternatives rejected.** Native iOS/Android apps (two more build chains
+to maintain for a small internal shop); a separate mobile frontend against
+the same API (duplicate permission logic, guaranteed drift).
+
+**Consequence.** One codebase and one permission surface. The cost is that
+offline support has to be built deliberately per action rather than coming
+free from a client-side data layer.
+
+## 4c. Labor timers produce ordinary labor rows (2026-07-28)
+
+**Problem.** A running timer is stateful, but every report already reads
+`work_order_labor`.
+
+**Decision.** `work_order_timers` records the running clock only; stopping
+converts elapsed time into a normal `work_order_labor` row. A partial
+unique index on `(user_id) WHERE stopped_at IS NULL` is what actually
+prevents one person from running several clocks at once — not application
+checks. Sub-minute timers log nothing rather than rounding up to a minute
+that was not worked.
+
+**Consequence.** Reporting, exports, and KPIs needed no changes.
+
 ## 5. Timezone and calendar-date rules (2026-07-27)
 
 **Problem.** Due dates, PM occurrence dates, and "overdue" checks are

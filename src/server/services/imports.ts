@@ -68,9 +68,14 @@ const STATUS_MAP: Record<string, string> = {
   "on hold": "on_hold",
   on_hold: "on_hold",
   hold: "on_hold",
-  paused: "on_hold",
+  paused: "paused",
   waiting: "waiting",
   blocked: "waiting",
+  "waiting for parts": "waiting",
+  "waiting on parts": "waiting",
+  "waiting for approval": "waiting_approval",
+  waiting_approval: "waiting_approval",
+  "pending approval": "waiting_approval",
   completed: "completed",
   complete: "completed",
   done: "completed",
@@ -782,7 +787,8 @@ async function createFromRow(
 ): Promise<number> {
   return db.transaction(async (tx) => {
     const status = parsed.status as
-      | "draft" | "open" | "assigned" | "in_progress" | "on_hold" | "waiting" | "completed" | "canceled";
+      | "draft" | "open" | "assigned" | "in_progress" | "paused" | "on_hold"
+      | "waiting" | "waiting_approval" | "completed" | "canceled";
     const completedAt =
       status === "completed"
         ? ((parsed.completionDate as Date | undefined) ??

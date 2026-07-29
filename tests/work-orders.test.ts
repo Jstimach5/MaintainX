@@ -9,6 +9,11 @@ import {
   addComment,
   addLabor,
   addPart,
+  bankedTimerMinutes,
+  getActiveTimer,
+  pauseTimer,
+  startTimer,
+  stopTimer,
   canActOnWorkOrder,
   changeWorkOrderStatus,
   createWorkOrder,
@@ -25,7 +30,7 @@ import type { SessionUser } from "@/server/auth/session";
 async function reset() {
   await truncateAll();
   await db.execute(sql`
-    TRUNCATE TABLE comments, work_order_parts, work_order_labor,
+    TRUNCATE TABLE comments, work_order_parts, work_order_timers, work_order_labor,
       work_order_status_history,
       work_order_assignments, work_order_assets, work_orders,
       asset_location_history, asset_status_history, attachments, assets,
@@ -425,5 +430,159 @@ describe("Phase 14: parts & materials documentation", () => {
       .where(eq(auditEvents.action, "work_order.part"));
     expect(events).toHaveLength(1);
     expect(events[0].summary).toContain("Bolt");
+  });
+});
+
+/** org_settings is truncated between tests, so upsert rather than update. */
+async function setApprovalRequired(on: boolean) {
+  const { orgSettings } = await import("@/server/db/schema");
+  await db
+    .insert(orgSettings)
+    .values({ id: 1, requireCompletionApproval: on })
+    .onConflictDoUpdate({
+      target: orgSettings.id,
+      set: { requireCompletionApproval: on },
+    });
+}
+
+describe("M2: pause/hold reasons, approval gate, and the labor timer", () => {
+  it("pausing, holding, and waiting-for-parts each demand a reason", async () => {
+    const id = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      assigneeIds: [tech.id],
+    });
+    await changeWorkOrderStatus(tech, id, "in_progress");
+    for (const s of ["paused", "on_hold", "waiting"] as const) {
+      await expect(changeWorkOrderStatus(tech, id, s)).rejects.toThrow(
+        /reason is required/i,
+      );
+    }
+    await changeWorkOrderStatus(tech, id, "paused", { note: "lunch" });
+    expect((await getWorkOrder(id))?.status).toBe("paused");
+  });
+
+  it("with approval off, a technician's completion completes the job", async () => {
+    const id = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      assigneeIds: [tech.id],
+    });
+    await changeWorkOrderStatus(tech, id, "completed", {
+      completionNotes: "done",
+    });
+    expect((await getWorkOrder(id))?.status).toBe("completed");
+  });
+
+  it("with approval on, completion parks for review and only a manager clears it", async () => {
+    await setApprovalRequired(true);
+    try {
+      const id = await createWorkOrder(admin.id, {
+        ...baseWo(),
+        assigneeIds: [tech.id],
+      });
+      await changeWorkOrderStatus(tech, id, "completed", {
+        completionNotes: "replaced the seal",
+        actualDowntimeMinutes: 30,
+      });
+      const parked = await getWorkOrder(id);
+      expect(parked?.status).toBe("waiting_approval");
+      // The write-up is kept for the manager to read.
+      expect(parked?.completionNotes).toBe("replaced the seal");
+      expect(parked?.actualDowntimeMinutes).toBe(30);
+      expect(parked?.completedAt).toBeNull();
+
+      // The technician cannot push it through themselves.
+      await expect(
+        changeWorkOrderStatus(tech, id, "completed"),
+      ).rejects.toThrow(/waiting for a manager/i);
+
+      // A manager can send it back…
+      await changeWorkOrderStatus(manager, id, "in_progress", {
+        note: "guard still off",
+      });
+      expect((await getWorkOrder(id))?.status).toBe("in_progress");
+      // …or approve it.
+      await changeWorkOrderStatus(tech, id, "completed");
+      await changeWorkOrderStatus(manager, id, "completed");
+      const done = await getWorkOrder(id);
+      expect(done?.status).toBe("completed");
+      expect(done?.completedAt).not.toBeNull();
+    } finally {
+      await setApprovalRequired(false);
+    }
+  });
+
+  it("a manager's own completion skips the approval step", async () => {
+    await setApprovalRequired(true);
+    try {
+      const id = await createWorkOrder(admin.id, baseWo());
+      await changeWorkOrderStatus(manager, id, "completed");
+      expect((await getWorkOrder(id))?.status).toBe("completed");
+    } finally {
+      await setApprovalRequired(false);
+    }
+  });
+
+  it("the timer banks time across a pause and logs labor once stopped", async () => {
+    const id = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      assigneeIds: [tech.id],
+    });
+    await startTimer(tech, id);
+    const active = await getActiveTimer(tech.id);
+    expect(active?.workOrderId).toBe(id);
+
+    // Backdate the start so measurable time has elapsed.
+    const { workOrderTimers } = await import("@/server/db/schema");
+    await db
+      .update(workOrderTimers)
+      .set({ startedAt: new Date(Date.now() - 25 * 60_000) })
+      .where(eq(workOrderTimers.id, active!.id));
+
+    await pauseTimer(tech);
+    expect(await getActiveTimer(tech.id)).toBeNull();
+    expect(await bankedTimerMinutes(tech.id, id)).toBeGreaterThanOrEqual(25);
+
+    // Resuming picks the banked minutes back up.
+    await startTimer(tech, id);
+    const resumed = await getActiveTimer(tech.id);
+    expect(resumed?.accumulatedMinutes).toBeGreaterThanOrEqual(25);
+
+    const logged = await stopTimer(tech, "compressor rebuild");
+    expect(logged).toBeGreaterThanOrEqual(25);
+    const detail = await getWorkOrderDetail(id);
+    expect(detail?.laborTotal).toBe(logged);
+    expect(detail?.labor[0].entry.note).toBe("compressor rebuild");
+    // Banked time is cleared, so the next session starts from zero.
+    expect(await bankedTimerMinutes(tech.id, id)).toBe(0);
+  });
+
+  it("one running timer per person, enforced across work orders", async () => {
+    const a = await createWorkOrder(admin.id, { ...baseWo(), assigneeIds: [tech.id] });
+    const b = await createWorkOrder(admin.id, { ...baseWo(), assigneeIds: [tech.id] });
+    await startTimer(tech, a);
+    await expect(startTimer(tech, b)).rejects.toThrow(/already have a timer/i);
+    // Starting again on the same job is a no-op, not an error.
+    await startTimer(tech, a);
+    expect((await getActiveTimer(tech.id))?.workOrderId).toBe(a);
+    // A different technician's timer is independent (on their own job).
+    const c = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      assigneeIds: [otherTech.id],
+    });
+    await startTimer(otherTech, c);
+    expect((await getActiveTimer(otherTech.id))?.workOrderId).toBe(c);
+    expect((await getActiveTimer(tech.id))?.workOrderId).toBe(a);
+  });
+
+  it("refuses a timer on someone else's work or a finished job", async () => {
+    const id = await createWorkOrder(admin.id, {
+      ...baseWo(),
+      assigneeIds: [tech.id],
+    });
+    await expect(startTimer(otherTech, id)).rejects.toThrow(
+      /assigned to someone else/i,
+    );
+    await changeWorkOrderStatus(tech, id, "completed");
+    await expect(startTimer(tech, id)).rejects.toThrow(/finished/i);
   });
 });

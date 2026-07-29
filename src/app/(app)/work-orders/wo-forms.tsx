@@ -9,6 +9,7 @@ import {
   changeWoStatusAction,
   createWorkOrderAction,
   removePartAction,
+  timerAction,
   updateWorkOrderAction,
 } from "./actions";
 import { Button, Field, Input, Select, Textarea } from "@/components/ui";
@@ -312,10 +313,18 @@ export function QuickStatusBar({
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
         {status !== "in_progress" && status !== "completed" && status !== "canceled"
-          ? btn("in_progress", "Start work", "primary")
+          ? btn(
+              "in_progress",
+              status === "paused" || status === "on_hold" || status === "waiting"
+                ? "Resume work"
+                : "Start work",
+              "primary",
+            )
           : null}
-        {status === "in_progress" ? btn("on_hold", "Put on hold") : null}
-        {status === "in_progress" || status === "on_hold" || status === "waiting" ? (
+        {status === "in_progress" ||
+        status === "paused" ||
+        status === "on_hold" ||
+        status === "waiting" ? (
           <Button type="button" onClick={() => setCompleting((v) => !v)}>
             Mark completed…
           </Button>
@@ -511,5 +520,256 @@ export function MeterReadingForm({
       ) : null}
       <FormError message={state?.error} />
     </form>
+  );
+}
+
+/**
+ * Sticky field action bar (small screens only). The job page is long —
+ * this keeps the actions a technician needs mid-task within thumb reach,
+ * so nobody scrolls back to the top to start work or save progress.
+ * It sits directly above the bottom field navigation.
+ */
+export function FieldActionBar({
+  workOrderId,
+  status,
+  canComplete,
+}: {
+  workOrderId: number;
+  status: string;
+  canComplete: boolean;
+}) {
+  const [state, formAction] = useActionState(changeWoStatusAction, undefined);
+  const [completing, setCompleting] = useState(false);
+
+  const isOpen = status !== "completed" && status !== "canceled";
+  const jump = (href: string, icon: string, label: string) => (
+    <a
+      href={href}
+      className="flex min-h-12 flex-col items-center justify-center rounded-md px-2 text-[10px] font-medium text-gray-600 active:bg-gray-100"
+    >
+      <span aria-hidden className="text-lg leading-none">
+        {icon}
+      </span>
+      {label}
+    </a>
+  );
+
+  return (
+    <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-20 border-t border-gray-200 bg-white shadow-[0_-2px_8px_rgba(0,0,0,0.06)] md:hidden">
+      {completing ? (
+        <form
+          action={formAction}
+          className="max-h-[60vh] space-y-3 overflow-y-auto border-b border-gray-200 p-3"
+        >
+          <input type="hidden" name="workOrderId" value={workOrderId} />
+          <input type="hidden" name="status" value="completed" />
+          <Field label="Completion notes" htmlFor="field-completion-notes">
+            <Textarea
+              id="field-completion-notes"
+              name="completionNotes"
+              placeholder="What was done?"
+            />
+          </Field>
+          <Field
+            label="Actual downtime (minutes)"
+            htmlFor="field-actual-downtime"
+          >
+            <Input
+              id="field-actual-downtime"
+              name="actualDowntimeMinutes"
+              type="number"
+              min={0}
+              inputMode="numeric"
+            />
+          </Field>
+          <div className="flex gap-2">
+            <SubmitButton>Complete work order</SubmitButton>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setCompleting(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      ) : null}
+
+      <div className="flex items-center gap-1 px-2 py-1.5">
+        {jump("#pictures", "📷", "Picture")}
+        {jump("#notes", "💬", "Note")}
+        {jump("#readings", "📊", "Reading")}
+        <div className="ml-auto">
+          {status !== "in_progress" && isOpen ? (
+            <form action={formAction}>
+              <input type="hidden" name="workOrderId" value={workOrderId} />
+              <input type="hidden" name="status" value="in_progress" />
+              <SubmitButton>Start work</SubmitButton>
+            </form>
+          ) : null}
+          {status === "in_progress" && canComplete ? (
+            <Button type="button" onClick={() => setCompleting((v) => !v)}>
+              {completing ? "Close" : "Complete"}
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      <FormError message={state?.error} />
+    </div>
+  );
+}
+
+/**
+ * Labor timer. Start when you walk up to the machine, pause when you step
+ * away, stop when the job's labor is done — stopping writes the entry.
+ */
+export function TimerPanel({
+  workOrderId,
+  running,
+  elapsedMinutes,
+  runningElsewhere,
+}: {
+  workOrderId: number;
+  running: boolean;
+  elapsedMinutes: number;
+  /** WO number of another job holding this user's only active timer. */
+  runningElsewhere: string | null;
+}) {
+  const [state, formAction] = useActionState(timerAction, undefined);
+  const label =
+    elapsedMinutes >= 60
+      ? `${Math.floor(elapsedMinutes / 60)}h ${elapsedMinutes % 60}m`
+      : `${elapsedMinutes}m`;
+
+  if (runningElsewhere) {
+    return (
+      <p className="text-sm text-amber-800">
+        Your timer is running on {runningElsewhere}. Stop it there before
+        starting one here.
+      </p>
+    );
+  }
+
+  return (
+    <form action={formAction} className="space-y-2">
+      <input type="hidden" name="workOrderId" value={workOrderId} />
+      {running ? (
+        <>
+          <p className="text-sm">
+            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-green-600 align-middle" />{" "}
+            Running · <span className="font-semibold tabular-nums">{label}</span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="submit"
+              name="op"
+              value="pause"
+              className="min-h-11 rounded-md border border-gray-300 px-4 text-sm font-semibold active:bg-gray-100"
+            >
+              Pause
+            </button>
+            <button
+              type="submit"
+              name="op"
+              value="stop"
+              className="min-h-11 rounded-md bg-blue-700 px-4 text-sm font-semibold text-white active:bg-blue-800"
+            >
+              Stop &amp; log time
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          {elapsedMinutes > 0 ? (
+            <p className="text-sm text-gray-600">
+              Paused at <span className="font-semibold tabular-nums">{label}</span>
+            </p>
+          ) : null}
+          <button
+            type="submit"
+            name="op"
+            value="start"
+            className="min-h-11 rounded-md bg-blue-700 px-4 text-sm font-semibold text-white active:bg-blue-800"
+          >
+            {elapsedMinutes > 0 ? "Resume timer" : "Start timer"}
+          </button>
+        </>
+      )}
+      <FormError message={state?.error} />
+    </form>
+  );
+}
+
+/**
+ * Pause / hold / waiting-for-parts, each with the required reason. Kept
+ * separate from the quick bar so the reason field has room to breathe.
+ */
+export function PauseHoldForm({
+  workOrderId,
+  status,
+}: {
+  workOrderId: number;
+  status: string;
+}) {
+  const [state, formAction] = useActionState(changeWoStatusAction, undefined);
+  const [target, setTarget] = useState("paused");
+  if (status !== "in_progress" && status !== "paused" && status !== "on_hold" && status !== "waiting") {
+    return null;
+  }
+  return (
+    <form action={formAction} className="space-y-2">
+      <input type="hidden" name="workOrderId" value={workOrderId} />
+      <Field label="Interrupt this job" htmlFor="pause-target">
+        <Select
+          id="pause-target"
+          name="status"
+          value={target}
+          onChange={(e) => setTarget(e.target.value)}
+        >
+          <option value="paused">Paused — stepping away</option>
+          <option value="on_hold">On hold — blocked</option>
+          <option value="waiting">Waiting for parts</option>
+        </Select>
+      </Field>
+      <Input name="note" placeholder="Why? (required)" required />
+      <SubmitButton variant="secondary">Save</SubmitButton>
+      <FormError message={state?.error} />
+    </form>
+  );
+}
+
+/** Manager review of work a technician submitted for approval. */
+export function ApprovalPanel({ workOrderId }: { workOrderId: number }) {
+  const [state, formAction] = useActionState(changeWoStatusAction, undefined);
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-purple-900">
+        A technician submitted this as finished. Approve it, or send it back
+        with what still needs doing.
+      </p>
+      <form action={formAction} className="space-y-2">
+        <input type="hidden" name="workOrderId" value={workOrderId} />
+        <Input name="note" placeholder="Note (required to send back)" />
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="submit"
+            name="status"
+            value="completed"
+            className="min-h-11 rounded-md bg-green-700 px-4 text-sm font-semibold text-white active:bg-green-800"
+          >
+            Approve &amp; complete
+          </button>
+          <button
+            type="submit"
+            name="status"
+            value="in_progress"
+            className="min-h-11 rounded-md border border-gray-300 px-4 text-sm font-semibold active:bg-gray-100"
+          >
+            Send back to technician
+          </button>
+        </div>
+      </form>
+      <FormError message={state?.error} />
+    </div>
   );
 }

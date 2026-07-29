@@ -14,14 +14,24 @@ import { AttachmentSection } from "@/components/attachments";
 import { IMAGE_TYPES } from "@/server/storage";
 import { WoPriorityBadge, WoStatusBadge } from "../wo-badges";
 import {
+  ApprovalPanel,
   CommentForm,
+  FieldActionBar,
   LaborForm,
   MeterReadingForm,
   PartsForm,
+  PauseHoldForm,
   QuickStatusBar,
   RemovePartButton,
+  TimerPanel,
 } from "../wo-forms";
 import { listMetersForAssets } from "@/server/services/meters";
+import {
+  bankedTimerMinutes,
+  getActiveTimer,
+  getWorkOrder,
+  timerMinutes,
+} from "@/server/services/workOrders";
 import {
   AttachProcedureForm,
   ProcedureInstancePanel,
@@ -81,6 +91,18 @@ export default async function WorkOrderDetailPage({
   const canManage = user.role === "admin" || user.role === "manager";
   const canAct = await canActOnWorkOrder(user, woId);
   const woMeters = await listMetersForAssets(detail.assets.map((a) => a.asset.id));
+
+  // Timer state: running here, running on another job, or paused with
+  // banked minutes waiting to be resumed.
+  const activeTimer = await getActiveTimer(user.id);
+  const timerHere = activeTimer?.workOrderId === woId ? activeTimer : null;
+  const otherTimerWo =
+    activeTimer && activeTimer.workOrderId !== woId
+      ? ((await getWorkOrder(activeTimer.workOrderId))?.woNumber ?? null)
+      : null;
+  const timerElapsed = timerHere
+    ? timerMinutes(timerHere)
+    : await bankedTimerMinutes(user.id, woId);
   const instances = await listInstancesForWo(woId);
   const templates = canManage ? await listTemplates() : [];
   const allUsers = await listUsers();
@@ -147,8 +169,15 @@ export default async function WorkOrderDetailPage({
         ))}
       </div>
 
+      {wo.status === "waiting_approval" && canManage ? (
+        <Card className="border-purple-300 bg-purple-50">
+          <ApprovalPanel workOrderId={wo.id} />
+        </Card>
+      ) : null}
+
       {canAct ? (
-        <Card>
+        // Desktop keeps the inline bar; phones get the sticky one below.
+        <Card className="hidden md:block">
           <QuickStatusBar
             workOrderId={wo.id}
             status={wo.status}
@@ -330,7 +359,7 @@ export default async function WorkOrderDetailPage({
             </Card>
           ) : null}
 
-          <Card>
+          <Card id="pictures">
             <AttachmentSection
               entityType="work_order"
               entityId={wo.id}
@@ -347,7 +376,7 @@ export default async function WorkOrderDetailPage({
             />
           </Card>
 
-          <Card>
+          <Card id="notes">
             <h2 className="mb-2 font-semibold">Comments</h2>
             {detail.comments.length === 0 ? (
               <p className="mb-3 text-sm text-gray-500">No comments yet.</p>
@@ -368,6 +397,21 @@ export default async function WorkOrderDetailPage({
         </div>
 
         <div className="space-y-4">
+          {canAct && woIsOpen ? (
+            <Card>
+              <h2 className="mb-2 font-semibold">Timer</h2>
+              <TimerPanel
+                workOrderId={wo.id}
+                running={timerHere != null}
+                elapsedMinutes={timerElapsed}
+                runningElsewhere={otherTimerWo}
+              />
+              <div className="mt-3 border-t border-gray-100 pt-3">
+                <PauseHoldForm workOrderId={wo.id} status={wo.status} />
+              </div>
+            </Card>
+          ) : null}
+
           {canAct ? (
             <Card>
               <h2 className="mb-2 font-semibold">Log labor time</h2>
@@ -436,7 +480,7 @@ export default async function WorkOrderDetailPage({
           ) : null}
 
           {canAct && woMeters.length > 0 ? (
-            <Card>
+            <Card id="readings">
               <h2 className="mb-2 font-semibold">Meter readings</h2>
               <p className="mb-3 text-xs text-gray-500">
                 Record the current hours / miles / fuel while at the machine.
@@ -504,6 +548,18 @@ export default async function WorkOrderDetailPage({
           </Card>
         </div>
       </div>
+
+      {canAct ? (
+        <>
+          {/* Spacer so the sticky bar never covers the last card. */}
+          <div className="h-20 md:hidden" aria-hidden />
+          <FieldActionBar
+            workOrderId={wo.id}
+            status={wo.status}
+            canComplete={woIsOpen}
+          />
+        </>
+      ) : null}
     </div>
   );
 }

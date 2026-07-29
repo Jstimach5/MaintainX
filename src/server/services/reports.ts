@@ -64,13 +64,17 @@ export async function woCountsByType(f: ReportFilters = {}) {
     .groupBy(workOrders.workType);
 }
 
+// Every status that is not finished. Must stay in step with the enum —
+// a status missing here silently vanishes from backlog and overdue KPIs.
 const OPEN_STATUSES = [
   "draft",
   "open",
   "assigned",
   "in_progress",
+  "paused",
   "on_hold",
   "waiting",
+  "waiting_approval",
 ] as const;
 
 export async function backlog(f: ReportFilters = {}) {

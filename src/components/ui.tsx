@@ -33,12 +33,16 @@ export function PageHeader({
 export function Card({
   children,
   className,
+  id,
 }: {
   children: ReactNode;
   className?: string;
+  /** Anchor target — the field action bar jumps to these sections. */
+  id?: string;
 }) {
   return (
     <div
+      id={id}
       className={cx(
         "rounded-lg border border-gray-200 bg-white p-4 shadow-sm",
         className,

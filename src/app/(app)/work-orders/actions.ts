@@ -11,7 +11,10 @@ import {
   addPart,
   changeWorkOrderStatus,
   createWorkOrder,
+  pauseTimer,
   removePart,
+  startTimer,
+  stopTimer,
   updateWorkOrder,
 } from "@/server/services/workOrders";
 import { addReading } from "@/server/services/meters";
@@ -152,8 +155,10 @@ const statusSchema = z.object({
     "open",
     "assigned",
     "in_progress",
+    "paused",
     "on_hold",
     "waiting",
+    "waiting_approval",
     "completed",
     "canceled",
   ]),
@@ -341,6 +346,43 @@ export async function addWoMeterReadingAction(
       note: parsed.data.note,
       isRollover: parsed.data.isRollover === "1",
     });
+  } catch (err) {
+    return friendly(err);
+  }
+  revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
+  redirect(`/work-orders/${parsed.data.workOrderId}`);
+}
+
+const timerSchema = z.object({
+  workOrderId: z.coerce.number().int().positive(),
+  op: z.enum(["start", "pause", "stop"]),
+  note: z.string().trim().max(1000).optional(),
+});
+
+/**
+ * Labor timer control. One action for start/pause/stop so the client only
+ * needs a single form; the service enforces one running timer per person.
+ */
+export async function timerAction(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  const actor = await assertRole("admin", "manager", "technician").catch(
+    () => null,
+  );
+  if (!actor) return { error: "Not allowed." };
+  const parsed = timerSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  try {
+    if (parsed.data.op === "start") {
+      await startTimer(actor, parsed.data.workOrderId);
+    } else if (parsed.data.op === "pause") {
+      await pauseTimer(actor);
+    } else {
+      await stopTimer(actor, parsed.data.note);
+    }
   } catch (err) {
     return friendly(err);
   }

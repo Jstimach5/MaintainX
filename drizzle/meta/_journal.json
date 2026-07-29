@@ -85,6 +85,13 @@
       "when": 1785240563241,
       "tag": "0011_work_order_parts",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1785243298922,
+      "tag": "0012_field_statuses_timers",
+      "breakpoints": true
     }
   ]
 }

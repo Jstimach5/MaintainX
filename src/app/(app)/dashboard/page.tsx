@@ -9,6 +9,9 @@ import { formatDateTime, todayInTimezone } from "@/lib/format";
 import { ButtonLink, Card, PageHeader } from "@/components/ui";
 import { StatTile } from "@/components/charts";
 import { WoStatusBadge } from "../work-orders/wo-badges";
+import { fieldSummary } from "@/server/services/field";
+import { unreadCount } from "@/server/services/notifications";
+import { FieldHome } from "./field-home";
 
 export const metadata = { title: "Dashboard" };
 
@@ -16,6 +19,18 @@ export default async function DashboardPage() {
   const user = await requireUser();
   const org = await getOrgSettings();
   const tz = org.timezone;
+
+  // Technicians get the field home screen — their day's work, not the
+  // operation's analytics. Managers keep the analytical dashboard.
+  if (user.role === "technician") {
+    const [summary, unread] = await Promise.all([
+      fieldSummary(user, todayInTimezone(tz), tz),
+      unreadCount(user.id),
+    ]);
+    return (
+      <FieldHome user={user} summary={summary} timeZone={tz} unread={unread} />
+    );
+  }
 
   // Requesters get a simple portal-style dashboard.
   if (user.role === "requester") {

@@ -12,11 +12,14 @@ Last updated: 2026-07-28 (M0 — audit baseline)
 | Feature | Status | Relevant files | Required work | Acceptance test | Evidence |
 |---|---|---|---|---|---|
 | Mobile login | Verified | src/app/(auth)/login | — | Sign in at phone width; session survives restart | TEST_LOG Phases 1, 11 |
-| Mobile home screen (today/overdue/PM-due/in-progress tiles, New Request + Scan buttons) | Missing | src/app/(app)/dashboard | Field home for small screens | Tiles show correct counts; both buttons reachable without scrolling | — |
-| Bottom navigation (≤5 areas) | Missing | src/components/nav.tsx | Home/Work/Requests/Scan/Account bar on small screens | Present at phone widths, absent on desktop | — |
+| Mobile home screen (today/overdue/PM-due/in-progress tiles, New Request + Scan buttons) | Working | dashboard/field-home.tsx, services/field.ts | e2e evidence pending | Tiles show correct counts; both buttons reachable without scrolling | 5 unit tests (M1) |
+| Bottom navigation (≤5 areas) | Working | components/field-nav.tsx, (app)/layout.tsx | e2e evidence pending | Present at phone widths, absent on desktop | — |
+| Account screen | Working | (app)/account | — | Identity, role, org timezone, sign-out | — |
 | Assigned work-order list | Partially working | src/app/(app)/work-orders | Field filters (today, this week, available, my team) + sort + requirement badges | Each filter returns the right set; sort applies | TEST_LOG Phase 4 |
-| Mobile work-order screen | Partially working | work-orders/[id] | Sticky bottom action bar; all §7 fields surfaced | Actions reachable without scrolling to top | TEST_LOG Phase 4 |
-| Start / pause / hold / resume / complete | Partially working | workOrders.ts changeWorkOrderStatus | Add `paused` + `waiting_approval`; capture hold/pause reason | Every transition recorded with user, time, reason | TEST_LOG Phase 4 |
+| Mobile work-order screen | Working | work-orders/[id], wo-forms FieldActionBar | e2e evidence pending | Actions reachable without scrolling to top | TEST_LOG Phase 4 |
+| Start / pause / hold / resume / complete | Working | workOrders.ts changeWorkOrderStatus | e2e evidence pending | Every transition recorded with user, time, and a required reason | 6 unit tests (M2) |
+| Completion approval (optional, org setting) | Working | org_settings.require_completion_approval | e2e evidence pending | Tech completion parks in `waiting_approval`; only a manager clears it | 2 unit tests (M2) |
+| Labor timer (start/pause/resume/stop) | Working | work_order_timers, TimerPanel | e2e evidence pending | Banked across pauses; one active timer per person; stop writes a labor row | 3 unit tests (M2) |
 | Mobile procedures & checklists | Partially working | procedure-panel.tsx, procedures.ts | Sectioned UI + progress; yes_no/safety_confirm; step photos; warn ranges | Long procedure completes on a phone; partial progress preserved | TEST_LOG Phase 5 |
 | Camera and photo uploads | Working | components/attachments.tsx, storage/ | Progress + retry (P1 offline work) | Take photo on phone → appears on office computer | TEST_LOG Phases 3–6 |
 | Completion notes | Verified | work-orders/wo-forms.tsx | — | Notes saved and visible to managers | TEST_LOG Phase 4 |

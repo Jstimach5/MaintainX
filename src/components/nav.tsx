@@ -39,7 +39,8 @@ export async function AppNav({ user }: { user: SessionUser }) {
         >
           Maintenance&nbsp;Manager
         </Link>
-        <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1">
+        {/* Small screens use the bottom field nav instead of this row. */}
+        <nav className="hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1 md:flex">
           {items.map((item) => (
             <Link
               key={item.href}

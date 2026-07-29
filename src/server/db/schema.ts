@@ -32,6 +32,15 @@ export const orgSettings = pgTable(
     id: smallint("id").primaryKey().default(1),
     name: text("name").notNull().default("Maintenance Manager"),
     timezone: text("timezone").notNull().default("UTC"),
+    /**
+     * When on, a technician's completion parks the job in
+     * `waiting_approval` for a manager to approve or return. Default off:
+     * most shops don't want the extra step, and turning it on must be a
+     * deliberate choice.
+     */
+    requireCompletionApproval: boolean("require_completion_approval")
+      .notNull()
+      .default(false),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -344,8 +353,13 @@ export const woStatus = pgEnum("wo_status", [
   "open",
   "assigned",
   "in_progress",
+  /** Technician stepped away mid-job; resumes without manager involvement. */
+  "paused",
   "on_hold",
+  /** "waiting" reads as "waiting for parts" in the UI. */
   "waiting",
+  /** Tech finished; a manager must approve (org setting, default off). */
+  "waiting_approval",
   "completed",
   "canceled",
 ]);
@@ -518,6 +532,44 @@ export const workOrderLabor = pgTable(
   (table) => [
     index("wo_labor_wo_idx").on(table.workOrderId),
     check("wo_labor_minutes_positive", sql`${table.minutes} > 0`),
+  ],
+);
+
+/**
+ * Running labor timers. A stopped timer becomes an ordinary
+ * work_order_labor row, so every existing report keeps working — the
+ * timer is an input method, not a parallel record. The partial unique
+ * index (WHERE stopped_at IS NULL) is what actually prevents one person
+ * from accidentally running several clocks at once.
+ */
+export const workOrderTimers = pgTable(
+  "work_order_timers",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    workOrderId: integer("work_order_id")
+      .notNull()
+      .references(() => workOrders.id, { onDelete: "cascade" }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    startedAt: timestamp("started_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    stoppedAt: timestamp("stopped_at", { withTimezone: true }),
+    /** Minutes banked by earlier pause/resume cycles on this job. */
+    accumulatedMinutes: integer("accumulated_minutes").notNull().default(0),
+    /**
+     * True on a paused row whose banked minutes a later start should resume
+     * from. Cleared when the timer is stopped for good and the minutes have
+     * become a labor entry, so the next session starts at zero.
+     */
+    carriedForward: boolean("carried_forward").notNull().default(false),
+  },
+  (table) => [
+    index("wo_timers_wo_idx").on(table.workOrderId),
+    uniqueIndex("wo_timers_one_active_per_user")
+      .on(table.userId)
+      .where(sql`${table.stoppedAt} IS NULL`),
   ],
 );
 
