@@ -21,6 +21,34 @@ async function openJob(page: Page, title: RegExp) {
   await page.waitForURL(/\/work-orders\/\d+$/);
 }
 
+/**
+ * Open the completion panel, write notes, submit, and wait for the badge.
+ * The toggle + submit can race a layout shift on this busy page (panels
+ * revalidating below), leaving the panel closed with nothing sent — detect
+ * that and retry once rather than flake.
+ */
+async function completeJob(page: Page, notes: string, expectBadge: RegExp) {
+  for (let attempt = 0; ; attempt++) {
+    const notesField = page.getByLabel(/completion notes/i);
+    if (!(await notesField.isVisible())) {
+      await page.getByRole("button", { name: /mark completed/i }).click();
+    }
+    await notesField.fill(notes);
+    await page
+      .locator("form", { has: notesField })
+      .getByRole("button", { name: /complete work order/i })
+      .click();
+    try {
+      await expect(page.getByText(expectBadge).first()).toBeVisible({
+        timeout: 10_000,
+      });
+      return;
+    } catch (err) {
+      if (attempt >= 1) throw err;
+    }
+  }
+}
+
 test.beforeAll(async () => {
   await ensureBaseData();
 });
@@ -132,11 +160,7 @@ test.describe.serial("M2 — pause reasons, labor timer, completion approval", (
       await openJob(page, /Timer and approval run/);
       await page.getByRole("button", { name: /resume work|start work/i }).first().click();
       await page.waitForURL(/\/work-orders\/\d+$/);
-      await page.getByRole("button", { name: /mark completed/i }).click();
-      await page.getByLabel(/completion notes/i).fill("Belt replaced, tested.");
-      await page.getByRole("button", { name: /complete work order/i }).click();
-      await page.waitForURL(/\/work-orders\/\d+$/);
-      await expect(page.getByText("Waiting for approval").first()).toBeVisible();
+      await completeJob(page, "Belt replaced, tested.", /Waiting for approval/);
 
       // The manager sees the write-up and can send it back.
       await login(page, CREDS.manager);
@@ -149,11 +173,8 @@ test.describe.serial("M2 — pause reasons, labor timer, completion approval", (
       await page.waitForURL(/\/work-orders\/\d+$/);
       await expect(page.getByText("In progress").first()).toBeVisible();
 
-      // Then approve it for real.
-      await page.getByRole("button", { name: /mark completed/i }).click();
-      await page.getByRole("button", { name: /complete work order/i }).click();
-      await page.waitForURL(/\/work-orders\/\d+$/);
-      await expect(page.getByText("Completed").first()).toBeVisible();
+      // Then approve it for real (a manager's own completion never parks).
+      await completeJob(page, "Verified and approved.", /^Completed$/);
     } finally {
       await pool.query(
         "UPDATE org_settings SET require_completion_approval = false",
