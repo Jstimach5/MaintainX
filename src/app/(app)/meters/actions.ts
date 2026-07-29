@@ -93,7 +93,7 @@ export async function updateMeterAction(
     return friendly(err);
   }
   revalidatePath(`/meters/${meterId}`);
-  redirect(`/meters/${meterId}`);
+  return {};
 }
 
 const readingSchema = z.object({
@@ -125,7 +125,7 @@ export async function addReadingAction(
     return friendly(err);
   }
   revalidatePath(`/meters/${parsed.data.meterId}`);
-  redirect(`/meters/${parsed.data.meterId}`);
+  return {};
 }
 
 const correctionSchema = z.object({
@@ -154,7 +154,7 @@ export async function correctReadingAction(
     return friendly(err);
   }
   revalidatePath(`/meters/${parsed.data.meterId}`);
-  redirect(`/meters/${parsed.data.meterId}`);
+  return {};
 }
 
 const triggerSchema = z.object({
@@ -191,7 +191,7 @@ export async function createTriggerAction(
     return friendly(err);
   }
   revalidatePath(`/meters/${meterId}`);
-  redirect(`/meters/${meterId}`);
+  return {};
 }
 
 const toggleSchema = z.object({

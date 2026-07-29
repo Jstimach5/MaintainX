@@ -179,6 +179,7 @@ export default async function WorkOrderDetailPage({
         // Desktop keeps the inline bar; phones get the sticky one below.
         <Card className="hidden md:block">
           <QuickStatusBar
+            key={`qsb-${wo.status}-${wo.updatedAt.getTime()}`}
             workOrderId={wo.id}
             status={wo.status}
             canCancel={canManage}
@@ -392,7 +393,9 @@ export default async function WorkOrderDetailPage({
                 ))}
               </ul>
             )}
-            {canAct ? <CommentForm workOrderId={wo.id} /> : null}
+            {canAct ? (
+              <CommentForm key={`c-${detail.comments.length}`} workOrderId={wo.id} />
+            ) : null}
           </Card>
         </div>
 
@@ -407,7 +410,11 @@ export default async function WorkOrderDetailPage({
                 runningElsewhere={otherTimerWo}
               />
               <div className="mt-3 border-t border-gray-100 pt-3">
-                <PauseHoldForm workOrderId={wo.id} status={wo.status} />
+                <PauseHoldForm
+                  key={`ph-${wo.status}-${wo.updatedAt.getTime()}`}
+                  workOrderId={wo.id}
+                  status={wo.status}
+                />
               </div>
             </Card>
           ) : null}
@@ -415,7 +422,7 @@ export default async function WorkOrderDetailPage({
           {canAct ? (
             <Card>
               <h2 className="mb-2 font-semibold">Log labor time</h2>
-              <LaborForm workOrderId={wo.id} />
+              <LaborForm key={`l-${detail.labor.length}`} workOrderId={wo.id} />
               {detail.labor.length > 0 ? (
                 <ul className="mt-3 space-y-1 border-t border-gray-100 pt-2">
                   {detail.labor.map(({ entry, userName }) => (
@@ -475,7 +482,9 @@ export default async function WorkOrderDetailPage({
                   Parts total: {money(detail.partsCostTotal)}
                 </p>
               ) : null}
-              {canAct && woIsOpen ? <PartsForm workOrderId={wo.id} /> : null}
+              {canAct && woIsOpen ? (
+                <PartsForm key={`p-${detail.parts.length}`} workOrderId={wo.id} />
+              ) : null}
             </Card>
           ) : null}
 
@@ -508,6 +517,7 @@ export default async function WorkOrderDetailPage({
                         : "No readings yet"}
                     </p>
                     <MeterReadingForm
+                      key={`mr-${meter.id}-${meter.currentValue ?? "none"}`}
                       workOrderId={wo.id}
                       meterId={meter.id}
                       unit={meter.unit}
@@ -554,6 +564,7 @@ export default async function WorkOrderDetailPage({
           {/* Spacer so the sticky bar never covers the last card. */}
           <div className="h-20 md:hidden" aria-hidden />
           <FieldActionBar
+            key={`fab-${wo.status}-${wo.updatedAt.getTime()}`}
             workOrderId={wo.id}
             status={wo.status}
             canComplete={woIsOpen}

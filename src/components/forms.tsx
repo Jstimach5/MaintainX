@@ -5,7 +5,8 @@ import { Button } from "./ui";
 import type { ComponentProps } from "react";
 
 /** Standard result shape returned by server actions on failure. */
-export type ActionResult = { error: string } | undefined;
+/** `{}` = success (no redirect); `{ error }` = show it; undefined = initial. */
+export type ActionResult = { error?: string } | undefined;
 
 export function SubmitButton({
   children,

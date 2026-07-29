@@ -114,7 +114,7 @@ export async function attachProcedureAction(
     return friendly(err);
   }
   revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
-  redirect(`/work-orders/${parsed.data.workOrderId}`);
+  return {};
 }
 
 const respondSchema = z.object({
@@ -161,5 +161,5 @@ export async function respondStepAction(
     return friendly(err);
   }
   revalidatePath(`/work-orders/${workOrderId}`);
-  redirect(`/work-orders/${workOrderId}`);
+  return {};
 }

@@ -189,7 +189,7 @@ export async function changeWoStatusAction(
     return friendly(err);
   }
   revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
-  redirect(`/work-orders/${parsed.data.workOrderId}`);
+  return {};
 }
 
 const commentSchema = z.object({
@@ -215,7 +215,7 @@ export async function addWoCommentAction(
     return friendly(err);
   }
   revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
-  redirect(`/work-orders/${parsed.data.workOrderId}`);
+  return {};
 }
 
 const laborSchema = z.object({
@@ -249,7 +249,7 @@ export async function addLaborAction(
     return friendly(err);
   }
   revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
-  redirect(`/work-orders/${parsed.data.workOrderId}`);
+  return {};
 }
 
 const partSchema = z.object({
@@ -286,7 +286,7 @@ export async function addPartAction(
     return friendly(err);
   }
   revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
-  redirect(`/work-orders/${parsed.data.workOrderId}`);
+  return {};
 }
 
 const removePartSchema = z.object({
@@ -312,7 +312,7 @@ export async function removePartAction(
     return friendly(err);
   }
   revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
-  redirect(`/work-orders/${parsed.data.workOrderId}`);
+  return {};
 }
 
 const woReadingSchema = z.object({
@@ -350,7 +350,7 @@ export async function addWoMeterReadingAction(
     return friendly(err);
   }
   revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
-  redirect(`/work-orders/${parsed.data.workOrderId}`);
+  return {};
 }
 
 const timerSchema = z.object({
@@ -387,5 +387,5 @@ export async function timerAction(
     return friendly(err);
   }
   revalidatePath(`/work-orders/${parsed.data.workOrderId}`);
-  redirect(`/work-orders/${parsed.data.workOrderId}`);
+  return {};
 }
