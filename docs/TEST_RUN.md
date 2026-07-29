@@ -28,6 +28,26 @@ self-contained boxes so nothing else has to be installed or configured.
    icon in the system tray stops animating (it will say "Engine running").
    You don't need an account — skip any sign-in screens.
 
+**If Docker Desktop shows "WSL not installed":** the PC is missing a
+small Windows component Docker relies on. Fix it once:
+
+1. Click **Quit** on the error.
+2. Open PowerShell **as administrator** (Start → type `powershell` →
+   right-click **Windows PowerShell** → **Run as administrator**) and run:
+
+   ```powershell
+   wsl --install
+   ```
+
+   If a window later asks you to create a "UNIX username", just close
+   it — Docker doesn't need it.
+3. **Restart the computer** (required), then start Docker Desktop again
+   and wait for "Engine running".
+
+If `wsl --install` itself fails with a message about **virtualization**,
+it needs a one-time setting enabled in the PC's BIOS — ask Claude Code
+with the exact error message and the PC model.
+
 ## Step 2 — Get the code onto the PC
 
 Easiest: download it as a ZIP in your browser.
