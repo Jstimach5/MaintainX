@@ -1,10 +1,10 @@
 # Project State
 
-Last updated: 2026-07-29 (M2 complete + admin settings; suite 159 unit / 88 e2e)
+Last updated: 2026-07-29 (production launch cycle; suite 186 unit / 95 e2e)
 
 ## Current phase
 
-**Mobile field application, M2 complete.** The office CMMS is complete
+**Production launch cycle (P0–P6).** Mobile M2 is complete; The office CMMS is complete
 (Phases 0–14; see FEATURE_MATRIX.md — every P0/P1 row Verified). A new
 specification asks for a true mobile field interface on the same backend:
 field-first navigation, full on-phone work execution, offline capture with
@@ -14,24 +14,28 @@ in docs/MOBILE_FEATURE_MATRIX.md and docs/MOBILE_TEST_LOG.md.
 
 ## Last completed task
 
-M1+M2 close-out: field shell (bottom nav, field home, sticky action bar),
-paused/waiting_approval lifecycle with required reasons, optional
-completion approval with the /admin/settings screen, labor timer, the
-Windows test-run guide (docs/TEST_RUN.md), and a real product fix — same-
-page form actions no longer redirect to their own route (second
-submissions were silently dropped); forms reset via server-computed keys.
+Production launch P0–P5: the silent-gitignore fix that was excluding the
+storage module from every clone; invitations with hashed one-shot tokens
++ admin UI + public acceptance; real SMTP email adapter with honest dev
+mode; self-serve password reset + forced first-login change; production
+compose (Caddy auto-HTTPS, non-root image, health endpoint, seed guard);
+prod backups with retention; migration/clean-clone/backup-restore gates —
+the clean-clone gate caught and fixed a build-time DB-connection bug that
+would have broken every docker image build.
 
 ## Current task
 
-None in flight — M3 is next.
+P6 — final launch docs, the consolidated operator-credentials list, and
+the go-live report. Deployment itself waits on the operator's VPS/domain/
+SMTP credentials.
 
 ## Next three tasks
 
-1. M3 — work-list field filters, sort, requirement badges, in-app QR
-   scanner.
-2. M4 — mobile procedures: sectioned UI, step photos, warn ranges, drawn
-   signatures.
-3. M5 — required picture categories gate + request polish.
+1. Operator provides VPS + domain + SMTP → run docs/DEPLOYMENT.md
+   production section end-to-end, then §19 manual tests from a real phone
+   on mobile data.
+2. Production onboarding per docs/TEAM_ONBOARDING.md (§20 order).
+3. Mobile roadmap resumes at M3 (docs/MOBILE_IMPLEMENTATION_PLAN.md).
 
 ## Known failures
 
@@ -40,11 +44,13 @@ bug in same-page form actions (see MOBILE_TEST_LOG close-out entry).
 
 ## Current test results (2026-07-29)
 
-- `npm test`: **159/159** pass (14 files)
-- `npx playwright test`: **88/88** pass — desktop, Pixel 7, iPhone 14,
+- `npm test`: **186/186** pass (17 files)
+- `npx playwright test`: **95/95** pass — desktop, Pixel 7, iPhone 14,
   Galaxy S8, iPad Mini projects
-- `npm run build` / `typecheck` / `lint`: clean
-- Migrations 0000–0012 replay cleanly onto freshly created databases
+- `npm run build` / `typecheck` / `lint`: clean — including
+  `env -u DATABASE_URL npm run build` (the docker image-build condition)
+- Migrations 0000–0013: clean empty DB (38 tables) AND populated-copy
+  re-run both verified; clean-clone build + migrate + seed verified
 
 ## Database migration status
 

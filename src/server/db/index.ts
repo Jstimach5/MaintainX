@@ -18,10 +18,27 @@ function createPool(): Pool {
   return new Pool({ connectionString, max: 10 });
 }
 
-export const pool: Pool = globalForDb.cmmsPool ?? createPool();
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.cmmsPool = pool;
+/**
+ * The pool is created on FIRST USE, not at import. Next's build imports
+ * this module while collecting page data, and a build machine (docker
+ * image build, clean clone) legitimately has no DATABASE_URL — the clear
+ * "DATABASE_URL is not set" error still fires, but at first query, where
+ * it belongs.
+ */
+function getPool(): Pool {
+  if (!globalForDb.cmmsPool) {
+    globalForDb.cmmsPool = createPool();
+  }
+  return globalForDb.cmmsPool;
 }
+
+export const pool: Pool = new Proxy({} as Pool, {
+  get(_target, prop) {
+    const real = getPool();
+    const value = Reflect.get(real, prop, real);
+    return typeof value === "function" ? value.bind(real) : value;
+  },
+}) as Pool;
 
 export const db: NodePgDatabase<typeof schema> = drizzle(pool, { schema });
 

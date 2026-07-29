@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import { assertRole, AuthError } from "@/server/auth/guards";
 import {
   completedByTechnician,
