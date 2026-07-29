@@ -54,6 +54,7 @@ volume; the database in `db_data`.
 
 | File | Purpose |
 |---|---|
+| `docs/TEST_RUN.md` | **Try it out** — step-by-step test drive on a Windows PC |
 | `docs/PROJECT_STATE.md` | Live build status — read this first |
 | `docs/FEATURE_MATRIX.md` | Feature-by-feature status with test evidence |
 | `docs/IMPLEMENTATION_PLAN.md` | Phased plan being executed |
