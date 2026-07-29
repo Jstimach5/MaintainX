@@ -96,13 +96,17 @@ test.describe.serial("M2 — pause reasons, labor timer, completion approval", (
     // Pause the clock, then resume it — banked time is kept.
     await page.getByRole("button", { name: /^pause$/i }).click();
     await page.waitForURL(/\/work-orders\/\d+$/);
-    await expect(page.getByRole("button", { name: /resume timer/i })).toBeVisible();
+    // A sub-minute pause banks 0 min, so the label is "Start timer" — the
+    // "Resume" wording only appears once real minutes are banked.
+    await expect(
+      page.getByRole("button", { name: /start timer|resume timer/i }),
+    ).toBeVisible();
   });
 
   test("stopping the timer writes a labor entry", async ({ page }) => {
     await login(page, CREDS.tech);
     await openJob(page, /Timer and approval run/);
-    await page.getByRole("button", { name: /resume timer/i }).click();
+    await page.getByRole("button", { name: /start timer|resume timer/i }).click();
     await page.waitForURL(/\/work-orders\/\d+$/);
     await page.getByRole("button", { name: /stop . log time/i }).click();
     await page.waitForURL(/\/work-orders\/\d+$/);
