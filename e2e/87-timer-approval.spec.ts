@@ -28,23 +28,30 @@ async function openJob(page: Page, title: RegExp) {
  * that and retry once rather than flake.
  */
 async function completeJob(page: Page, notes: string, expectBadge: RegExp) {
+  // Let any in-flight action refresh land first — a late RSC payload
+  // remounts the status bar (fresh key) and would close the panel under us.
+  await page.waitForLoadState("networkidle");
   for (let attempt = 0; ; attempt++) {
-    const notesField = page.getByLabel(/completion notes/i);
-    if (!(await notesField.isVisible())) {
-      await page.getByRole("button", { name: /mark completed/i }).click();
-    }
-    await notesField.fill(notes);
-    await page
-      .locator("form", { has: notesField })
-      .getByRole("button", { name: /complete work order/i })
-      .click();
     try {
+      const notesField = page.getByLabel(/completion notes/i);
+      if (!(await notesField.isVisible())) {
+        await page
+          .getByRole("button", { name: /mark completed/i })
+          .click({ timeout: 5_000 });
+      }
+      // Short per-step timeouts so a vanished panel restarts the loop
+      // instead of consuming the whole test timeout on one dead locator.
+      await notesField.fill(notes, { timeout: 5_000 });
+      await page
+        .locator("form", { has: notesField })
+        .getByRole("button", { name: /complete work order/i })
+        .click({ timeout: 5_000 });
       await expect(page.getByText(expectBadge).first()).toBeVisible({
         timeout: 10_000,
       });
       return;
     } catch (err) {
-      if (attempt >= 1) throw err;
+      if (attempt >= 2) throw err;
     }
   }
 }
