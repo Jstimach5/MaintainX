@@ -67,10 +67,13 @@ Easiest: download it as a ZIP in your browser.
 
 1. Open **PowerShell** (Start menu → type "powershell") and go to the
    folder — adjust the path if your extract created a nested folder; the
-   right folder is the one containing `docker-compose.yml`:
+   right folder is the one containing `docker-compose.yml`. **If any part
+   of your path contains spaces, the quotes are required** — without them
+   PowerShell splits the path at each space and errors with "positional
+   parameter cannot be found":
 
    ```powershell
-   cd C:\cmms-test
+   cd "C:\Users\you\Documents\My Folder\MaintainX-claude-asset-tracking-software-lltwy3"
    dir docker-compose.yml
    ```
 
