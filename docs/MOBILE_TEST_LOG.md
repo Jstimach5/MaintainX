@@ -116,3 +116,39 @@ MOBILE_FEATURE_MATRIX.md without an entry here.
 - **Viewports:** desktop + Pixel 7.
 - **Roles:** admin, manager, technician.
 - **Final result:** recorded with the browser-suite outcome below.
+
+---
+
+## M1/M2 close-out — settings screen, browser evidence, and a real bug
+
+### 2026-07-29 — Verification cycle
+
+- **Feature tested:** the full application after M1+M2 plus the new
+  /admin/settings screen (org name, timezone, completion-approval toggle,
+  audited updates via updateOrgSettings/readOrgSettings).
+- **Automated results:** unit **159/159** (adds 4 org-settings tests);
+  production build clean; Playwright **88/88** across five projects —
+  desktop, Pixel 7, iPhone 14, Galaxy S8, iPad Mini (the Apple projects
+  run chromium pinned as viewport emulations; WebKit is not installed).
+- **Real product bug found by the e2e suite** (the reason this cycle took
+  several runs): every same-page form action redirected back to its own
+  route. A second submission racing that redirect's RSC refresh was
+  dropped silently — no POST ever left the browser — and the refresh could
+  close panels mid-interaction. On a phone this reads as "the button does
+  nothing" (e.g. pausing the timer right after logging an interrupt
+  reason). Diagnosed from the Playwright trace (zero network activity for
+  the completion submit) and a live browser harness. Fix: same-page
+  actions now return success and rely on revalidatePath's refresh;
+  client components with panel/input state get server-computed keys
+  (status+updatedAt, list lengths, meter values) so success remounts them
+  fresh while a failed validation preserves the user's input. Applied to
+  work-order, procedure-step, and meter actions alike.
+- **Test-harness fixes along the way:** Apple viewport projects had never
+  launched (WebKit default → pinned chromium); hidden desktop bars
+  measured as 0-height fingertip targets (visible-only filter); stale
+  dashboard/schedule expectations from the M1 field home; unbounded click
+  timeout swallowing the completion helper's retry.
+- **Viewports:** all five projects. **Roles:** admin, manager, technician,
+  requester.
+- **Final result:** PASS — 88/88; M1, M2, and the settings screen are all
+  browser-verified.

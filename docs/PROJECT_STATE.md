@@ -1,10 +1,10 @@
 # Project State
 
-Last updated: 2026-07-28 (M0 — mobile field application, in progress)
+Last updated: 2026-07-29 (M2 complete + admin settings; suite 159 unit / 88 e2e)
 
 ## Current phase
 
-**Mobile field application, phase M0.** The office CMMS is complete
+**Mobile field application, M2 complete.** The office CMMS is complete
 (Phases 0–14; see FEATURE_MATRIX.md — every P0/P1 row Verified). A new
 specification asks for a true mobile field interface on the same backend:
 field-first navigation, full on-phone work execution, offline capture with
@@ -14,41 +14,37 @@ in docs/MOBILE_FEATURE_MATRIX.md and docs/MOBILE_TEST_LOG.md.
 
 ## Last completed task
 
-Phase 14: technician calendar on /schedule (server-scoped to own work),
-`work_order_parts` usage + cost documentation, meter readings from the
-work-order page, docs/MOBILE_WORKFLOW.md methodology.
+M1+M2 close-out: field shell (bottom nav, field home, sticky action bar),
+paused/waiting_approval lifecycle with required reasons, optional
+completion approval with the /admin/settings screen, labor timer, the
+Windows test-run guide (docs/TEST_RUN.md), and a real product fix — same-
+page form actions no longer redirect to their own route (second
+submissions were silently dropped); forms reset via server-computed keys.
 
 ## Current task
 
-M0 — land Phase 14 (e2e suite re-running after test-expectation fixes),
-write the mobile documentation set, add iPhone / small-Android / tablet
-Playwright viewport projects with a read-only `@field` layout spec.
+None in flight — M3 is next.
 
 ## Next three tasks
 
-1. M1 — field shell: bottom navigation, field home screen, sticky
-   work-order action bar.
-2. M2 — lifecycle + time: `paused`/`waiting_approval` statuses, pause and
-   hold reasons, manager return/approval, labor timer.
-3. M3 — work-list field filters, sort, requirement badges, in-app QR
+1. M3 — work-list field filters, sort, requirement badges, in-app QR
    scanner.
+2. M4 — mobile procedures: sectioned UI, step photos, warn ranges, drawn
+   signatures.
+3. M5 — required picture categories gate + request polish.
 
 ## Known failures
 
-None outstanding. Phase 14's first e2e run surfaced three stale test
-expectations (technician /schedule now permitted; fixture display-name
-drift; a calendar assertion on a work order with no due date) — all three
-corrected; confirming run in progress.
+None outstanding. The M1/M2 cycle surfaced and fixed a real dispatch-drop
+bug in same-page form actions (see MOBILE_TEST_LOG close-out entry).
 
-## Current test results (final sweep, clean DB — TEST_LOG Phase 13)
+## Current test results (2026-07-29)
 
-- `npm test`: **139/139** pass (12 files)
-- `npm run test:e2e`: **61/61** pass — Scenarios A–F all green
+- `npm test`: **159/159** pass (14 files)
+- `npx playwright test`: **88/88** pass — desktop, Pixel 7, iPhone 14,
+  Galaxy S8, iPad Mini projects
 - `npm run build` / `typecheck` / `lint`: clean
-- Worker on a cold clean DB: starts, catches up PM exactly once, stops
-  gracefully
-- Backup → restore: executed with identical row counts (Phase 11)
-- Prod-mode /setup door: verified by hand both directions (Phase 1)
+- Migrations 0000–0012 replay cleanly onto freshly created databases
 
 ## Database migration status
 
