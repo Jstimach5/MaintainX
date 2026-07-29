@@ -34,10 +34,16 @@ production — the seed also WIPES all data):
   "manager must approve completed work" rule (off by default; when on, a
   technician's completion parks as *Waiting for approval* until a manager
   approves it or sends it back with a note). Changes are audited.
-- **Users** (`/admin/users`): create accounts, set roles, reset passwords
-  (resets sign the user out everywhere), deactivate on departure
-  (deactivation revokes their sessions immediately). Users are never
-  deleted — history keeps its names.
+- **Users** (`/admin/users`): the normal path is **Invite user** — the
+  coworker gets a one-time expiring link (emailed when SMTP is
+  configured, otherwise copy it and text it) and sets their own password;
+  pending invitations can be resent (new link, old one dies) or revoked.
+  "Add manually" still exists for people without email — the password you
+  type is temporary and their first login forces a change. Reset
+  passwords (resets sign the user out everywhere and force a change),
+  deactivate on departure (revokes sessions immediately). Users are never
+  deleted — history keeps its names. Locked-out users with an email can
+  self-serve via **Forgot your password?** on the sign-in page.
 - **Teams** (`/admin/teams`): group technicians for assignment/routing.
 - **Sites** (`/sites`): each site holds a nested location tree. Archiving a
   site or location hides it from pickers; history is preserved. The site

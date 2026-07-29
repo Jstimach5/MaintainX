@@ -8,47 +8,77 @@ Everything the application stores lives in exactly two places:
 
 Back up both, always as a pair.
 
-## Taking a backup
+## Taking a backup — production (docker-compose.prod.yml)
 
 ```bash
-scripts/backup.sh                # writes ./backups/db-<stamp>.dump + files-<stamp>.tar.gz
+scripts/prod-backup.sh           # ./backups/db-daily-<stamp>.dump + files-daily-<stamp>.tar.gz
+```
+
+Runs `pg_dump --format=custom` **inside the db container** (no published
+port needed) and archives the uploads volume through the app container.
+Retention is automatic: last **7 daily**, **4 weekly** (Sundays),
+**12 monthly** (1st of the month). It fails loudly on an empty dump
+instead of pretending success.
+
+**Schedule it** (2:17 AM daily) and **get a copy off the server** — one
+machine is not a backup strategy:
+
+```
+17 2 * * * cd /opt/cmms && scripts/prod-backup.sh >> backups/backup.log 2>&1
+47 2 * * * rsync -a /opt/cmms/backups/ user@other-machine:/srv/cmms-backups/
+```
+
+(Any equivalent works: `rclone` to cloud storage, a mounted NAS, etc.
+Include a secured copy of `.env` and `docker-compose.prod.yml` in that
+off-server location too — they are the configuration half of a restore.)
+
+## Taking a backup — dev / bare-metal
+
+```bash
+scripts/backup.sh                # ./backups/db-<stamp>.dump + files-<stamp>.tar.gz  (keeps last 14)
 scripts/backup.sh /mnt/usb       # or straight to a mounted drive
 ```
 
-The script uses `pg_dump --format=custom` (safe while the app is running —
-pg_dump takes a consistent snapshot) and tars the storage directory
-(uploads are write-once files, so a live copy is safe). It keeps the last
-14 backups of each kind and deletes older ones.
+## Restoring — production
 
-Under docker compose, run it inside the app container or point
-`DATABASE_URL` at the published Postgres port.
-
-**Schedule it.** Linux cron example (2:30 AM daily):
-
-```
-30 2 * * * cd /path/to/app && ./scripts/backup.sh /path/to/backup/drive >> backup.log 2>&1
-```
-
-## Restoring
-
-1. Stop the app (and worker): `docker compose stop app worker` or Ctrl-C.
-2. Restore the database (this REPLACES current data):
+1. Stop the app and worker (leave db up):
 
    ```bash
-   pg_restore --clean --if-exists --no-owner -d "$DATABASE_URL" backups/db-<stamp>.dump
+   docker compose -f docker-compose.prod.yml stop app worker
    ```
 
-3. Restore the files:
+2. Restore the database (REPLACES current data):
 
    ```bash
-   rm -rf storage && tar -xzf backups/files-<stamp>.tar.gz
+   docker compose -f docker-compose.prod.yml exec -T db \
+     pg_restore --clean --if-exists --no-owner -U cmms -d cmms < backups/db-<class>-<stamp>.dump
+   ```
+
+3. Restore the files into the volume:
+
+   ```bash
+   docker compose -f docker-compose.prod.yml run --rm --no-deps \
+     -v "$PWD/backups:/backups:ro" app \
+     sh -c "rm -rf /data/storage && tar -xzf /backups/files-<class>-<stamp>.tar.gz -C /data"
    ```
 
    (Restore the pair from the SAME timestamp so pictures match their
    records.)
 
-4. Start the app again and spot-check: log in, open a work order with a
-   photo, confirm the photo renders.
+4. Start everything and spot-check:
+
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d
+   ```
+
+   Log in, open a work order with a photo, confirm the photo renders.
+
+## Restoring — dev / bare-metal
+
+1. Stop the app and worker.
+2. `pg_restore --clean --if-exists --no-owner -d "$DATABASE_URL" backups/db-<stamp>.dump`
+3. `rm -rf storage && tar -xzf backups/files-<stamp>.tar.gz`
+4. Start and spot-check as above.
 
 ## Verified procedure
 

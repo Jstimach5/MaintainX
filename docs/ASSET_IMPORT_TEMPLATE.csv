@@ -1,0 +1,5 @@
+asset_number,asset_name,site,location,parent_asset,asset_type,make,model,serial_number,year,status,meter_type,current_meter_reading,notes
+A-0001,Air Compressor 1,Main Plant,Compressor Room,,Compressor,AirMax,AM-500,AM5-11207,2021,online,hours,4820,Rebuilt Q1
+A-0002,Packaging Line 1,Main Plant,Production Floor,,Production line,,,,,online,,,Line lead: Morgan
+A-0003,Conveyor Belt L1,Main Plant,Production Floor,A-0002,Conveyor,FlowTech,CB-2200,FT-88301,2019,online,,,Sub-asset of Line 1
+A-0004,Forklift 3,West Depot,Loading Dock,,Vehicle,LiftPro,LP-40,LP40-2231,2020,online,miles,15210,
