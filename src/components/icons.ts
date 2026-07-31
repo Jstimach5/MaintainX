@@ -7,6 +7,7 @@
  */
 export {
   // Navigation & shell
+  ArrowLeft,
   Home,
   Bell,
   ChevronDown,

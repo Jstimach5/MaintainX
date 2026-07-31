@@ -242,6 +242,9 @@ const TASKS: Task[] = [
       // WO-0003 (in progress, compressor asset with a meter).
       await d.click(page.getByRole("link", { name: /Compressor intake filter swap/ }).first());
       await page.waitForURL(/\/work-orders\/\d+/);
+      // Forms on this page are client actions — wait out hydration so the
+      // first click isn't dropped (same wait in every run; no bias).
+      await page.waitForLoadState("networkidle").catch(() => {});
       // Note (comment)
       await d.fill(page.getByPlaceholder(/comment/i).first(), "Swapped filter, seals look good.");
       await d.click(page.getByRole("button", { name: /^comment$/i }).first());

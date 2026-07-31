@@ -177,3 +177,9 @@ Full gate each run: `npm run typecheck && npm run lint && npm test && npm run te
 | e2e churn from nav collapse | navTo helper + enumerated 8 call sites + 86-field-shell rewrite ship inside the nav commit |
 | Stash conflicts by Phase 6 | Stash applied early in a scratch check before Phase 6 to detect drift; if conflicted, redo mechanically from its diff (`git stash show -p`) |
 | Container is ephemeral | Push at every gate; screenshots/docs committed, not just local |
+
+---
+
+## Amendment log
+
+- **2026-07-31 (pilot):** Route-level `loading.tsx` skeletons removed from the pilot after bisecting an intermittent Next.js 16.2.12 production bug: with route loading boundaries present, server-action responses could hang mid-stream (button stuck on "Saving…") after other sessions aborted RSC prefetches. Reproduced 2/3 rounds with the files, 0/3 without, 0/3 with only `error.tsx`, 0/3 pre-pilot. Loading states return in Phase 9 via targeted `<Suspense>` or after a framework upgrade. Details: docs/UI_PILOT_REVIEW.md § F1.

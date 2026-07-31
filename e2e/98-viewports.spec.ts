@@ -61,7 +61,10 @@ test.describe("@field field screens fit the viewport", () => {
     await login(page, CREDS.tech);
     await page.goto("/work-orders");
     await page.waitForLoadState("networkidle");
-    const firstWo = page.locator('a[href^="/work-orders/"]').first();
+    // The list renders phone cards AND a desktop table (one hidden per
+    // breakpoint) — pick the visible variant, same convention as the
+    // submit-control check below.
+    const firstWo = page.locator('a[href^="/work-orders/"]:visible').first();
     await expect(firstWo).toBeVisible();
     await firstWo.click();
     await page.waitForURL(/\/work-orders\/\d+$/);

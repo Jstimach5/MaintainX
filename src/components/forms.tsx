@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { Button } from "./ui";
+import { Alert, Button } from "./ui";
 import type { ComponentProps } from "react";
 
 /** Standard result shape returned by server actions on failure. */
@@ -24,12 +24,8 @@ export function SubmitButton({
 export function FormError({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <div
-      role="alert"
-      data-testid="form-error"
-      className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
-    >
+    <Alert tone="error" data-testid="form-error">
       {message}
-    </div>
+    </Alert>
   );
 }
