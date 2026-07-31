@@ -12,7 +12,9 @@ import {
 import { listAttachments } from "@/server/services/attachments";
 import { getOrgSettings } from "@/server/services/org";
 import { formatDate, formatDateTime } from "@/lib/format";
-import { Badge, Card, PageHeader } from "@/components/ui";
+import { Badge, Breadcrumb, Card } from "@/components/ui";
+import { DetailLayout } from "@/components/layout";
+import { ArrowLeft } from "@/components/icons";
 import type { BadgeTone } from "@/components/ui";
 import { AttachmentSection } from "@/components/attachments";
 import { IMAGE_TYPES } from "@/server/storage";
@@ -28,10 +30,18 @@ const TONES: Record<string, BadgeTone> = Object.fromEntries(
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   if (value == null || value === "") return null;
   return (
-    <div className="flex justify-between gap-4 py-1 text-sm">
+    <div className="grid grid-cols-[9rem_minmax(0,1fr)] gap-x-4 py-1.5 text-sm">
       <dt className="text-gray-500">{label}</dt>
-      <dd className="text-right font-medium">{value}</dd>
+      <dd className="font-medium">{value}</dd>
     </div>
+  );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-2 text-sm font-semibold tracking-wide text-gray-900 uppercase">
+      {children}
+    </h2>
   );
 }
 
@@ -68,25 +78,107 @@ export default async function RequestDetailPage({
   );
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
-      <PageHeader
-        title={`${request.requestNumber} · ${request.title}`}
-        subtitle={detail.siteName}
-      />
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge tone={TONES[request.status] ?? "gray"}>
-          {requestStatusLabel(request.status)}
-        </Badge>
-        {request.priority !== "none" ? (
-          <Badge tone={request.priority === "critical" ? "red" : request.priority === "high" ? "amber" : "gray"}>
-            {request.priority}
-          </Badge>
-        ) : null}
-        {request.source !== "internal" ? (
-          <Badge tone="blue">{request.source}</Badge>
-        ) : null}
-      </div>
-
+    <DetailLayout
+      header={
+        <div className="mb-4 space-y-3">
+          <div>
+            <Link
+              href="/requests"
+              className="mb-1 inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-brand-800"
+            >
+              <ArrowLeft aria-hidden className="h-4 w-4" />
+              Requests
+            </Link>
+            <h1 className="text-xl font-bold sm:text-2xl">
+              {request.requestNumber} · {request.title}
+            </h1>
+            <Breadcrumb
+              items={[
+                ...(detail.siteName ? [{ label: detail.siteName }] : []),
+                ...(detail.locationName ? [{ label: detail.locationName }] : []),
+              ]}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone={TONES[request.status] ?? "gray"}>
+              {requestStatusLabel(request.status)}
+            </Badge>
+            {request.priority !== "none" ? (
+              <Badge
+                tone={
+                  request.priority === "critical"
+                    ? "red"
+                    : request.priority === "high"
+                      ? "amber"
+                      : "gray"
+                }
+              >
+                {request.priority}
+              </Badge>
+            ) : null}
+            {request.source !== "internal" ? (
+              <Badge tone="blue">{request.source}</Badge>
+            ) : null}
+          </div>
+        </div>
+      }
+      rail={
+        <>
+          {isReviewer && request.status !== "converted" ? (
+            <Card>
+              <SectionTitle>Decision</SectionTitle>
+              <DecisionBar requestId={request.id} status={request.status} />
+            </Card>
+          ) : null}
+          <Card>
+            <SectionTitle>Progress</SectionTitle>
+            <ol className="relative ml-1.5 space-y-3 border-l border-gray-200 pl-4 text-sm">
+              {REQUEST_STATUSES.filter((s) =>
+                ["submitted", "under_review", "approved", "converted"].includes(
+                  s.value,
+                ),
+              ).map((s) => {
+                const reached =
+                  ["submitted", "under_review", "approved", "converted"].indexOf(
+                    request.status,
+                  ) >=
+                  ["submitted", "under_review", "approved", "converted"].indexOf(
+                    s.value,
+                  );
+                const current = request.status === s.value;
+                return (
+                  <li key={s.value} className="relative">
+                    <span
+                      aria-hidden
+                      className={`absolute top-1.5 -left-[21px] h-2.5 w-2.5 rounded-full border-2 border-white ${
+                        reached ? "bg-brand-600" : "bg-gray-300"
+                      }`}
+                    />
+                    <span
+                      className={
+                        current
+                          ? "font-semibold text-brand-900"
+                          : reached
+                            ? "text-gray-700"
+                            : "text-gray-400"
+                      }
+                    >
+                      {s.label}
+                      {current ? " — now" : ""}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+            {request.status === "declined" || request.status === "canceled" ? (
+              <p className="mt-3 border-t border-gray-100 pt-3 text-sm font-medium text-red-700">
+                {requestStatusLabel(request.status)}
+              </p>
+            ) : null}
+          </Card>
+        </>
+      }
+    >
       {request.status === "declined" && request.declineReason ? (
         <Card className="border-red-200 bg-red-50">
           <p className="text-sm text-red-800">
@@ -114,14 +206,8 @@ export default async function RequestDetailPage({
         </Card>
       ) : null}
 
-      {isReviewer && request.status !== "converted" ? (
-        <Card>
-          <DecisionBar requestId={request.id} status={request.status} />
-        </Card>
-      ) : null}
-
       <Card>
-        <h2 className="mb-1 font-semibold">Details</h2>
+        <SectionTitle>Details</SectionTitle>
         {request.description ? (
           <p className="mb-2 text-sm whitespace-pre-wrap">{request.description}</p>
         ) : null}
@@ -181,7 +267,7 @@ export default async function RequestDetailPage({
       </Card>
 
       <Card>
-        <h2 className="mb-2 font-semibold">Comments</h2>
+        <SectionTitle>Comments</SectionTitle>
         {visibleComments.length === 0 ? (
           <p className="mb-3 text-sm text-gray-500">No comments yet.</p>
         ) : (
@@ -206,6 +292,6 @@ export default async function RequestDetailPage({
         )}
         <RequestCommentForm requestId={request.id} canInternal={isReviewer} />
       </Card>
-    </div>
+    </DetailLayout>
   );
 }
