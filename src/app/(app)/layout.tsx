@@ -16,8 +16,12 @@ export default async function AppLayout({
   return (
     <div className="min-h-dvh">
       <AppNav user={user} />
-      {/* pb clears the fixed field nav on small screens. */}
-      <main className="mx-auto max-w-6xl p-4 pb-24 md:pb-4">{children}</main>
+      {/* Gutters only — content width belongs to each page family's layout
+          template ((classic) reproduces the old max-w-6xl). pb clears the
+          fixed field nav on small screens. */}
+      <main className="px-4 pt-4 pb-24 sm:px-6 md:pb-6 xl:px-8">
+        {children}
+      </main>
       <FieldNav user={user} />
     </div>
   );
