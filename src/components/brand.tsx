@@ -68,7 +68,7 @@ export function SealTechLogo({
       <span
         className={cx(
           "mt-0.5 text-center text-[7px] font-semibold tracking-[0.42em]",
-          onDark ? "text-gray-400" : "text-gray-500",
+          onDark ? "text-gray-300" : "text-gray-500",
         )}
       >
         INSULATION

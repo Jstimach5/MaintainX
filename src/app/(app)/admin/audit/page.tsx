@@ -102,7 +102,7 @@ export default async function AuditPage({
               {event.source !== "web" ? <Badge tone="blue">{event.source}</Badge> : null}
             </div>
             <p className="mt-0.5 text-sm">{event.summary ?? "—"}</p>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500">
               {userName ?? "system"} · {formatDateTime(event.createdAt, org.timezone)}
             </p>
           </div>

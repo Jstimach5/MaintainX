@@ -141,7 +141,7 @@ export default async function ReportsPage({
             </Link>
             <form action={deleteReportViewAction}>
               <input type="hidden" name="viewId" value={v.id} />
-              <button type="submit" aria-label={`Delete saved view ${v.name}`} className="rounded-full px-2 py-1 text-gray-400 hover:text-red-600">
+              <button type="submit" aria-label={`Delete saved view ${v.name}`} className="rounded-full px-2 py-1 text-gray-500 hover:text-red-600">
                 ✕
               </button>
             </form>
@@ -292,7 +292,7 @@ export default async function ReportsPage({
         <Card>
           <h2 className="mb-2 font-semibold">Downtime by asset (completed work)</h2>
           {downtime.length === 0 ? (
-            <p className="text-sm text-gray-400">No downtime recorded in range.</p>
+            <p className="text-sm text-gray-500">No downtime recorded in range.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -325,7 +325,7 @@ export default async function ReportsPage({
           )}
           <h2 className="mt-4 mb-2 font-semibold">Repeat failures</h2>
           {repeats.length === 0 ? (
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-500">
               No asset has failed twice in this range.
             </p>
           ) : (

@@ -15,11 +15,20 @@ export default async function AppLayout({
   if (user.mustChangePassword) redirect("/change-password");
   return (
     <div className="min-h-dvh">
+      {/* Keyboard users reach the page without tabbing the whole nav. */}
+      <a
+        href="#main"
+        className="sr-only rounded-md bg-brand-800 px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
+      >
+        Skip to content
+      </a>
       <AppNav user={user} />
       {/* Gutters only — content width belongs to each page family's layout
-          template ((classic) reproduces the old max-w-6xl). pb clears the
-          fixed field nav on small screens. */}
-      <main className="px-4 pt-4 pb-24 sm:px-6 md:pb-6 xl:px-8">
+          template. pb clears the fixed field nav on small screens. */}
+      <main
+        id="main"
+        className="px-4 pt-4 pb-24 sm:px-6 md:pb-6 xl:px-8"
+      >
         {children}
       </main>
       <FieldNav user={user} />

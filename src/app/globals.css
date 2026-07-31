@@ -58,6 +58,33 @@ html {
   font-size: 16px;
 }
 
+/*
+ * A focused control must never end up under the sticky header or behind
+ * the fixed field nav when the browser scrolls it into view.
+ */
+:target,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  scroll-margin-top: 5rem;
+  scroll-margin-bottom: 6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 body {
   @apply bg-gray-50 text-gray-900 antialiased;
 }

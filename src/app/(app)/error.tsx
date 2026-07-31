@@ -32,7 +32,7 @@ export default function AppError({
           The page hit an unexpected error. Your data is safe — try again, or
           head back to the dashboard.
           {error.digest ? (
-            <span className="mt-1 block text-xs text-gray-400">
+            <span className="mt-1 block text-xs text-gray-500">
               Reference: {error.digest}
             </span>
           ) : null}

@@ -148,7 +148,7 @@ export function AttachmentSection({
                   >
                     {a.originalName ?? `file-${a.id}`}
                   </a>
-                  <span className="text-gray-400"> · {a.createdAt}</span>
+                  <span className="text-gray-500"> · {a.createdAt}</span>
                 </li>
               ))}
             </ul>

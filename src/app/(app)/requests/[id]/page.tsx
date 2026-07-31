@@ -160,7 +160,7 @@ export default async function RequestDetailPage({
                           ? "font-semibold text-brand-900"
                           : reached
                             ? "text-gray-700"
-                            : "text-gray-400"
+                            : "text-gray-500"
                       }
                     >
                       {s.label}
@@ -283,7 +283,7 @@ export default async function RequestDetailPage({
                   </p>
                 ) : null}
                 <p className="text-sm whitespace-pre-wrap">{comment.body}</p>
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-xs text-gray-500">
                   {authorName} · {formatDateTime(comment.createdAt, tz)}
                 </p>
               </li>

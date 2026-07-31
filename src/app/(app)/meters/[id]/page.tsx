@@ -170,7 +170,7 @@ export default async function MeterDetailPage({
                 )}
                 <span className="flex items-center gap-2">
                   {wo ? <WoStatusBadge status={wo.status} /> : null}
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-500">
                     {formatDateTime(event.createdAt, tz)}
                   </span>
                 </span>
@@ -263,7 +263,7 @@ export default async function MeterDetailPage({
                 {readings.map((r) => (
                   <tr
                     key={r.id}
-                    className={`border-b border-gray-100 ${r.isVoided ? "text-gray-400 line-through" : ""}`}
+                    className={`border-b border-gray-100 ${r.isVoided ? "text-gray-500 line-through" : ""}`}
                   >
                     <td className="py-1.5 pr-3 font-medium">
                       {Number(r.value)} {meter.unit}

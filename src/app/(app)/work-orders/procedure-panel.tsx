@@ -177,7 +177,7 @@ export function ProcedureInstancePanel({
       <div className="mb-2 flex items-center justify-between">
         <h3 className="font-semibold">
           {name}
-          {version ? <span className="text-gray-400"> v{version}</span> : null}
+          {version ? <span className="text-gray-500"> v{version}</span> : null}
         </h3>
         <Badge tone={answered >= answerable ? "green" : "amber"}>
           {answered}/{answerable} done
@@ -228,7 +228,7 @@ export function ProcedureInstancePanel({
                     {step.answered ? "Update answer" : "Save answer"}
                   </SubmitButton>
                   {step.answered && step.respondedByName ? (
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-500">
                       Answered by {step.respondedByName}
                     </p>
                   ) : null}

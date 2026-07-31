@@ -25,12 +25,12 @@ export function LocationTree({
         <li key={n.id} className="py-1">
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className={n.isActive ? "font-medium" : "font-medium text-gray-400"}
+              className={n.isActive ? "font-medium" : "font-medium text-gray-500"}
             >
               {n.name}
             </span>
             {n.code ? (
-              <span className="text-xs text-gray-400">{n.code}</span>
+              <span className="text-xs text-gray-500">{n.code}</span>
             ) : null}
             {!n.isActive ? <Badge tone="red">archived</Badge> : null}
             {canManage ? (

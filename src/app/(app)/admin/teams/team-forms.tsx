@@ -77,7 +77,7 @@ export function EditTeamForm({
               />
               <span className="text-sm">
                 {u.displayName}
-                <span className="text-gray-400"> · {u.role}</span>
+                <span className="text-gray-500"> · {u.role}</span>
                 {!u.isActive ? (
                   <span className="text-red-600"> (deactivated)</span>
                 ) : null}

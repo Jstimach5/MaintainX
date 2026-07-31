@@ -73,7 +73,7 @@ export default async function PlanDetailPage({
                 )}
                 <span className="flex items-center gap-2">
                   {wo ? <WoStatusBadge status={wo.status} /> : null}
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-500">
                     {formatDateTime(occurrence.createdAt, org.timezone)}
                   </span>
                 </span>

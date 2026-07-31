@@ -110,7 +110,7 @@ export default async function UsersPage() {
         <h2 className="mb-2 font-semibold">Open invitations</h2>
         {open.length === 0 ? (
           <p className="text-sm text-gray-500">
-            None — use <Link href="/admin/users/invite" className="text-brand-800 hover:underline">Invite user</Link> to
+            None — use <Link href="/admin/users/invite" className="text-brand-800 underline">Invite user</Link> to
             bring a coworker on board.
           </p>
         ) : (
@@ -126,7 +126,7 @@ export default async function UsersPage() {
                     {inv.email} · {inv.role}
                     {teamName ? ` · ${teamName}` : ""} · invited by {invitedByName}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-500">
                     Expires {formatDateTime(inv.expiresAt, tz)}
                     {inv.lastSentAt
                       ? ` · emailed ${formatDateTime(inv.lastSentAt, tz)}`

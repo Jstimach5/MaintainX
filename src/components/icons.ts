@@ -36,6 +36,7 @@ export {
   QrCode,
   FileUp,
   ScrollText,
+  ShieldAlert,
   // Actions & feedback
   Plus,
   Search,

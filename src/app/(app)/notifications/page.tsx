@@ -38,7 +38,7 @@ export default async function NotificationsPage() {
                 <p className="font-medium">{n.title}</p>
               )}
               {n.body ? <p className="text-sm text-gray-600">{n.body}</p> : null}
-              <p className="mt-0.5 text-xs text-gray-400">
+              <p className="mt-0.5 text-xs text-gray-500">
                 {formatDateTime(n.createdAt, org.timezone)}
               </p>
             </div>

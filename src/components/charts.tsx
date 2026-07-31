@@ -71,7 +71,7 @@ export function BarRows({
         </div>
       ))}
       {rows.length === 0 ? (
-        <p className="text-sm text-gray-400">No data in this range.</p>
+        <p className="text-sm text-gray-500">No data in this range.</p>
       ) : null}
     </div>
   );
@@ -134,7 +134,7 @@ export function LineChart({
   }, [points, thresholds]);
 
   if (points.length === 0) {
-    return <p className="text-sm text-gray-400">No readings yet.</p>;
+    return <p className="text-sm text-gray-500">No readings yet.</p>;
   }
 
   function onMove(e: React.MouseEvent<SVGSVGElement>) {

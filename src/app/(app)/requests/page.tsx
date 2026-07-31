@@ -174,7 +174,7 @@ export default async function RequestsPage({
                       </td>
                       <td className="px-3 py-2.5">
                         {priorityBadge(request.priority) ?? (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-500">—</span>
                         )}
                       </td>
                       <td className="max-w-56 truncate px-3 py-2.5 text-gray-600">

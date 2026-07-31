@@ -169,7 +169,7 @@ export function WorkOrderForm({
         </legend>
         <div className="max-h-44 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-2">
           {siteAssets.length === 0 ? (
-            <p className="text-sm text-gray-400">No assets at this site.</p>
+            <p className="text-sm text-gray-500">No assets at this site.</p>
           ) : (
             siteAssets.map((a) => (
               <label
@@ -483,7 +483,7 @@ export function RemovePartButton({
         type="submit"
         aria-label="Remove part line"
         title={state?.error ?? "Remove"}
-        className="rounded px-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+        className="rounded px-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
       >
         ✕
       </button>

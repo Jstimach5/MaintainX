@@ -92,7 +92,7 @@ export default async function AccountPage() {
         {user.email ? (
           <p className="text-sm text-gray-500">{user.email}</p>
         ) : null}
-        <p className="mt-2 text-xs text-gray-400">
+        <p className="mt-2 text-xs text-gray-500">
           {org.name} · times shown in {org.timezone}
         </p>
       </Card>

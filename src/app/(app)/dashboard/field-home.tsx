@@ -167,7 +167,7 @@ export function FieldHome({
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <div>
-        <p className="text-[11px] font-semibold tracking-[0.2em] text-brand-700 uppercase">
+        <p className="text-[11px] font-semibold tracking-[0.2em] text-brand-900 uppercase">
           Your work for today
         </p>
         <h1 className="text-xl font-bold sm:text-2xl">

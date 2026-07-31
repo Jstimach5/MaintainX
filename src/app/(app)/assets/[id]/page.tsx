@@ -230,7 +230,7 @@ export default async function AssetDetailPage({
                       <span className="text-gray-600"> — {entry.note}</span>
                     ) : null}
                     <br />
-                    <span className="text-gray-400">
+                    <span className="text-gray-500">
                       {changedByName} · {formatDateTime(entry.createdAt, tz)}
                     </span>
                   </li>
@@ -260,7 +260,7 @@ export default async function AssetDetailPage({
                         <span className="text-gray-600"> — {entry.note}</span>
                       ) : null}
                       <br />
-                      <span className="text-gray-400">
+                      <span className="text-gray-500">
                         {movedByName} · {formatDateTime(entry.createdAt, tz)}
                       </span>
                     </li>

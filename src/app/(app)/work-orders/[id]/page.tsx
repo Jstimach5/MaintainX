@@ -349,7 +349,7 @@ export default async function WorkOrderDetailPage({
                       >
                         {meter.name}
                       </Link>{" "}
-                      <span className="text-gray-400">({assetNumber})</span>
+                      <span className="text-gray-500">({assetNumber})</span>
                     </p>
                     <p className="mb-1 text-xs text-gray-500">
                       {meter.currentValue != null
@@ -397,7 +397,7 @@ export default async function WorkOrderDetailPage({
                     <span className="text-gray-600"> — {entry.note}</span>
                   ) : null}
                   <br />
-                  <span className="text-gray-400">
+                  <span className="text-gray-500">
                     {changedByName} · {formatDateTime(entry.createdAt, tz)}
                   </span>
                 </li>
@@ -614,7 +614,7 @@ export default async function WorkOrderDetailPage({
             {detail.comments.map(({ comment, authorName }) => (
               <li key={comment.id} className="rounded-md bg-gray-50 p-3">
                 <p className="text-sm whitespace-pre-wrap">{comment.body}</p>
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-xs text-gray-500">
                   {authorName} · {formatDateTime(comment.createdAt, tz)}
                 </p>
               </li>

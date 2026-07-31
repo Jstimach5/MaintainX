@@ -88,7 +88,7 @@ export function CalendarView({
               >
                 {day ? (
                   <>
-                    <p className={`text-xs ${isToday ? "font-bold text-brand-800" : "text-gray-400"}`}>
+                    <p className={`text-xs ${isToday ? "font-bold text-brand-800" : "text-gray-500"}`}>
                       {Number(day.slice(-2))}
                     </p>
                     {items.slice(0, 3).map((r) => {
@@ -114,7 +114,7 @@ export function CalendarView({
                       );
                     })}
                     {items.length > 3 ? (
-                      <p className="mt-0.5 text-[10px] text-gray-400">
+                      <p className="mt-0.5 text-[10px] text-gray-500">
                         +{items.length - 3} more
                       </p>
                     ) : null}
@@ -194,7 +194,7 @@ export function TimelineView({
             {days.map((d) => (
               <div
                 key={d}
-                className={`border-l border-gray-100 px-1 py-0.5 text-center text-[10px] ${d === today ? "font-bold text-brand-800" : "text-gray-400"}`}
+                className={`border-l border-gray-100 px-1 py-0.5 text-center text-[10px] ${d === today ? "font-bold text-brand-800" : "text-gray-500"}`}
               >
                 {Number(d.slice(-2))}
               </div>
@@ -254,7 +254,7 @@ export function TimelineView({
 
 function WoStatusBadgeLegend() {
   return (
-    <p className="text-xs text-gray-400">
+    <p className="text-xs text-gray-500">
       Click a bar to open the work order. Conflicts on critical assets are
       listed in the warnings panel above.
     </p>
