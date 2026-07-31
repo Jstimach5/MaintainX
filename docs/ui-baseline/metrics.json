@@ -1,0 +1,24 @@
+[
+  {
+    "role": "technician",
+    "slug": "work-order-complete-form",
+    "viewport": "390x844",
+    "url": "/work-orders/3",
+    "screenshot": "technician/work-order-complete-form--390x844.png",
+    "title": "Work order",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 3.18
+  },
+  {
+    "role": "technician",
+    "slug": "work-order-complete-form",
+    "viewport": "360x800",
+    "url": "/work-orders/3",
+    "screenshot": "technician/work-order-complete-form--360x800.png",
+    "title": "Work order",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 3.39
+  }
+]
