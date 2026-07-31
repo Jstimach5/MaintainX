@@ -5,6 +5,7 @@ import { auditEvents, users } from "@/server/db/schema";
 import { getOrgSettings } from "@/server/services/org";
 import { formatDateTime } from "@/lib/format";
 import { Badge, Button, Card, Input, PageHeader, Select } from "@/components/ui";
+import { ListLayout } from "@/components/layout";
 
 export const metadata = { title: "Audit log" };
 export const dynamic = "force-dynamic";
@@ -58,7 +59,7 @@ export default async function AuditPage({
   ]);
 
   return (
-    <div>
+    <ListLayout>
       <PageHeader
         title="Audit log"
         subtitle="Append-only record of every important action. Newest first, capped at 200 rows per view — narrow with the filters."
@@ -109,6 +110,6 @@ export default async function AuditPage({
           <p className="p-4 text-sm text-gray-500">No events match.</p>
         ) : null}
       </Card>
-    </div>
+    </ListLayout>
   );
 }

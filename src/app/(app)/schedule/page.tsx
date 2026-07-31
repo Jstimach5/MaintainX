@@ -15,6 +15,8 @@ import { listUsers } from "@/server/services/users";
 import { getOrgSettings } from "@/server/services/org";
 import { formatDate, formatDateTime, todayInTimezone } from "@/lib/format";
 import { Badge, Button, Card, PageHeader, Select } from "@/components/ui";
+import { ListLayout } from "@/components/layout";
+import { TriangleAlert } from "@/components/icons";
 import { WoPriorityBadge, WoStatusBadge } from "@/components/wo-badges";
 import Link2 from "next/link";
 import { CalendarView, TimelineView } from "./views";
@@ -124,7 +126,7 @@ export default async function SchedulePage({
   ];
 
   return (
-    <div>
+    <ListLayout>
       <PageHeader
         title={isTech ? "My schedule" : "Schedule & progress"}
         subtitle={
@@ -136,8 +138,9 @@ export default async function SchedulePage({
 
       {warningItems.length > 0 ? (
         <Card className="mb-4 border-amber-300 bg-amber-50">
-          <h2 className="mb-1 font-semibold text-amber-900">
-            ⚠ Needs attention ({warningItems.length})
+          <h2 className="mb-1 flex items-center gap-1.5 text-sm font-semibold tracking-wide text-amber-900 uppercase">
+            <TriangleAlert aria-hidden className="h-4 w-4" />
+            Needs attention ({warningItems.length})
           </h2>
           <div className="space-y-2">
             <WarningList title="" items={warningItems} />
@@ -310,6 +313,6 @@ export default async function SchedulePage({
         ) : null}
       </Card>
       )}
-    </div>
+    </ListLayout>
   );
 }

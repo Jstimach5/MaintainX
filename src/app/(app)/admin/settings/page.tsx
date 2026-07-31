@@ -1,6 +1,7 @@
 import { requireRole } from "@/server/auth/guards";
 import { readOrgSettings } from "@/server/services/org";
-import { Card, PageHeader } from "@/components/ui";
+import { Card, PageHeader, StatusMessage } from "@/components/ui";
+import { FormLayout } from "@/components/layout";
 import { SettingsForm } from "./settings-form";
 
 export const metadata = { title: "Organization settings" };
@@ -17,18 +18,15 @@ export default async function SettingsPage({
   const timezones = Intl.supportedValuesOf("timeZone");
 
   return (
-    <div>
+    <FormLayout>
       <PageHeader
         title="Organization settings"
         subtitle="Name, timezone, and how work gets signed off."
       />
       {params.saved === "1" ? (
-        <p
-          className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-800"
-          data-testid="settings-saved"
-        >
+        <StatusMessage className="mb-4" data-testid="settings-saved">
           Settings saved.
-        </p>
+        </StatusMessage>
       ) : null}
       <Card>
         <SettingsForm
@@ -40,6 +38,6 @@ export default async function SettingsPage({
           }}
         />
       </Card>
-    </div>
+    </FormLayout>
   );
 }

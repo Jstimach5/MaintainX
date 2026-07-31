@@ -7,6 +7,7 @@ import {
 import { getOrgSettings } from "@/server/services/org";
 import { formatDateTime } from "@/lib/format";
 import { Badge, Button, ButtonLink, Card, PageHeader } from "@/components/ui";
+import { ListLayout } from "@/components/layout";
 import type { BadgeTone } from "@/components/ui";
 import Link from "next/link";
 import { setActiveAction } from "./actions";
@@ -46,7 +47,7 @@ export default async function UsersPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <ListLayout className="space-y-6">
       <PageHeader
         title="Users"
         subtitle="Accounts are deactivated, never deleted — history stays intact."
@@ -175,6 +176,6 @@ export default async function UsersPage() {
           </Card>
         </div>
       ) : null}
-    </div>
+    </ListLayout>
   );
 }

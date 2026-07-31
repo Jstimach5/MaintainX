@@ -23,6 +23,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/server/db";
 import { reportViews } from "@/server/db/schema";
 import { Button, Card, Input, PageHeader, Select } from "@/components/ui";
+import { ListLayout } from "@/components/layout";
 import { BarRows, StatTile } from "@/components/charts";
 import { PrintButton } from "@/components/print-button";
 import { deleteReportViewAction, saveReportViewAction } from "./actions";
@@ -95,7 +96,7 @@ export default async function ReportsPage({
   ).toString();
 
   return (
-    <div className="space-y-4">
+    <ListLayout className="space-y-4">
       <PageHeader
         title="Reports"
         subtitle="Counts always distinguish completed from canceled — canceled work is never counted as done."
@@ -337,6 +338,6 @@ export default async function ReportsPage({
           )}
         </Card>
       </div>
-    </div>
+    </ListLayout>
   );
 }

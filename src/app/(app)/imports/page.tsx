@@ -4,6 +4,7 @@ import { listJobs } from "@/server/services/imports";
 import { getOrgSettings } from "@/server/services/org";
 import { formatDateTime } from "@/lib/format";
 import { Badge, ButtonLink, Card, EmptyState, PageHeader } from "@/components/ui";
+import { ListLayout } from "@/components/layout";
 import type { BadgeTone } from "@/components/ui";
 
 export const metadata = { title: "Imports" };
@@ -22,7 +23,7 @@ export default async function ImportsPage() {
   const jobs = await listJobs();
   const org = await getOrgSettings();
   return (
-    <div>
+    <ListLayout>
       <PageHeader
         title="Bulk imports"
         subtitle="Import work orders from CSV or XLSX with validation, dry-run, and rollback."
@@ -58,6 +59,6 @@ export default async function ImportsPage() {
           ))}
         </Card>
       )}
-    </div>
+    </ListLayout>
   );
 }

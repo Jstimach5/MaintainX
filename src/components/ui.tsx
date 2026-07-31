@@ -236,16 +236,15 @@ export function StatusMessage({
   children,
   className,
   tone = "success",
-}: {
+  ...props
+}: ComponentProps<"div"> & {
   children: ReactNode;
   className?: string;
   tone?: "success" | "info";
 }) {
   return (
-    <div role="status" aria-live="polite">
-      <Alert tone={tone} className={className}>
-        {children}
-      </Alert>
+    <div role="status" aria-live="polite" className={className} {...props}>
+      <Alert tone={tone}>{children}</Alert>
     </div>
   );
 }
