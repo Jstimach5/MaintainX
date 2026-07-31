@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { CREDS, ensureBaseData } from "./fixtures";
+import { CREDS, ensureBaseData, navTo } from "./fixtures";
 
 async function login(page: Page, creds: { username: string; password: string }) {
   await page.goto("/login");
@@ -34,7 +34,7 @@ test.describe.serial("schedule view and reports", () => {
     page,
   }) => {
     await login(page, CREDS.manager);
-    await page.getByRole("link", { name: /^schedule$/i }).click();
+    await navTo(page, "Schedule");
     await page.waitForURL("**/schedule");
     // The table lists work orders created by earlier specs.
     await expect(page.getByRole("link", { name: /WO-\d+/ }).first()).toBeVisible();
@@ -50,7 +50,7 @@ test.describe.serial("schedule view and reports", () => {
     page,
   }) => {
     await login(page, CREDS.manager);
-    await page.getByRole("link", { name: /^reports$/i }).click();
+    await navTo(page, "Reports");
     await page.waitForURL("**/reports");
     await expect(page.getByText("Open backlog")).toBeVisible();
     await expect(page.getByText("PM compliance", { exact: true })).toBeVisible();

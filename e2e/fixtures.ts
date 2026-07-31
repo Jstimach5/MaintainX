@@ -1,3 +1,4 @@
+import { expect, type Page } from "@playwright/test";
 import { Pool } from "pg";
 import { hashPassword } from "../src/server/auth/password";
 
@@ -47,4 +48,50 @@ export async function ensureBaseData(): Promise<void> {
   } finally {
     await pool.end();
   }
+}
+
+/**
+ * Click a primary-nav destination, opening its disclosure group first.
+ *
+ * The desktop nav groups destinations behind toggle buttons, and role
+ * filtering can collapse a one-item group back into a plain link — so try
+ * the direct link first, then the group. Retries the toggle once: the
+ * trigger is a client component, and a click landing before hydration is
+ * dropped silently.
+ */
+const NAV_GROUP_OF: Record<string, string> = {
+  Dashboard: "Work",
+  Schedule: "Work",
+  "Work orders": "Work",
+  Reports: "Work",
+  Meters: "Maintenance",
+  PM: "Maintenance",
+  Procedures: "Maintenance",
+  Assets: "Assets",
+  Sites: "Assets",
+  Locations: "Assets",
+  Imports: "Assets",
+  Audit: "Assets",
+  Users: "Admin",
+  Teams: "Admin",
+  Settings: "Admin",
+};
+
+export async function navTo(page: Page, label: string): Promise<void> {
+  const banner = page.getByRole("banner");
+  const exact = new RegExp(`^${label}$`, "i");
+  const direct = banner.getByRole("link", { name: exact });
+  if (await direct.isVisible().catch(() => false)) {
+    await direct.click();
+    return;
+  }
+  const group = NAV_GROUP_OF[label];
+  if (!group) throw new Error(`navTo: no group known for "${label}"`);
+  const trigger = banner.getByRole("button", { name: new RegExp(`^${group}$`, "i") });
+  await trigger.click();
+  if ((await trigger.getAttribute("aria-expanded")) !== "true") {
+    await trigger.click(); // hydration race: the first click was dropped
+  }
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await banner.getByRole("link", { name: exact }).click();
 }

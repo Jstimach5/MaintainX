@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { CREDS, ensureBaseData } from "./fixtures";
+import { CREDS, ensureBaseData, navTo } from "./fixtures";
 
 async function login(page: Page, creds: { username: string; password: string }) {
   await page.goto("/login");
@@ -26,7 +26,7 @@ test.beforeAll(async () => {
 test.describe.serial("preventive maintenance — Scenario B", () => {
   test("manager creates a floating PM plan due today", async ({ page }) => {
     await login(page, CREDS.manager);
-    await page.getByRole("link", { name: /^pm$/i }).click();
+    await navTo(page, "PM");
     await page.waitForURL("**/pm-plans");
     await page.getByRole("link", { name: /new plan/i }).first().click();
 

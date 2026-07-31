@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { navTo } from "./fixtures";
 
 /**
  * Phase 1 end-to-end: first-run setup, login/logout, user management,
@@ -72,7 +73,7 @@ test.describe.serial("authentication and RBAC", () => {
   test("admin creates a technician account", async ({ page }) => {
     await login(page, ADMIN);
     await page.waitForURL("**/dashboard");
-    await page.getByRole("link", { name: /^users$/i }).click();
+    await navTo(page, "Users");
     await page.waitForURL("**/admin/users");
     await page.getByRole("link", { name: /add manually/i }).click();
 

@@ -83,14 +83,25 @@ test.describe("M1 — field shell", () => {
     ).toBeVisible();
   });
 
-  test("desktop keeps the full header navigation and inline status bar", async ({
+  test("desktop groups the header navigation into disclosure menus", async ({
     page,
   }) => {
     await login(page, CREDS.tech);
-    // Desktop viewport: header links present, field nav hidden.
+    const banner = page.getByRole("banner");
+    // Destinations live behind a group toggle, not a flat row…
+    const work = banner.getByRole("button", { name: /^work$/i });
+    await expect(work).toBeVisible();
+    await expect(work).toHaveAttribute("aria-expanded", "false");
+    await work.click();
+    await expect(work).toHaveAttribute("aria-expanded", "true");
     await expect(
-      page.getByRole("banner").getByRole("link", { name: "Work orders" }),
+      banner.getByRole("link", { name: "Work orders" }),
     ).toBeVisible();
+    // …Escape closes the panel and hands focus back to its trigger.
+    await page.keyboard.press("Escape");
+    await expect(work).toHaveAttribute("aria-expanded", "false");
+    await expect(work).toBeFocused();
+    // Desktop keeps the field nav hidden.
     await expect(
       page.getByRole("navigation", { name: /field navigation/i }),
     ).toBeHidden();

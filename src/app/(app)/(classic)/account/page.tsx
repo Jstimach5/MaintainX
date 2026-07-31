@@ -4,6 +4,7 @@ import { logoutAction } from "@/app/(auth)/login/actions";
 import { getOrgSettings } from "@/server/services/org";
 import { unreadCount } from "@/server/services/notifications";
 import { Card, PageHeader } from "@/components/ui";
+import { ChevronRight } from "@/components/icons";
 
 export const metadata = { title: "Account" };
 export const dynamic = "force-dynamic";
@@ -29,26 +30,58 @@ export default async function AccountPage() {
   const isManager = user.role === "admin" || user.role === "manager";
   const isStaff = user.role !== "requester";
 
-  const links: { href: string; label: string; show: boolean }[] = [
-    { href: "/notifications", label: `Notifications${unread > 0 ? ` (${unread})` : ""}`, show: true },
-    { href: "/work-orders?mine=1", label: "My work orders", show: isStaff },
-    { href: "/requests", label: "My requests", show: true },
-    { href: "/schedule", label: "My schedule", show: isStaff },
-    { href: "/assets", label: "Assets", show: isStaff },
-    { href: "/meters", label: "Meters", show: isStaff },
-    { href: "/sites", label: "Sites & locations", show: isStaff },
-    { href: "/reports", label: "Reports", show: isManager },
-    { href: "/pm-plans", label: "Maintenance plans", show: isManager },
-    { href: "/procedures", label: "Procedures", show: isManager },
+  // Sections mirror the desktop nav groups so the two menus teach the
+  // same shape of the app.
+  const sections: {
+    title: string;
+    links: { href: string; label: string; show: boolean }[];
+  }[] = [
     {
-      href: "/admin/settings",
-      label: "Organization settings",
-      show: user.role === "admin",
+      title: "Work",
+      links: [
+        {
+          href: "/notifications",
+          label: `Notifications${unread > 0 ? ` (${unread})` : ""}`,
+          show: true,
+        },
+        { href: "/work-orders?mine=1", label: "My work orders", show: isStaff },
+        { href: "/schedule", label: "My schedule", show: isStaff },
+        { href: "/requests", label: "My requests", show: true },
+        { href: "/reports", label: "Reports", show: isManager },
+      ],
     },
-  ];
+    {
+      title: "Maintenance",
+      links: [
+        { href: "/meters", label: "Meters", show: isStaff },
+        { href: "/pm-plans", label: "PM", show: isManager },
+        { href: "/procedures", label: "Procedures", show: isManager },
+      ],
+    },
+    {
+      title: "Assets",
+      links: [
+        { href: "/assets", label: "Assets", show: isStaff },
+        { href: "/sites", label: "Sites", show: isStaff },
+        { href: "/locations", label: "Locations", show: isStaff },
+      ],
+    },
+    {
+      title: "Admin",
+      links: [
+        {
+          href: "/admin/settings",
+          label: "Organization settings",
+          show: user.role === "admin",
+        },
+      ],
+    },
+  ]
+    .map((s) => ({ ...s, links: s.links.filter((l) => l.show) }))
+    .filter((s) => s.links.length > 0);
 
   return (
-    <div className="space-y-4">
+    <div className="mx-auto max-w-2xl space-y-4">
       <PageHeader title="Account" />
 
       <Card>
@@ -64,25 +97,28 @@ export default async function AccountPage() {
         </p>
       </Card>
 
-      <Card className="p-0">
-        <ul className="divide-y divide-gray-100">
-          {links
-            .filter((l) => l.show)
-            .map((l) => (
-              <li key={l.href}>
-                <Link
-                  href={l.href}
-                  className="flex min-h-12 items-center justify-between px-4 text-sm font-medium text-gray-800 active:bg-gray-50"
-                >
-                  {l.label}
-                  <span aria-hidden className="text-gray-300">
-                    ›
-                  </span>
-                </Link>
-              </li>
-            ))}
-        </ul>
-      </Card>
+      {sections.map((section) => (
+        <section key={section.title}>
+          <h2 className="mb-1.5 px-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+            {section.title}
+          </h2>
+          <Card className="p-0">
+            <ul className="divide-y divide-gray-100">
+              {section.links.map((l) => (
+                <li key={l.href}>
+                  <Link
+                    href={l.href}
+                    className="flex min-h-12 items-center justify-between px-4 text-sm font-medium text-gray-800 active:bg-gray-50"
+                  >
+                    {l.label}
+                    <ChevronRight aria-hidden className="h-4 w-4 text-gray-300" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </section>
+      ))}
 
       <Card>
         <p className="mb-2 text-sm text-gray-600">

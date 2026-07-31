@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { CREDS, ensureBaseData } from "./fixtures";
+import { CREDS, ensureBaseData, navTo } from "./fixtures";
 
 const CSV = [
   "External ID,Title,Status,Priority,Site,Due Date",
@@ -32,7 +32,7 @@ test.describe.serial("bulk imports — Scenario D", () => {
     page,
   }) => {
     await login(page, CREDS.admin);
-    await page.getByRole("link", { name: /^imports$/i }).click();
+    await navTo(page, "Imports");
     await page.waitForURL("**/imports");
     await page.getByRole("link", { name: /new import/i }).first().click();
 

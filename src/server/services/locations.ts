@@ -8,13 +8,8 @@ export type LocationRow = typeof locations.$inferSelect;
 
 export type LocationNode = LocationRow & { children: LocationNode[] };
 
-/** Assemble the location tree for a site (archived nodes included). */
-export async function getLocationTree(siteId: number): Promise<LocationNode[]> {
-  const rows = await db
-    .select()
-    .from(locations)
-    .where(eq(locations.siteId, siteId))
-    .orderBy(asc(locations.name));
+/** Parent/child assembly shared by the per-site and all-sites queries. */
+function buildTree(rows: LocationRow[]): LocationNode[] {
   const byId = new Map<number, LocationNode>(
     rows.map((r) => [r.id, { ...r, children: [] }]),
   );
@@ -27,6 +22,45 @@ export async function getLocationTree(siteId: number): Promise<LocationNode[]> {
     }
   }
   return roots;
+}
+
+/** Assemble the location tree for a site (archived nodes included). */
+export async function getLocationTree(siteId: number): Promise<LocationNode[]> {
+  const rows = await db
+    .select()
+    .from(locations)
+    .where(eq(locations.siteId, siteId))
+    .orderBy(asc(locations.name));
+  return buildTree(rows);
+}
+
+export type SiteLocations = {
+  site: typeof sites.$inferSelect;
+  tree: LocationNode[];
+  /** Total nodes under this site, archived included. */
+  count: number;
+};
+
+/**
+ * Every site with its location tree — the /locations index. Two queries,
+ * grouped in memory; archived sites are included and badged by the caller
+ * (matches /sites).
+ */
+export async function listLocationsBySite(): Promise<SiteLocations[]> {
+  const [siteRows, locationRows] = await Promise.all([
+    db.select().from(sites).orderBy(asc(sites.name)),
+    db.select().from(locations).orderBy(asc(locations.name)),
+  ]);
+  const bySite = new Map<number, LocationRow[]>();
+  for (const row of locationRows) {
+    const list = bySite.get(row.siteId);
+    if (list) list.push(row);
+    else bySite.set(row.siteId, [row]);
+  }
+  return siteRows.map((site) => {
+    const rows = bySite.get(site.id) ?? [];
+    return { site, tree: buildTree(rows), count: rows.length };
+  });
 }
 
 export async function getLocation(id: number) {

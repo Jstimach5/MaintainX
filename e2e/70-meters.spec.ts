@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { CREDS, ensureBaseData } from "./fixtures";
+import { CREDS, ensureBaseData, navTo } from "./fixtures";
 
 async function login(page: Page, creds: { username: string; password: string }) {
   await page.goto("/login");
@@ -26,7 +26,7 @@ test.beforeAll(async () => {
 test.describe.serial("meters — Scenario C", () => {
   test("manager creates a meter and a threshold trigger", async ({ page }) => {
     await login(page, CREDS.manager);
-    await page.getByRole("link", { name: /^meters$/i }).click();
+    await navTo(page, "Meters");
     await page.waitForURL("**/meters");
     await page.getByRole("link", { name: /add meter/i }).first().click();
 

@@ -6,39 +6,97 @@ import { unreadCount } from "@/server/services/notifications";
 import { getOrgSettings } from "@/server/services/org";
 import { SealTechLogo } from "@/components/brand";
 import { Bell } from "@/components/icons";
+import { PrimaryNav, type NavEntry } from "@/components/primary-nav";
 
 type NavItem = { href: string; label: string; roles: Role[] };
+type NavGroup = { label: string; items: NavItem[] };
+type NavSpec = NavItem | NavGroup;
+
+const ALL: Role[] = ["admin", "manager", "technician", "requester"];
+const STAFF: Role[] = ["admin", "manager", "technician"];
+const MANAGERS: Role[] = ["admin", "manager"];
+const ADMIN: Role[] = ["admin"];
 
 /**
- * Data-driven navigation. Routes still enforce roles server-side — hiding a
- * link here is convenience, not security (§4).
- * (Grouped disclosure menus land with the nav redesign phase; this is the
- * flat row on the branded header.)
+ * Data-driven navigation, grouped into disclosure menus. Routes still
+ * enforce roles server-side — filtering here is convenience, not security
+ * (§4) — but the filtering does happen on the server, so links a role may
+ * not use never reach the browser at all.
  */
-const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", roles: ["admin", "manager", "technician", "requester"] },
-  { href: "/work-orders", label: "Work orders", roles: ["admin", "manager", "technician"] },
-  { href: "/requests", label: "Requests", roles: ["admin", "manager", "technician", "requester"] },
-  { href: "/assets", label: "Assets", roles: ["admin", "manager", "technician"] },
-  { href: "/sites", label: "Sites", roles: ["admin", "manager", "technician"] },
-  { href: "/procedures", label: "Procedures", roles: ["admin", "manager"] },
-  { href: "/pm-plans", label: "PM", roles: ["admin", "manager"] },
-  { href: "/meters", label: "Meters", roles: ["admin", "manager", "technician"] },
-  { href: "/schedule", label: "Schedule", roles: ["admin", "manager", "technician"] },
-  { href: "/reports", label: "Reports", roles: ["admin", "manager"] },
-  { href: "/imports", label: "Imports", roles: ["admin"] },
-  { href: "/admin/users", label: "Users", roles: ["admin"] },
-  { href: "/admin/teams", label: "Teams", roles: ["admin"] },
-  { href: "/admin/audit", label: "Audit", roles: ["admin"] },
-  { href: "/admin/settings", label: "Settings", roles: ["admin"] },
+const NAV: NavSpec[] = [
+  { href: "/requests", label: "Requests", roles: ALL },
+  {
+    label: "Work",
+    items: [
+      { href: "/dashboard", label: "Dashboard", roles: ALL },
+      { href: "/schedule", label: "Schedule", roles: STAFF },
+      { href: "/work-orders", label: "Work orders", roles: STAFF },
+      { href: "/reports", label: "Reports", roles: MANAGERS },
+    ],
+  },
+  {
+    label: "Maintenance",
+    items: [
+      { href: "/meters", label: "Meters", roles: STAFF },
+      { href: "/pm-plans", label: "PM", roles: MANAGERS },
+      { href: "/procedures", label: "Procedures", roles: MANAGERS },
+    ],
+  },
+  {
+    label: "Assets",
+    items: [
+      { href: "/assets", label: "Assets", roles: STAFF },
+      { href: "/sites", label: "Sites", roles: STAFF },
+      { href: "/locations", label: "Locations", roles: STAFF },
+      { href: "/imports", label: "Imports", roles: ADMIN },
+      { href: "/admin/audit", label: "Audit", roles: ADMIN },
+    ],
+  },
+  {
+    label: "Admin",
+    items: [
+      { href: "/admin/users", label: "Users", roles: ADMIN },
+      { href: "/admin/teams", label: "Teams", roles: ADMIN },
+      { href: "/admin/settings", label: "Settings", roles: ADMIN },
+    ],
+  },
 ];
 
+/**
+ * Filter by role, then degrade: a group with nothing visible disappears, and
+ * a group down to one item becomes a plain link labelled with that item —
+ * no dropdown that only ever holds a single destination.
+ */
+function entriesFor(role: Role): NavEntry[] {
+  const out: NavEntry[] = [];
+  for (const spec of NAV) {
+    if ("href" in spec) {
+      if (spec.roles.includes(role)) {
+        out.push({ kind: "link", label: spec.label, href: spec.href });
+      }
+      continue;
+    }
+    const items = spec.items.filter((i) => i.roles.includes(role));
+    if (items.length === 0) continue;
+    if (items.length === 1) {
+      out.push({ kind: "link", label: items[0].label, href: items[0].href });
+    } else {
+      out.push({
+        kind: "group",
+        label: spec.label,
+        items: items.map(({ href, label }) => ({ href, label })),
+      });
+    }
+  }
+  return out;
+}
+
 export async function AppNav({ user }: { user: SessionUser }) {
-  const items = NAV_ITEMS.filter((i) => i.roles.includes(user.role));
   const [unread, org] = await Promise.all([
     unreadCount(user.id),
     getOrgSettings(),
   ]);
+  const entries = entriesFor(user.role);
   return (
     <header className="sticky top-0 z-30 border-b border-brand-900 bg-brand-950">
       <div className="mx-auto flex max-w-[1600px] items-center gap-2 px-4 sm:px-6 xl:px-8">
@@ -50,17 +108,7 @@ export async function AppNav({ user }: { user: SessionUser }) {
           <SealTechLogo onDark />
         </Link>
         {/* Small screens use the bottom field nav instead of this row. */}
-        <nav className="hidden min-w-0 flex-1 items-center gap-0.5 overflow-x-auto py-1 md:flex">
-          {items.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-300"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <PrimaryNav entries={entries} />
         <Link
           href="/notifications"
           className="relative ml-auto shrink-0 rounded-md p-2 text-gray-300 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-300 md:ml-0"

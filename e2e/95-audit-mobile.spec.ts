@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { CREDS, ensureBaseData } from "./fixtures";
+import { CREDS, ensureBaseData, navTo } from "./fixtures";
 
 async function login(page: Page, creds: { username: string; password: string }) {
   await page.goto("/login");
@@ -22,7 +22,7 @@ test.beforeAll(async () => {
 test.describe.serial("audit browser + mobile pass", () => {
   test("admin browses and filters the append-only audit log", async ({ page }) => {
     await login(page, CREDS.admin);
-    await page.getByRole("link", { name: /^audit$/i }).click();
+    await navTo(page, "Audit");
     await page.waitForURL("**/admin/audit");
     // Events from earlier specs exist.
     await expect(page.locator("span.font-mono").first()).toBeVisible();

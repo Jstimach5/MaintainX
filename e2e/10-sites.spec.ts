@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { CREDS, ensureBaseData } from "./fixtures";
+import { CREDS, ensureBaseData, navTo } from "./fixtures";
 
 async function login(page: Page, creds: { username: string; password: string }) {
   await page.goto("/login");
@@ -22,7 +22,7 @@ test.beforeAll(async () => {
 test.describe.serial("sites and nested locations", () => {
   test("admin creates a site with nested locations", async ({ page }) => {
     await login(page, CREDS.admin);
-    await page.getByRole("link", { name: /^sites$/i }).click();
+    await navTo(page, "Sites");
     await page.waitForURL("**/sites");
     await page.getByRole("link", { name: /add site/i }).first().click();
 
