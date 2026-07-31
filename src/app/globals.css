@@ -26,6 +26,31 @@
   --color-brand-800: #2e7d32; /* interactive: links, solid buttons */
   --color-brand-900: #1b5e20; /* hover/pressed on 800 */
   --color-brand-950: #123020; /* forest header, matches site hero */
+
+  /*
+   * Semantic layer — components use these, not raw palette classes.
+   * Brand (action/focus/selected/accent/header) is deliberately separate
+   * from operational status (success/warning/danger/info), which stays on
+   * stock Tailwind hues so status meaning never reads as "brand".
+   */
+  --color-app-bg: #f9fafb; /* gray-50 */
+  --color-surface: #ffffff;
+  --color-line: #e5e7eb; /* gray-200 default border */
+  --color-line-strong: #d1d5db; /* gray-300 control border */
+  --color-ink: #111827; /* gray-900 primary text */
+  --color-ink-muted: #6b7280; /* gray-500 secondary text */
+  --color-action: #2e7d32; /* = brand-800 */
+  --color-action-hover: #1b5e20; /* = brand-900 */
+  --color-focus: #43a047; /* = brand-600 focus ring/border */
+  --color-selected: #e8f5e9; /* = brand-50 selected/active bg */
+  --color-accent: #4caf50; /* = brand-500, accents ONLY */
+  --color-header: #123020; /* = brand-950 app header */
+  --color-disabled: #d1d5db; /* gray-300 */
+  --color-disabled-ink: #9ca3af; /* gray-400 */
+  --color-success: #16a34a; /* green-600 */
+  --color-warning: #d97706; /* amber-600 */
+  --color-danger: #b91c1c; /* red-700 */
+  --color-info: #2563eb; /* blue-600 */
 }
 
 html {

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- TEMPORARY MARK: keep in sync with src/components/brand.tsx -->
+  <rect width="32" height="32" rx="7" fill="#123020"/>
+  <g stroke="#123020" stroke-width="0.6" stroke-linejoin="round">
+    <path d="M16 4 L6 16 L16 16 Z" fill="#81c784"/>
+    <path d="M16 4 L26 16 L16 16 Z" fill="#66bb6a"/>
+    <path d="M16 28 L26 16 L16 16 Z" fill="#4caf50"/>
+    <path d="M16 28 L6 16 L16 16 Z" fill="#2e7d32"/>
+  </g>
+</svg>
