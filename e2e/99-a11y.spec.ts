@@ -22,6 +22,12 @@ async function login(page: Page, creds: { username: string; password: string }) 
 }
 
 async function scan(page: Page, label: string) {
+  // Settle before analysing. A scan that starts mid-hydration reads a
+  // half-built DOM and reports violations that never reach a user — the
+  // one flake this suite produced was exactly that, on the screen scanned
+  // immediately after the login redirect.
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await expect(page.locator("main")).toBeVisible();
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
@@ -67,6 +73,43 @@ test.describe("accessibility", () => {
       await page.waitForLoadState("networkidle").catch(() => {});
       await scan(page, label);
     }
+  });
+
+  test("the designed error and permission states are accessible", async ({
+    page,
+  }) => {
+    await login(page, CREDS.admin);
+    await page.goto("/no-such-page");
+    await expect(page.getByRole("heading", { name: /page not found/i })).toBeVisible();
+    await scan(page, "404");
+
+    // /forbidden is where every role guard lands; it must be reachable and
+    // readable, not just a redirect target.
+    await page.goto("/forbidden");
+    await scan(page, "forbidden");
+  });
+
+  test("an open navigation panel is accessible", async ({ page }) => {
+    await login(page, CREDS.admin);
+    const trigger = page
+      .getByRole("navigation", { name: "Primary" })
+      .getByRole("button", { name: "Assets" });
+    await trigger.click();
+    if ((await trigger.getAttribute("aria-expanded")) !== "true") {
+      await trigger.click();
+    }
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await scan(page, "nav panel open");
+  });
+
+  test("a confirmation dialog is accessible", async ({ page }) => {
+    await login(page, CREDS.admin);
+    await page.goto("/admin/users");
+    const trigger = page.getByRole("button", { name: /^deactivate$/i }).first();
+    test.skip(!(await trigger.count()), "no deactivatable user seeded");
+    await trigger.click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await scan(page, "confirmation dialog");
   });
 
   test("record pages are accessible", async ({ page }) => {
