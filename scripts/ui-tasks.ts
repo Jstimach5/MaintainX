@@ -82,6 +82,51 @@ class Driver {
   }
 }
 
+/**
+ * Header destinations that live inside a disclosure group after the
+ * redesign. Opening the group is a real click and is counted as one — the
+ * grouping trades a click for a header that no longer overflows, and the
+ * benchmark has to show both sides of that trade.
+ */
+const NAV_GROUP_OF: Record<string, string> = {
+  Dashboard: "Work",
+  Schedule: "Work",
+  "Work orders": "Work",
+  Reports: "Work",
+  Meters: "Maintenance",
+  PM: "Maintenance",
+  Procedures: "Maintenance",
+  Assets: "Assets",
+  Sites: "Assets",
+  Locations: "Assets",
+  Imports: "Assets",
+  Audit: "Assets",
+  Users: "Admin",
+  Teams: "Admin",
+  Settings: "Admin",
+};
+
+/** Click a primary-nav destination, opening its group first if it has one. */
+async function navTo(d: Driver, label: string): Promise<void> {
+  const banner = d.page.getByRole("banner");
+  const exact = new RegExp(`^${label}$`, "i");
+  const direct = banner.getByRole("link", { name: exact });
+  if (await direct.isVisible().catch(() => false)) {
+    await d.click(direct);
+    return;
+  }
+  const group = NAV_GROUP_OF[label];
+  if (!group) throw new Error(`navTo: no group known for "${label}"`);
+  const trigger = banner.getByRole("button", {
+    name: new RegExp(`^${group}$`, "i"),
+  });
+  await d.click(trigger);
+  if ((await trigger.getAttribute("aria-expanded")) !== "true") {
+    await d.click(trigger); // hydration race: the first click was dropped
+  }
+  await d.click(banner.getByRole("link", { name: exact }));
+}
+
 type TaskResult = {
   role: string;
   task: string;
@@ -132,7 +177,7 @@ const TASKS: Task[] = [
     run: async (d) => {
       const { page } = d;
       // Site
-      await d.click(page.getByRole("banner").getByRole("link", { name: "Sites" }));
+      await navTo(d, "Sites");
       await page.waitForURL("**/sites");
       await d.click(page.getByRole("link", { name: /new site|add site/i }).first());
       await d.fill(page.getByLabel(/name/i).first(), "North Annex");
@@ -144,7 +189,7 @@ const TASKS: Task[] = [
       await d.click(page.getByRole("button", { name: /add location/i }).first());
       await page.waitForURL(/\/sites\/\d+$/, { timeout: 15_000 });
       // Asset in it
-      await d.click(page.getByRole("banner").getByRole("link", { name: "Assets" }));
+      await navTo(d, "Assets");
       await page.waitForURL("**/assets");
       await d.click(page.getByRole("link", { name: /add asset/i }).first());
       await d.fill(page.getByLabel(/^name/i).first(), "Dehumidifier N1");
@@ -158,7 +203,7 @@ const TASKS: Task[] = [
     name: "invite a user",
     run: async (d) => {
       const { page } = d;
-      await d.click(page.getByRole("banner").getByRole("link", { name: "Users" }));
+      await navTo(d, "Users");
       await page.waitForURL("**/admin/users");
       await d.click(page.getByRole("link", { name: /invite/i }).first());
       await d.fill(page.getByLabel(/username/i).first(), "newtech");
@@ -172,7 +217,7 @@ const TASKS: Task[] = [
     name: "locate asset, open QR label",
     run: async (d) => {
       const { page } = d;
-      await d.click(page.getByRole("banner").getByRole("link", { name: "Assets" }));
+      await navTo(d, "Assets");
       await page.waitForURL("**/assets");
       await d.fill(page.getByPlaceholder(/search/i).first(), "compressor");
       await d.click(page.getByRole("button", { name: /filter/i }).first());
@@ -197,7 +242,7 @@ const TASKS: Task[] = [
     name: "create, assign, schedule a work order",
     run: async (d) => {
       const { page } = d;
-      await d.click(page.getByRole("banner").getByRole("link", { name: "Work orders" }));
+      await navTo(d, "Work orders");
       await page.waitForURL("**/work-orders");
       await d.click(page.getByRole("link", { name: /new work order/i }).first());
       await d.fill(page.getByLabel(/title/i).first(), "Inspect dock door seals");
@@ -214,7 +259,7 @@ const TASKS: Task[] = [
     name: "review upcoming preventive maintenance",
     run: async (d) => {
       const { page } = d;
-      await d.click(page.getByRole("banner").getByRole("link", { name: "PM" }));
+      await navTo(d, "PM");
       await page.waitForURL("**/pm-plans");
       await d.click(page.getByRole("link", { name: /Quarterly belt inspection/ }).first());
       await page.waitForURL(/\/pm-plans\/\d+/);

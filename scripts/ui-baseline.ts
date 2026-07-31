@@ -144,6 +144,14 @@ type Metric = {
   title: string;
   overflowX: boolean;
   mainWidthPct: number | null;
+  /**
+   * Width of the content container as a % of the viewport. Before the
+   * redesign the cap lived on `<main>` itself, so `mainWidthPct` measured
+   * it; the layout templates moved the cap to a container inside `<main>`,
+   * which now spans the full width. Measuring main's widest child keeps the
+   * before/after numbers comparable.
+   */
+  contentWidthPct: number | null;
   foldRatio: number;
   screenshot: string;
 };
@@ -166,10 +174,21 @@ async function measure(page: Page): Promise<Omit<Metric, "role" | "slug" | "view
   return page.evaluate(() => {
     const main = document.querySelector("main");
     const mainRect = main?.getBoundingClientRect();
+    const contentWidth = main
+      ? Math.max(
+          0,
+          ...Array.from(main.children).map(
+            (c) => c.getBoundingClientRect().width,
+          ),
+        )
+      : 0;
     return {
       title: document.title,
       overflowX: document.documentElement.scrollWidth > window.innerWidth + 1,
       mainWidthPct: mainRect ? Math.round((mainRect.width / window.innerWidth) * 100) : null,
+      contentWidthPct: contentWidth
+        ? Math.round((contentWidth / window.innerWidth) * 100)
+        : null,
       foldRatio: Math.round((document.documentElement.scrollHeight / window.innerHeight) * 100) / 100,
     };
   });
@@ -242,7 +261,7 @@ async function main() {
             ...m,
           });
           process.stdout.write(
-            `${role.padEnd(10)} ${screen.slug.padEnd(26)} ${`${vp.w}x${vp.h}`.padEnd(9)} overflowX=${m.overflowX ? "YES" : "no "} main=${m.mainWidthPct ?? "-"}% fold=${m.foldRatio}\n`,
+            `${role.padEnd(10)} ${screen.slug.padEnd(26)} ${`${vp.w}x${vp.h}`.padEnd(9)} overflowX=${m.overflowX ? "YES" : "no "} content=${m.contentWidthPct ?? "-"}% fold=${m.foldRatio}\n`,
           );
         } catch (err) {
           process.stdout.write(`FAIL ${role} ${screen.slug} ${vp.w}x${vp.h}: ${(err as Error).message}\n`);

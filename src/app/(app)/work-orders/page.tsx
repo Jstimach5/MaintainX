@@ -217,8 +217,17 @@ export default async function WorkOrdersPage({
         />
       ) : (
         <>
-          {/* Phones: record cards with a status rail (always paired with the badge). */}
-          <Card className="divide-y divide-gray-100 p-0 md:hidden">
+          {/*
+            Phones and tablets: record cards with a status rail (always
+            paired with the badge). The switch is at `xl`, not `md`, and
+            only on this list: six columns including a long title and a
+            "overdue · Jul 29, 2026, 3:48 PM" due cell need ~1280px. At
+            1024 the final captures showed every title wrapping to five
+            lines with the due column pushed out of the scroll box — worse
+            than the stacked rows this replaced. The five-column lists
+            (assets, requests, meters, PM) fit at `md` and stay there.
+          */}
+          <Card className="divide-y divide-gray-100 p-0 xl:hidden">
             {rows.map(({ wo, siteName, locationName, teamName, assignees }) => {
               const overdue = isOverdue(wo);
               const rail = overdue
@@ -268,7 +277,7 @@ export default async function WorkOrdersPage({
             })}
           </Card>
           {/* Desktop: a real table that uses the width. */}
-          <Card className="hidden overflow-x-auto p-0 md:block">
+          <Card className="hidden overflow-x-auto p-0 xl:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-left text-xs tracking-wide text-gray-500 uppercase">

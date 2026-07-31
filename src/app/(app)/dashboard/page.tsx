@@ -75,11 +75,17 @@ function WoRow({
 }) {
   return (
     <li>
+      {/*
+        Stacked on phones, one line from `sm` up. Side by side at 390px the
+        priority badge plus a full "overdue · Jul 29, 2026, 3:48 PM" leaves
+        the title about one character — the final captures showed this row
+        rendering as "W…", which is worse than no row at all.
+      */}
       <Link
         href={`/work-orders/${wo.id}`}
-        className="-mx-2 flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-gray-50"
+        className="-mx-2 flex flex-col items-start gap-0.5 rounded-md px-2 py-1.5 text-sm hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between sm:gap-2"
       >
-        <span className="min-w-0 truncate font-medium text-brand-800">
+        <span className="min-w-0 max-w-full truncate font-medium text-brand-800">
           {wo.woNumber} · {wo.title}
         </span>
         <span className="flex shrink-0 items-center gap-2">
