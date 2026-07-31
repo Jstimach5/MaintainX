@@ -117,12 +117,23 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Shared minimal HTML shell — renders fine in every client. */
+/**
+ * Shared minimal HTML shell — renders fine in every client.
+ *
+ * Branding is inline styles and borders only: no remote images (blocked by
+ * default in most clients, and a broken logo is worse than none) and no SVG
+ * (Outlook drops it). The green rule and footer bar carry the identity; the
+ * org name is the customer's, so nothing product-specific is baked in.
+ */
 function shell(orgName: string, bodyHtml: string): string {
   return `<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
-<h2 style="margin:0 0 16px">${escapeHtml(orgName)}</h2>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 20px"><tr>
+<td style="border-bottom:3px solid #2e7d32;padding:0 0 10px">
+<span style="font-size:19px;font-weight:700;color:#1b3a1f">${escapeHtml(orgName)}</span><br>
+<span style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#666">Maintenance system</span>
+</td></tr></table>
 ${bodyHtml}
-<p style="margin-top:24px;color:#666;font-size:13px">This message was sent by your organization's maintenance system. If you weren't expecting it, you can ignore it.</p>
+<p style="margin:24px 0 0;padding-top:12px;border-top:1px solid #e5e7eb;color:#666;font-size:13px">This message was sent by ${escapeHtml(orgName)}'s maintenance system. If you weren't expecting it, you can ignore it.</p>
 </div>`;
 }
 

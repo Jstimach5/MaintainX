@@ -169,3 +169,94 @@ Job handlers treat unique-violation as "already done, skip".
 
 **Future consequence.** Retried pg-boss jobs are safe by construction; a
 crashed worker resuming mid-batch cannot double-create work orders.
+
+## 7. One icon system: lucide-react (2026-07-31)
+
+**Problem.** The interface carried roughly 40 distinct emoji as icons
+(🔧 📋 ⚠️ …). Emoji render as the *operating system's* glyph, so the same
+screen looks different on Windows, macOS, and Android; several render in
+colour that fights the status palette; screen readers announce their
+Unicode names ("wrench", "warning sign") in the middle of sentences; and
+they cannot inherit `currentColor` or a stroke weight.
+
+**Options considered.**
+1. `lucide-react` — MIT, tree-shaken per-icon, stroke-based, sized in `em`.
+2. Hand-authored SVG sprite maintained in-repo.
+3. An icon font (Font Awesome et al.).
+
+**Decision.** Option 1, re-exported through a single curated module,
+`src/components/icons.ts`. Nothing imports `lucide-react` directly.
+
+**Reason.** The curated module is what makes this a *system* rather than a
+dependency: the set of icons in use is one file long, so a reviewer can see
+the whole vocabulary, and swapping libraries later touches one file. Icons
+inherit `currentColor`, so the semantic tokens keep working. Option 2 is the
+same result with ongoing drawing work; option 3 ships an entire font for a
+few dozen glyphs and fails at `font-display` boundaries.
+
+**Tradeoff.** A runtime dependency on a third-party icon set, and every icon
+must be added to the curated module before use (deliberate friction).
+
+**Consequence.** Icons are decorative by default (`aria-hidden`) and are
+always paired with text, so removing an icon can never remove meaning.
+
+## 8. Page width comes from a layout template, not a global cap (2026-07-31)
+
+**Problem.** Every page was wrapped in the same `max-w-6xl` container. The
+rendered baseline (`docs/UI_BASELINE.md`) measured the result: on a 1440px
+desktop, list and dashboard screens used ~80% of the viewport and folded at
+a ratio of 1.0 — the reader saw one screen of content and a wide empty
+gutter, while the same cap left detail pages cramped.
+
+**Options considered.**
+1. Widen the single global cap.
+2. Per-page `max-w-*` chosen ad hoc at each call site.
+3. Four named layout templates, selected by page family via route groups.
+
+**Decision.** Option 3 — `DashboardGrid` (12-column, 1600px), `ListLayout`
+(1500px), `DetailLayout` (main + sticky rail at `lg`+), `FormLayout`
+(`max-w-2xl`), in `src/components/layout.tsx`. Route groups give each page
+family its own layout file, so the template is structural rather than a
+class a page author has to remember.
+
+**Reason.** Width is a property of *what a page is for*, not of the app. A
+table wants horizontal room; a form does not — a 1500px-wide input row is
+measurably harder to fill in than a 640px one. One rule cannot serve both,
+which is why option 1 fixes lists by breaking forms. Option 2 is how the
+inconsistency arose in the first place.
+
+**Tradeoff.** Adding a page means choosing a family, and the route-group
+directory layout is one level of indirection between URL and file.
+
+**Consequence.** Density work is now per-family and measurable: the
+before/after fold ratios in `docs/UI_FINAL_REPORT.md` are comparable because
+every page in a family shares one container.
+
+## 9. No route-level `loading.tsx` on Next 16.2.12 (deferred) (2026-07-31)
+
+**Problem.** Adding route-level `loading.tsx` files — the ordinary way to
+give a route a skeleton — intermittently hung the response stream of
+*server actions* on that route: the action ran to completion on the server
+(the write landed) but the client never received the response, so the form
+sat spinning forever.
+
+**Evidence.** Bisected with a three-round reproducer (abort an in-flight RSC
+prefetch, then submit a server action): 2/3 rounds hung with `loading.tsx`
+present, 0/3 with it removed, 0/3 with `error.tsx` alone, 0/3 on the
+pre-pilot tree. `not-found.tsx` was tested separately and was clean (0/3),
+so it ships.
+
+**Decision.** Ship without route-level `loading.tsx`. Perceived-performance
+work uses the `Skeleton` component inside already-rendering pages instead.
+
+**Reason.** A hung write is a data-integrity-shaped bug from the user's
+point of view — they retry, and now they cannot tell whether they created
+one record or two. A missing skeleton is a cosmetic regression. The trade is
+not close.
+
+**Tradeoff.** Navigations to slow routes show the previous page for longer
+with no route-level pending state.
+
+**Future consequence.** Re-test on the next Next.js minor — the reproducer
+is written up in `docs/UI_PILOT_REVIEW.md` § F1. If a release fixes it, the
+`loading.tsx` files can be added back with no other change.

@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { requireRole } from "@/server/auth/guards";
 import { getAsset } from "@/server/services/assets";
+import { getOrgSettings } from "@/server/services/org";
+import { SealTechLogo } from "@/components/brand";
 
 export const metadata = { title: "QR label" };
 
@@ -21,6 +23,7 @@ export default async function AssetLabelPage({
   if (!Number.isInteger(assetId)) notFound();
   const asset = await getAsset(assetId);
   if (!asset) notFound();
+  const org = await getOrgSettings();
 
   const path = `/a/${asset.qrToken}`;
   const svg = await QRCode.toString(path, {
@@ -33,6 +36,18 @@ export default async function AssetLabelPage({
   return (
     <div className="mx-auto max-w-sm text-center print:max-w-none">
       <div className="rounded-lg border border-gray-300 bg-white p-6 print:border-2 print:border-black">
+        {/*
+          The logo lives inside the card, not the app header: the print
+          stylesheet hides `header`/`nav`, so anything up there is absent
+          from the paper label. Text-and-SVG only, so it survives a
+          black-and-white printer.
+        */}
+        <div className="mb-4 flex items-center justify-between gap-3 border-b border-gray-300 pb-3 text-left">
+          <SealTechLogo />
+          <span className="text-xs font-semibold text-gray-600">
+            {org.name}
+          </span>
+        </div>
         <div
           className="mx-auto w-60"
           // qrcode's SVG output is server-generated, deterministic markup.

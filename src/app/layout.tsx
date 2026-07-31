@@ -1,10 +1,19 @@
 import type { Metadata, Viewport } from "next";
+import { getOrgNameForMetadata } from "@/server/services/org";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Maintenance Manager",
-  description: "Internal asset, maintenance, and work-order management",
-};
+/**
+ * The browser tab carries the customer's name, not the product's. Read
+ * through the tagged cache in `org.ts` — root metadata runs on every
+ * navigation, so this must not be a per-request query.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const name = await getOrgNameForMetadata();
+  return {
+    title: { default: name, template: `%s · ${name}` },
+    description: "Asset, maintenance, and work-order management",
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",

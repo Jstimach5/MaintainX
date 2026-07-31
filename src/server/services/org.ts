@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { db } from "@/server/db";
 import { orgSettings } from "@/server/db/schema";
 import { recordAudit } from "./audit";
@@ -37,6 +38,31 @@ export const getOrgSettings = cache(async () => {
     }
   );
 });
+
+export const ORG_SETTINGS_TAG = "org-settings";
+
+/** Fallback title when the database is unreachable or not yet seeded. */
+export const DEFAULT_ORG_NAME = "Maintenance Manager";
+
+/**
+ * Cross-request cached org name for `generateMetadata()`. Root metadata runs
+ * on every navigation, so a plain read would be a database round-trip per
+ * request; this caches until `updateOrgSettings` revalidates the tag.
+ */
+const cachedOrgName = unstable_cache(
+  async () => (await readOrgSettings()).name,
+  ["org-name"],
+  { tags: [ORG_SETTINGS_TAG] },
+);
+
+/** Never throws: a metadata read must not be able to fail a page render. */
+export async function getOrgNameForMetadata(): Promise<string> {
+  try {
+    return (await cachedOrgName()) || DEFAULT_ORG_NAME;
+  } catch {
+    return DEFAULT_ORG_NAME;
+  }
+}
 
 export type OrgSettingsInput = {
   name: string;

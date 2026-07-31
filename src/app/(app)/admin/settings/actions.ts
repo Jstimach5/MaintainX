@@ -1,11 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { assertRole, AuthError } from "@/server/auth/guards";
 import { ServiceError } from "@/server/services/users";
-import { updateOrgSettings } from "@/server/services/org";
+import { ORG_SETTINGS_TAG, updateOrgSettings } from "@/server/services/org";
 import type { ActionResult } from "@/components/forms";
 
 const schema = z.object({
@@ -37,6 +37,11 @@ export async function updateSettingsAction(
     }
     throw err;
   }
+  // The org name is baked into root metadata through a tagged cross-request
+  // cache; without this the tab title keeps the old name until redeploy.
+  // `updateTag` (not `revalidateTag`) so the admin who just renamed the
+  // organization sees the new name on the very next render.
+  updateTag(ORG_SETTINGS_TAG);
   revalidatePath("/", "layout");
   redirect("/admin/settings?saved=1");
 }

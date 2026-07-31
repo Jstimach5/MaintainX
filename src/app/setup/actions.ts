@@ -1,9 +1,11 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { setupOrganization, ServiceError } from "@/server/services/users";
+import { ORG_SETTINGS_TAG } from "@/server/services/org";
 import { SESSION_COOKIE, createSession } from "@/server/auth/session";
 import type { ActionResult } from "@/components/forms";
 
@@ -51,6 +53,9 @@ export async function setupAction(
     if (err instanceof ServiceError) return { error: err.message };
     throw err;
   }
+  // First-run named the organization; the pre-setup fallback title is now
+  // stale in the metadata cache.
+  updateTag(ORG_SETTINGS_TAG);
   const { token, expiresAt } = await createSession(adminId);
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
