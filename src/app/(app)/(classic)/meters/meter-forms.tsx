@@ -136,7 +136,7 @@ export function CorrectionForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-xs text-blue-700 hover:underline"
+        className="text-xs text-brand-800 hover:underline"
       >
         Correct
       </button>

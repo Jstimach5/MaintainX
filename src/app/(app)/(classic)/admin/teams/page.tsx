@@ -30,7 +30,7 @@ export default async function TeamsPage() {
               <div className="min-w-0">
                 <Link
                   href={`/admin/teams/${t.id}`}
-                  className="font-medium text-blue-800 hover:underline"
+                  className="font-medium text-brand-800 hover:underline"
                 >
                   {t.name}
                 </Link>

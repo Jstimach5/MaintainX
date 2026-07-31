@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/server/auth/guards";
 import { listAssets } from "@/server/services/assets";
-import { Card, Input, PageHeader } from "@/components/ui";
+import { Button, Card, Input, PageHeader } from "@/components/ui";
 
 export const metadata = { title: "Find an asset" };
 export const dynamic = "force-dynamic";
@@ -45,12 +45,7 @@ export default async function ScanPage({
             autoComplete="off"
             className="flex-1"
           />
-          <button
-            type="submit"
-            className="min-h-11 rounded-md bg-blue-700 px-4 text-sm font-semibold text-white active:bg-blue-800"
-          >
-            Search
-          </button>
+          <Button type="submit">Search</Button>
         </form>
       </Card>
 
@@ -75,7 +70,7 @@ export default async function ScanPage({
                     }
                     className="-mx-2 block rounded px-2 py-3 active:bg-gray-50"
                   >
-                    <span className="block font-medium text-blue-800">
+                    <span className="block font-medium text-brand-800">
                       {asset.assetNumber} · {asset.name}
                     </span>
                     <span className="block text-xs text-gray-500">

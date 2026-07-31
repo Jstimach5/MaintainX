@@ -33,7 +33,7 @@ export function LoginForm({ next }: { next?: string }) {
         Sign in
       </SubmitButton>
       <p className="text-center text-sm">
-        <a href="/forgot" className="text-blue-700 hover:underline">
+        <a href="/forgot" className="text-brand-800 hover:underline">
           Forgot your password?
         </a>
       </p>

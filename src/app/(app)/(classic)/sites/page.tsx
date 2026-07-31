@@ -39,7 +39,7 @@ export default async function SitesPage() {
               <div className="min-w-0">
                 <Link
                   href={`/sites/${s.id}`}
-                  className="font-medium text-blue-800 hover:underline"
+                  className="font-medium text-brand-800 hover:underline"
                 >
                   {s.name}
                 </Link>

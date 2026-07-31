@@ -22,7 +22,7 @@ import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { db } from "@/server/db";
 import { reportViews } from "@/server/db/schema";
-import { Card, PageHeader } from "@/components/ui";
+import { Button, Card, Input, PageHeader, Select } from "@/components/ui";
 import { BarRows, StatTile } from "@/components/charts";
 import { PrintButton } from "@/components/print-button";
 import { deleteReportViewAction, saveReportViewAction } from "./actions";
@@ -104,23 +104,21 @@ export default async function ReportsPage({
       <form method="get" className="flex flex-wrap items-end gap-2">
         <label className="text-sm text-gray-600">
           From
-          <input type="date" name="from" defaultValue={params.from ?? ""} className="mt-0.5 block min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base" />
+          <Input type="date" name="from" defaultValue={params.from ?? ""} inline className="mt-0.5 block" />
         </label>
         <label className="text-sm text-gray-600">
           To
-          <input type="date" name="to" defaultValue={params.to ?? ""} className="mt-0.5 block min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base" />
+          <Input type="date" name="to" defaultValue={params.to ?? ""} inline className="mt-0.5 block" />
         </label>
-        <select name="site" defaultValue={params.site ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
+        <Select name="site" defaultValue={params.site ?? ""} inline aria-label="Site">
           <option value="">All sites</option>
           {sites.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
           ))}
-        </select>
-        <button type="submit" className="min-h-11 rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800">
-          Apply
-        </button>
+        </Select>
+        <Button type="submit">Apply</Button>
         <a
           href={`/reports/export?${exportQs}`}
           className="min-h-11 rounded-md border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-50"
@@ -135,7 +133,7 @@ export default async function ReportsPage({
           <span key={v.id} className="flex items-center gap-1 rounded-full bg-gray-100 pl-3 text-sm">
             <Link
               href={`/reports?${new URLSearchParams(v.params as Record<string, string>).toString()}`}
-              className="py-1 font-medium text-blue-800 hover:underline"
+              className="py-1 font-medium text-brand-800 hover:underline"
             >
               {v.name}
             </Link>

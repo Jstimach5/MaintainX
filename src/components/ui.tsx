@@ -228,6 +228,66 @@ export function Alert({
 }
 
 /**
+ * Success/confirmation notice. Announced politely — a saved record is not
+ * an interruption. (Dynamic errors use `Alert tone="error"`, which carries
+ * role="alert"; static tinted boxes stay inert.)
+ */
+export function StatusMessage({
+  children,
+  className,
+  tone = "success",
+}: {
+  children: ReactNode;
+  className?: string;
+  tone?: "success" | "info";
+}) {
+  return (
+    <div role="status" aria-live="polite">
+      <Alert tone={tone} className={className}>
+        {children}
+      </Alert>
+    </div>
+  );
+}
+
+/** Ancestor trail for genuinely hierarchical records (site › location › asset). */
+export function Breadcrumb({
+  items,
+}: {
+  /** Ordered ancestors; the last entry is the current page (no href). */
+  items: { label: string; href?: string }[];
+}) {
+  if (items.length === 0) return null;
+  return (
+    <nav aria-label="Breadcrumb" className="mb-1">
+      <ol className="flex flex-wrap items-center gap-1 text-sm text-gray-500">
+        {items.map((item, i) => (
+          <li key={`${item.label}-${i}`} className="flex items-center gap-1">
+            {i > 0 ? (
+              <span aria-hidden className="text-gray-300">
+                ›
+              </span>
+            ) : null}
+            {item.href ? (
+              <Link
+                href={item.href}
+                className="hover:text-brand-800 hover:underline"
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <span aria-current="page" className="text-gray-700">
+                {item.label}
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+/**
  * Dashboard stat tile (server-safe; icons render inline). The whole tile
  * is the link. Tones color the value only — meaning also lives in the
  * label, never color alone.

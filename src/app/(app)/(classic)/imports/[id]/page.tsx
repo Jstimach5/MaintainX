@@ -8,9 +8,10 @@ import {
   getJob,
   listMappingTemplates,
 } from "@/server/services/imports";
-import { Badge, Card, PageHeader } from "@/components/ui";
+import { Badge, Button, Card, PageHeader, buttonClasses } from "@/components/ui";
 import { MappingForm } from "../import-forms";
 import { rollbackImportAction, startImportAction } from "../actions";
+import { ConfirmSubmit } from "@/components/dialog";
 
 export const metadata = { title: "Import" };
 export const dynamic = "force-dynamic";
@@ -88,16 +89,13 @@ export default async function ImportDetailPage({
           <div className="flex flex-wrap gap-2">
             <form action={startImportAction}>
               <input type="hidden" name="jobId" value={job.id} />
-              <button
-                type="submit"
-                className="inline-flex min-h-11 items-center rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-              >
+              <Button type="submit">
                 Start import ({job.validRows + job.warningRows} rows)
-              </button>
+              </Button>
             </form>
             <a
               href={`/imports/${job.id}/issues.csv`}
-              className="inline-flex min-h-11 items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+              className={buttonClasses("secondary")}
             >
               Download issues CSV
             </a>
@@ -110,7 +108,7 @@ export default async function ImportDetailPage({
           <h2 className="mb-2 font-semibold">Importing…</h2>
           <div className="h-3 w-full overflow-hidden rounded-full bg-gray-100">
             <div
-              className="h-full rounded-full bg-blue-700 transition-all"
+              className="h-full rounded-full bg-brand-700 transition-all"
               style={{
                 width: `${job.totalRows > 0 ? Math.round((job.processedRows / (job.validRows + job.warningRows || 1)) * 100) : 0}%`,
               }}
@@ -136,19 +134,19 @@ export default async function ImportDetailPage({
           <div className="flex flex-wrap gap-2">
             <a
               href={`/imports/${job.id}/issues.csv`}
-              className="inline-flex min-h-11 items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+              className={buttonClasses("secondary")}
             >
               Download issues CSV
             </a>
             {job.status === "completed" && job.createdCount > 0 ? (
               <form action={rollbackImportAction}>
                 <input type="hidden" name="jobId" value={job.id} />
-                <button
-                  type="submit"
-                  className="inline-flex min-h-11 items-center rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800"
-                >
-                  Roll back this import
-                </button>
+                <ConfirmSubmit
+                  label="Roll back this import"
+                  title="Roll back this import?"
+                  body="Work orders created by this import are removed unless someone has already worked on them — those are kept and reported. This cannot be undone."
+                  confirmLabel="Roll back"
+                />
               </form>
             ) : null}
           </div>

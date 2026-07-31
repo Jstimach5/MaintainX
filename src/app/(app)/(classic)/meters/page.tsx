@@ -44,7 +44,7 @@ export default async function MetersPage() {
                 <div className="min-w-0">
                   <Link
                     href={`/meters/${meter.id}`}
-                    className="font-medium text-blue-800 hover:underline"
+                    className="font-medium text-brand-800 hover:underline"
                   >
                     {meter.name}
                   </Link>

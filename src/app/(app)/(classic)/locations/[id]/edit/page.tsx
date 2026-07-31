@@ -36,7 +36,7 @@ export default async function EditLocationPage({
         <LocationForm siteId={site.id} options={options} location={location} />
       </Card>
       <p className="mt-3 text-sm">
-        <Link href={`/sites/${site.id}`} className="text-blue-700 hover:underline">
+        <Link href={`/sites/${site.id}`} className="text-brand-800 hover:underline">
           ← Back to {site.name}
         </Link>
       </p>

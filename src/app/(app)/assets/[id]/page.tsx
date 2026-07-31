@@ -14,6 +14,7 @@ import type { BadgeTone } from "@/components/ui";
 import { DetailLayout } from "@/components/layout";
 import { ArrowLeft, ChevronDown } from "@/components/icons";
 import { AttachmentSection } from "@/components/attachments";
+import { ConfirmSubmit } from "@/components/dialog";
 import { StatusChangeForm, TransferForm } from "../asset-forms";
 import { buildPickerData } from "@/server/services/pickers";
 import { setAssetArchivedAction } from "../actions";
@@ -122,12 +123,21 @@ export default async function AssetDetailPage({
                         name="archived"
                         value={asset.archivedAt ? "false" : "true"}
                       />
-                      <button
-                        type="submit"
-                        className={buttonClasses("secondary")}
-                      >
-                        {asset.archivedAt ? "Restore" : "Archive"}
-                      </button>
+                      {asset.archivedAt ? (
+                        <button
+                          type="submit"
+                          className={buttonClasses("secondary")}
+                        >
+                          Restore
+                        </button>
+                      ) : (
+                        <ConfirmSubmit
+                          label="Archive"
+                          title={`Archive ${asset.name}?`}
+                          body="The asset stops appearing in pickers and new work cannot reference it. History and past work orders are kept, and you can restore it later."
+                          variant="secondary"
+                        />
+                      )}
                     </form>
                   </>
                 ) : null}

@@ -6,10 +6,11 @@ import {
 } from "@/server/services/invitations";
 import { getOrgSettings } from "@/server/services/org";
 import { formatDateTime } from "@/lib/format";
-import { Badge, ButtonLink, Card, PageHeader } from "@/components/ui";
+import { Badge, Button, ButtonLink, Card, PageHeader } from "@/components/ui";
 import type { BadgeTone } from "@/components/ui";
 import Link from "next/link";
 import { setActiveAction } from "./actions";
+import { ConfirmSubmit } from "@/components/dialog";
 import { ReissueButton, RevokeButton } from "./invite-forms";
 
 export const metadata = { title: "Users" };
@@ -67,7 +68,7 @@ export default async function UsersPage() {
             <div className="min-w-0">
               <Link
                 href={`/admin/users/${u.id}`}
-                className="font-medium text-blue-800 hover:underline"
+                className="font-medium text-brand-800 hover:underline"
               >
                 {u.displayName}
               </Link>
@@ -86,12 +87,18 @@ export default async function UsersPage() {
                   name="active"
                   value={u.isActive ? "false" : "true"}
                 />
-                <button
-                  type="submit"
-                  className="rounded px-2 py-1 text-sm text-gray-500 hover:bg-gray-100"
-                >
-                  {u.isActive ? "Deactivate" : "Reactivate"}
-                </button>
+                {u.isActive ? (
+                  <ConfirmSubmit
+                    label="Deactivate"
+                    title={`Deactivate ${u.displayName}?`}
+                    body="They are signed out immediately and cannot sign in again until reactivated. Their history stays intact — accounts are never deleted."
+                    variant="secondary"
+                  />
+                ) : (
+                  <Button type="submit" variant="secondary">
+                    Reactivate
+                  </Button>
+                )}
               </form>
             </div>
           </div>
@@ -102,7 +109,7 @@ export default async function UsersPage() {
         <h2 className="mb-2 font-semibold">Open invitations</h2>
         {open.length === 0 ? (
           <p className="text-sm text-gray-500">
-            None — use <Link href="/admin/users/invite" className="text-blue-700 hover:underline">Invite user</Link> to
+            None — use <Link href="/admin/users/invite" className="text-brand-800 hover:underline">Invite user</Link> to
             bring a coworker on board.
           </p>
         ) : (

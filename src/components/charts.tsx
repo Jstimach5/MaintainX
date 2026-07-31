@@ -10,7 +10,7 @@ import Link from "next/link";
  * ship a crosshair + tooltip hover layer.
  */
 
-const BAR_HUE = "#1d4ed8"; // blue-700 — the app's single sequential hue
+const BAR_HUE = "#43a047"; // brand-600 — the app's single sequential hue
 
 export function StatTile({
   label,
@@ -26,7 +26,7 @@ export function StatTile({
   const valueColor =
     tone === "bad" ? "text-red-700" : tone === "good" ? "text-green-700" : "text-gray-900";
   const body = (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:border-blue-300">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:border-brand-300">
       <p className={`text-2xl font-bold tabular-nums ${valueColor}`}>{value}</p>
       <p className="mt-0.5 text-sm text-gray-500">{label}</p>
     </div>

@@ -14,7 +14,7 @@ import { listSites } from "@/server/services/sites";
 import { listUsers } from "@/server/services/users";
 import { getOrgSettings } from "@/server/services/org";
 import { formatDate, formatDateTime, todayInTimezone } from "@/lib/format";
-import { Badge, Card, PageHeader } from "@/components/ui";
+import { Badge, Button, Card, PageHeader, Select } from "@/components/ui";
 import { WoPriorityBadge, WoStatusBadge } from "@/components/wo-badges";
 import Link2 from "next/link";
 import { CalendarView, TimelineView } from "./views";
@@ -150,7 +150,7 @@ export default async function SchedulePage({
           <Link2
             key={v}
             href={`/schedule?view=${v}`}
-            className={`rounded px-3 py-1.5 capitalize ${view === v ? "bg-white shadow-sm text-blue-800" : "text-gray-600 hover:text-gray-900"}`}
+            className={`rounded px-3 py-1.5 capitalize ${view === v ? "bg-white shadow-sm text-brand-800" : "text-gray-600 hover:text-gray-900"}`}
           >
             {v}
           </Link2>
@@ -189,7 +189,7 @@ export default async function SchedulePage({
             <Link2
               key={g}
               href={`/schedule?view=timeline&group=${g}`}
-              className={`mr-2 ${params.group === g || (!params.group && g === "site") ? "font-semibold text-blue-800" : "text-blue-600 hover:underline"}`}
+              className={`mr-2 ${params.group === g || (!params.group && g === "site") ? "font-semibold text-brand-800" : "text-brand-800 hover:underline"}`}
             >
               {g}
             </Link2>
@@ -199,40 +199,40 @@ export default async function SchedulePage({
 
       {view !== "table" ? null : (
       <form method="get" className="mb-4 flex flex-wrap items-end gap-2">
-        <select name="status" defaultValue={params.status ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
+        <Select name="status" defaultValue={params.status ?? ""} inline aria-label="Status">
           <option value="">All open</option>
           {WO_STATUSES.map((s) => (
             <option key={s.value} value={s.value}>
               {s.label}
             </option>
           ))}
-        </select>
-        <select name="priority" defaultValue={params.priority ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
+        </Select>
+        <Select name="priority" defaultValue={params.priority ?? ""} inline aria-label="Priority">
           <option value="">All priorities</option>
           {WO_PRIORITIES.map((p) => (
             <option key={p.value} value={p.value}>
               {p.label}
             </option>
           ))}
-        </select>
-        <select name="type" defaultValue={params.type ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
+        </Select>
+        <Select name="type" defaultValue={params.type ?? ""} inline aria-label="Work type">
           <option value="">All types</option>
           {WO_TYPES.map((t) => (
             <option key={t.value} value={t.value}>
               {t.label}
             </option>
           ))}
-        </select>
-        <select name="site" defaultValue={params.site ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
+        </Select>
+        <Select name="site" defaultValue={params.site ?? ""} inline aria-label="Site">
           <option value="">All sites</option>
           {sites.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
           ))}
-        </select>
+        </Select>
         {isTech ? null : (
-          <select name="assignee" defaultValue={params.assignee ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
+          <Select name="assignee" defaultValue={params.assignee ?? ""} inline aria-label="Assignee">
             <option value="">Anyone</option>
             {people
               .filter((p) => p.isActive && p.role !== "requester")
@@ -241,15 +241,13 @@ export default async function SchedulePage({
                   {p.displayName}
                 </option>
               ))}
-          </select>
+          </Select>
         )}
         <label className="flex min-h-11 items-center gap-1.5 text-sm text-gray-600">
-          <input type="checkbox" name="done" value="1" defaultChecked={params.done === "1"} className="h-4 w-4" />
+          <input type="checkbox" name="done" value="1" defaultChecked={params.done === "1"} className="h-4 w-4 accent-brand-800" />
           Include finished
         </label>
-        <button type="submit" className="min-h-11 rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800">
-          Filter
-        </button>
+        <Button type="submit" variant="secondary">Filter</Button>
       </form>
       )}
 
@@ -277,7 +275,7 @@ export default async function SchedulePage({
               return (
                 <tr key={wo.id} className="border-b border-gray-100 align-top hover:bg-gray-50">
                   <td className="px-4 py-2">
-                    <Link href={`/work-orders/${wo.id}`} className="font-medium text-blue-800 hover:underline">
+                    <Link href={`/work-orders/${wo.id}`} className="font-medium text-brand-800 hover:underline">
                       {wo.woNumber} · {wo.title}
                     </Link>
                     {wo.flagged ? <Badge tone="red" className="ml-1">flagged</Badge> : null}

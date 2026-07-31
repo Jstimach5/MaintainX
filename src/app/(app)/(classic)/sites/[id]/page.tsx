@@ -90,7 +90,7 @@ export default async function SiteDetailPage({
               <input type="hidden" name="enable" value="true" />
               <button
                 type="submit"
-                className="text-sm font-medium text-blue-700 hover:underline"
+                className="text-sm font-medium text-brand-800 hover:underline"
               >
                 Enable public request portal
               </button>

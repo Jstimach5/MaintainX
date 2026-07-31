@@ -145,7 +145,7 @@ export function ReissueButton({ invitationId }: { invitationId: number }) {
       <form action={formAction} className="inline">
         <input type="hidden" name="invitationId" value={invitationId} />
         <input type="hidden" name="sendEmail" value="1" />
-        <button type="submit" className="text-sm text-blue-700 hover:underline">
+        <button type="submit" className="text-sm text-brand-800 hover:underline">
           Resend
         </button>
       </form>

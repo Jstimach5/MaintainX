@@ -22,7 +22,7 @@ function Dead({ title, body }: { title: string; body: string }) {
       <h1 className="mb-2 text-xl font-bold">{title}</h1>
       <p className="text-sm text-gray-600">{body}</p>
       <p className="mt-4 text-sm">
-        <Link href="/login" className="text-blue-700 hover:underline">
+        <Link href="/login" className="text-brand-800 hover:underline">
           Go to sign in
         </Link>
       </p>

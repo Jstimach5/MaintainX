@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { createTeamAction, updateTeamAction } from "./actions";
-import { Field, Input, Textarea } from "@/components/ui";
+import { Field, Input, Select, Textarea } from "@/components/ui";
 import { FormError, SubmitButton } from "@/components/forms";
 
 export function CreateTeamForm() {
@@ -49,15 +49,14 @@ export function EditTeamForm({
         />
       </Field>
       <Field label="Status" htmlFor="isActive">
-        <select
+        <Select
           id="isActive"
           name="isActive"
           defaultValue={team.isActive ? "true" : "false"}
-          className="block w-full min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base shadow-sm"
         >
           <option value="true">Active</option>
           <option value="false">Inactive</option>
-        </select>
+        </Select>
       </Field>
       <fieldset>
         <legend className="mb-2 text-sm font-medium text-gray-700">

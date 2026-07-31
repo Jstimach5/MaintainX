@@ -41,7 +41,7 @@ export default async function ImportsPage() {
               <div className="min-w-0">
                 <Link
                   href={`/imports/${job.id}`}
-                  className="font-medium text-blue-800 hover:underline"
+                  className="font-medium text-brand-800 hover:underline"
                 >
                   #{job.id} · {job.filename}
                 </Link>

@@ -144,7 +144,7 @@ export function AttachmentSection({
                     href={`/files/${a.id}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-blue-700 hover:underline"
+                    className="text-brand-800 hover:underline"
                   >
                     {a.originalName ?? `file-${a.id}`}
                   </a>

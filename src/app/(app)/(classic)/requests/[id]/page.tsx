@@ -102,7 +102,7 @@ export default async function RequestDetailPage({
             {isReviewer || user.role === "technician" ? (
               <Link
                 href={`/work-orders/${detail.convertedWo.id}`}
-                className="font-medium text-blue-800 hover:underline"
+                className="font-medium text-brand-800 hover:underline"
               >
                 {detail.convertedWo.woNumber} · {detail.convertedWo.title}
               </Link>
@@ -149,7 +149,7 @@ export default async function RequestDetailPage({
               value={
                 <Link
                   href={`/work-orders/${detail.originWo.id}`}
-                  className="text-blue-700 hover:underline"
+                  className="text-brand-800 hover:underline"
                 >
                   {detail.originWo.woNumber}
                 </Link>

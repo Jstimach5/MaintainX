@@ -43,7 +43,7 @@ export default async function PortalPage({
         <p className="mt-4 text-sm">
           <a
             href={`/portal/${token}`}
-            className="text-blue-700 hover:underline"
+            className="text-brand-800 hover:underline"
           >
             Submit another request
           </a>

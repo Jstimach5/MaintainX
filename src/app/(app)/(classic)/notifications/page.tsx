@@ -31,7 +31,7 @@ export default async function NotificationsPage() {
               className={`px-4 py-3 ${n.isRead ? "" : "bg-blue-50/50"}`}
             >
               {n.link ? (
-                <Link href={n.link} className="font-medium text-blue-800 hover:underline">
+                <Link href={n.link} className="font-medium text-brand-800 hover:underline">
                   {n.title}
                 </Link>
               ) : (

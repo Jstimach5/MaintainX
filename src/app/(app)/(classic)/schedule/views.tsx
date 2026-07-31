@@ -63,10 +63,10 @@ export function CalendarView({
       <div className="mb-2 flex items-center justify-between">
         <h2 className="font-semibold">{monthLabel}</h2>
         <span className="flex gap-2 text-sm">
-          <Link href={`/schedule?${baseQs}&view=calendar&month=${prevMonth}`} className="text-blue-700 hover:underline">
+          <Link href={`/schedule?${baseQs}&view=calendar&month=${prevMonth}`} className="text-brand-800 hover:underline">
             ← previous
           </Link>
-          <Link href={`/schedule?${baseQs}&view=calendar&month=${nextMonth}`} className="text-blue-700 hover:underline">
+          <Link href={`/schedule?${baseQs}&view=calendar&month=${nextMonth}`} className="text-brand-800 hover:underline">
             next →
           </Link>
         </span>
@@ -84,11 +84,11 @@ export function CalendarView({
             return (
               <div
                 key={i}
-                className={`min-h-24 bg-white p-1.5 ${isToday ? "ring-2 ring-blue-500 ring-inset" : ""}`}
+                className={`min-h-24 bg-white p-1.5 ${isToday ? "ring-2 ring-brand-500 ring-inset" : ""}`}
               >
                 {day ? (
                   <>
-                    <p className={`text-xs ${isToday ? "font-bold text-blue-700" : "text-gray-400"}`}>
+                    <p className={`text-xs ${isToday ? "font-bold text-brand-800" : "text-gray-400"}`}>
                       {Number(day.slice(-2))}
                     </p>
                     {items.slice(0, 3).map((r) => {
@@ -194,7 +194,7 @@ export function TimelineView({
             {days.map((d) => (
               <div
                 key={d}
-                className={`border-l border-gray-100 px-1 py-0.5 text-center text-[10px] ${d === today ? "font-bold text-blue-700" : "text-gray-400"}`}
+                className={`border-l border-gray-100 px-1 py-0.5 text-center text-[10px] ${d === today ? "font-bold text-brand-800" : "text-gray-400"}`}
               >
                 {Number(d.slice(-2))}
               </div>

@@ -157,7 +157,7 @@ export function invitationEmail(input: {
       `<p>Hi ${escapeHtml(input.displayName)},</p>
 <p>${escapeHtml(input.invitedByName)} invited you to <strong>${escapeHtml(input.orgName)}</strong>'s maintenance system as a <strong>${escapeHtml(input.role)}</strong>.</p>
 ${msg ? `<p style="border-left:3px solid #ccc;padding-left:12px;color:#444">${escapeHtml(msg)}</p>` : ""}
-<p><a href="${link}" style="display:inline-block;background:#1d4ed8;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">Set up your account</a></p>
+<p><a href="${link}" style="display:inline-block;background:#2e7d32;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">Set up your account</a></p>
 <p style="font-size:13px;color:#666">Or paste this link into your browser:<br>${link}</p>
 <p style="font-size:13px;color:#666">This link expires ${expires} and can be used once.</p>`,
     ),
@@ -188,7 +188,7 @@ export function passwordResetEmail(input: {
       input.orgName,
       `<p>Hi ${escapeHtml(input.displayName)},</p>
 <p>Someone asked to reset the password for your <strong>${escapeHtml(input.orgName)}</strong> maintenance account.</p>
-<p><a href="${link}" style="display:inline-block;background:#1d4ed8;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">Set a new password</a></p>
+<p><a href="${link}" style="display:inline-block;background:#2e7d32;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">Set a new password</a></p>
 <p style="font-size:13px;color:#666">Or paste this link into your browser:<br>${link}</p>
 <p style="font-size:13px;color:#666">This link expires ${expires} and can be used once. If you didn't ask for this, ignore this message — your password is unchanged.</p>`,
     ),

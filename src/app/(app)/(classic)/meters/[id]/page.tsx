@@ -124,7 +124,7 @@ export default async function MeterDetailPage({
                       <input type="hidden" name="meterId" value={meter.id} />
                       <input type="hidden" name="triggerId" value={t.id} />
                       <input type="hidden" name="active" value={t.isActive ? "false" : "true"} />
-                      <button type="submit" className="text-xs text-blue-700 hover:underline">
+                      <button type="submit" className="text-xs text-brand-800 hover:underline">
                         {t.isActive ? "Disable" : "Enable"}
                       </button>
                     </form>
@@ -151,7 +151,7 @@ export default async function MeterDetailPage({
             {woHistory.map(({ event, wo }) => (
               <li key={event.id} className="flex items-center justify-between gap-2 text-sm">
                 {wo ? (
-                  <Link href={`/work-orders/${wo.id}`} className="text-blue-700 hover:underline">
+                  <Link href={`/work-orders/${wo.id}`} className="text-brand-800 hover:underline">
                     {wo.woNumber} · {wo.title}
                   </Link>
                 ) : (

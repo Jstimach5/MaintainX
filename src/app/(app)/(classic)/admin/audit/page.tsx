@@ -4,7 +4,7 @@ import { db } from "@/server/db";
 import { auditEvents, users } from "@/server/db/schema";
 import { getOrgSettings } from "@/server/services/org";
 import { formatDateTime } from "@/lib/format";
-import { Badge, Card, PageHeader } from "@/components/ui";
+import { Badge, Button, Card, Input, PageHeader, Select } from "@/components/ui";
 
 export const metadata = { title: "Audit log" };
 export const dynamic = "force-dynamic";
@@ -64,33 +64,32 @@ export default async function AuditPage({
         subtitle="Append-only record of every important action. Newest first, capped at 200 rows per view — narrow with the filters."
       />
       <form method="get" className="mb-4 flex flex-wrap items-end gap-2">
-        <select name="entity" defaultValue={params.entity ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
+        <Select name="entity" defaultValue={params.entity ?? ""} inline aria-label="Record type">
           <option value="">All record types</option>
           {entityTypes.map((t) => (
             <option key={t.entityType} value={t.entityType}>
               {t.entityType.replace("_", " ")}
             </option>
           ))}
-        </select>
-        <input
+        </Select>
+        <Input
           name="action"
           defaultValue={params.action ?? ""}
           placeholder="Action prefix, e.g. work_order."
-          className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base"
+          aria-label="Action prefix"
+          inline
         />
-        <select name="user" defaultValue={params.user ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base">
+        <Select name="user" defaultValue={params.user ?? ""} inline aria-label="User">
           <option value="">Anyone (incl. system)</option>
           {allUsers.map((u) => (
             <option key={u.id} value={u.id}>
               {u.displayName}
             </option>
           ))}
-        </select>
-        <input type="date" name="from" defaultValue={params.from ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base" />
-        <input type="date" name="to" defaultValue={params.to ?? ""} className="min-h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-base" />
-        <button type="submit" className="min-h-11 rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800">
-          Filter
-        </button>
+        </Select>
+        <Input type="date" name="from" defaultValue={params.from ?? ""} aria-label="From date" inline />
+        <Input type="date" name="to" defaultValue={params.to ?? ""} aria-label="To date" inline />
+        <Button type="submit" variant="secondary">Filter</Button>
       </form>
       <Card className="divide-y divide-gray-100 p-0">
         {rows.map(({ event, userName }) => (

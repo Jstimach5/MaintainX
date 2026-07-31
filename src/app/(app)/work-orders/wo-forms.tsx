@@ -14,6 +14,7 @@ import {
 } from "./actions";
 import { Button, Field, Input, Select, Textarea } from "@/components/ui";
 import { Camera, Gauge, MessageSquare } from "@/components/icons";
+import { ConfirmSubmit } from "@/components/dialog";
 import { FormError, SubmitButton } from "@/components/forms";
 import type { PickerData } from "@/server/services/pickers";
 
@@ -331,9 +332,18 @@ export function QuickStatusBar({
           </Button>
         ) : null}
         {status === "completed" ? btn("in_progress", "Reopen") : null}
-        {canCancel && status !== "completed" && status !== "canceled"
-          ? btn("canceled", "Cancel", "danger")
-          : null}
+        {canCancel && status !== "completed" && status !== "canceled" ? (
+          <form action={formAction}>
+            <input type="hidden" name="workOrderId" value={workOrderId} />
+            <input type="hidden" name="status" value="canceled" />
+            <ConfirmSubmit
+              label="Cancel"
+              title="Cancel this work order?"
+              body="Canceled work is kept for the record but never counts as completed. You can reopen it afterwards if this was a mistake."
+              confirmLabel="Cancel work order"
+            />
+          </form>
+        ) : null}
         {status === "canceled" ? btn("open", "Reopen") : null}
       </div>
       {completing ? (

@@ -32,7 +32,7 @@ export default async function ResetPasswordPage({
               one from the sign-in page.
             </p>
             <p className="mt-4 text-sm">
-              <Link href="/forgot" className="text-blue-700 hover:underline">
+              <Link href="/forgot" className="text-brand-800 hover:underline">
                 Request a new link
               </Link>
             </p>

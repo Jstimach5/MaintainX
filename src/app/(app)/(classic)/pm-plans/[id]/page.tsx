@@ -38,7 +38,7 @@ export default async function PlanDetailPage({
           {upcoming.map((d, i) => (
             <span
               key={d}
-              className={`rounded-full px-3 py-1 text-sm ${i === 0 ? "bg-blue-100 font-semibold text-blue-800" : "bg-gray-100 text-gray-600"}`}
+              className={`rounded-full px-3 py-1 text-sm ${i === 0 ? "bg-brand-100 font-semibold text-brand-900" : "bg-gray-100 text-gray-600"}`}
             >
               {formatDate(d, org.timezone)}
             </span>
@@ -62,7 +62,7 @@ export default async function PlanDetailPage({
                 {wo ? (
                   <Link
                     href={`/work-orders/${wo.id}`}
-                    className="text-blue-700 hover:underline"
+                    className="text-brand-800 hover:underline"
                   >
                     {wo.woNumber} · due {formatDate(occurrence.occurrenceKey, org.timezone)}
                   </Link>

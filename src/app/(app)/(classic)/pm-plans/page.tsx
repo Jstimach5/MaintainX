@@ -3,7 +3,7 @@ import { requireRole } from "@/server/auth/guards";
 import { listPlans } from "@/server/services/pm";
 import { getOrgSettings } from "@/server/services/org";
 import { todayInTimezone, formatDate } from "@/lib/format";
-import { Badge, ButtonLink, Card, EmptyState, PageHeader } from "@/components/ui";
+import { Badge, ButtonLink, Card, EmptyState, PageHeader, buttonClasses } from "@/components/ui";
 import { runSchedulerAction } from "./actions";
 
 export const metadata = { title: "Preventive maintenance" };
@@ -24,7 +24,7 @@ export default async function PmPlansPage() {
             <form action={runSchedulerAction}>
               <button
                 type="submit"
-                className="inline-flex min-h-11 items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+                className={buttonClasses("secondary")}
               >
                 Run scheduler now
               </button>
@@ -48,7 +48,7 @@ export default async function PmPlansPage() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Link
                     href={`/pm-plans/${plan.id}`}
-                    className="font-medium text-blue-800 hover:underline"
+                    className="font-medium text-brand-800 hover:underline"
                   >
                     {plan.name}
                   </Link>

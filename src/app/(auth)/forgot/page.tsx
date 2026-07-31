@@ -15,7 +15,7 @@ export default function ForgotPasswordPage() {
         </p>
         <ForgotForm />
         <p className="mt-4 text-sm">
-          <Link href="/login" className="text-blue-700 hover:underline">
+          <Link href="/login" className="text-brand-800 hover:underline">
             Back to sign in
           </Link>
         </p>

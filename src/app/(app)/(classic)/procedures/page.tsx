@@ -31,7 +31,7 @@ export default async function ProceduresPage() {
               <div className="min-w-0">
                 <Link
                   href={`/procedures/${t.id}`}
-                  className="font-medium text-blue-800 hover:underline"
+                  className="font-medium text-brand-800 hover:underline"
                 >
                   {t.name}
                 </Link>
