@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { attachProcedureAction, respondStepAction } from "@/app/(app)/(classic)/procedures/actions";
+import { attachProcedureAction, respondStepAction } from "@/app/(app)/procedures/actions";
 import { Badge, Field, Input, Select, Textarea } from "@/components/ui";
 import { FormError, SubmitButton } from "@/components/forms";
 

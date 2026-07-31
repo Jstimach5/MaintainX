@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireRole } from "@/server/auth/guards";
 import { listTemplates } from "@/server/services/procedures";
 import { Badge, ButtonLink, Card, EmptyState, PageHeader } from "@/components/ui";
+import { ListLayout } from "@/components/layout";
 
 export const metadata = { title: "Procedures" };
 
@@ -9,7 +10,7 @@ export default async function ProceduresPage() {
   await requireRole("admin", "manager");
   const templates = await listTemplates();
   return (
-    <div>
+    <ListLayout>
       <PageHeader
         title="Procedures"
         subtitle="Reusable checklists attached to work orders. Edits create new versions; past work keeps its snapshot."
@@ -45,6 +46,6 @@ export default async function ProceduresPage() {
           ))}
         </Card>
       )}
-    </div>
+    </ListLayout>
   );
 }

@@ -15,8 +15,10 @@ import { listTeams } from "@/server/services/teams";
 import { listUsers } from "@/server/services/users";
 import { getOrgSettings } from "@/server/services/org";
 import { formatDateTime } from "@/lib/format";
-import { Badge, Card, PageHeader } from "@/components/ui";
+import { Badge, Card } from "@/components/ui";
 import { LineChart } from "@/components/charts";
+import { DetailLayout } from "@/components/layout";
+import { ArrowLeft } from "@/components/icons";
 import {
   CorrectionForm,
   MeterForm,
@@ -87,19 +89,29 @@ export default async function MeterDetailPage({
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
-      <PageHeader
-        title={meter.name}
-        subtitle={`Current: ${meter.currentValue != null ? `${Number(meter.currentValue)} ${meter.unit}` : "no readings yet"}`}
-      />
-
+    <DetailLayout
+      header={
+        <div className="mb-4">
+          <Link
+            href="/meters"
+            className="mb-1 inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-brand-800"
+          >
+            <ArrowLeft aria-hidden className="h-4 w-4" />
+            Meters
+          </Link>
+          <h1 className="text-xl font-bold sm:text-2xl">{meter.name}</h1>
+          <p className="text-sm text-gray-500">
+            Current:{" "}
+            {meter.currentValue != null
+              ? `${Number(meter.currentValue)} ${meter.unit}`
+              : "no readings yet"}
+          </p>
+        </div>
+      }
+      rail={
+        <>
       <Card>
-        <h2 className="mb-2 font-semibold">Enter a reading</h2>
-        <ReadingForm meterId={meter.id} unit={meter.unit} />
-      </Card>
-
-      <Card>
-        <h2 className="mb-2 font-semibold">Triggers</h2>
+        <h2 className="mb-2 text-sm font-semibold tracking-wide text-gray-900 uppercase">Triggers</h2>
         {triggers.length === 0 ? (
           <p className="mb-2 text-sm text-gray-500">
             No triggers — readings are recorded but never generate work.
@@ -143,10 +155,9 @@ export default async function MeterDetailPage({
           />
         ) : null}
       </Card>
-
       {woHistory.length > 0 ? (
         <Card>
-          <h2 className="mb-2 font-semibold">Work orders from this meter</h2>
+          <h2 className="mb-2 text-sm font-semibold tracking-wide text-gray-900 uppercase">Work orders from this meter</h2>
           <ul className="space-y-1">
             {woHistory.map(({ event, wo }) => (
               <li key={event.id} className="flex items-center justify-between gap-2 text-sm">
@@ -168,11 +179,59 @@ export default async function MeterDetailPage({
           </ul>
         </Card>
       ) : null}
+      {canManage && manageData ? (
+        <Card>
+          <h2 className="mb-3 text-sm font-semibold tracking-wide text-gray-900 uppercase">Edit meter</h2>
+          <MeterForm
+            assets={manageData.assets}
+            locations={manageData.locations}
+            meter={{
+              id: meter.id,
+              name: meter.name,
+              description: meter.description,
+              unit: meter.unit,
+              assetId: meter.assetId,
+              locationId: meter.locationId,
+              mustIncrease: meter.mustIncrease,
+              warnThreshold: meter.warnThreshold,
+              criticalThreshold: meter.criticalThreshold,
+              isActive: meter.isActive,
+            }}
+          />
+        </Card>
+      ) : null}
+        </>
+      }
+    >
+      <Card>
+        <h2 className="mb-2 text-sm font-semibold tracking-wide text-gray-900 uppercase">Enter a reading</h2>
+        <ReadingForm meterId={meter.id} unit={meter.unit} />
+      </Card>
 
       <Card>
-        <h2 className="mb-2 font-semibold">Trend</h2>
+        <h2 className="mb-2 text-sm font-semibold tracking-wide text-gray-900 uppercase">Trend</h2>
         <LineChart
           unit={meter.unit}
+          thresholds={[
+            ...(meter.warnThreshold != null
+              ? [
+                  {
+                    value: Number(meter.warnThreshold),
+                    label: "warn",
+                    tone: "warn" as const,
+                  },
+                ]
+              : []),
+            ...(meter.criticalThreshold != null
+              ? [
+                  {
+                    value: Number(meter.criticalThreshold),
+                    label: "critical",
+                    tone: "critical" as const,
+                  },
+                ]
+              : []),
+          ]}
           points={[...readings]
             .filter((r) => !r.isVoided)
             .reverse()
@@ -185,7 +244,7 @@ export default async function MeterDetailPage({
       </Card>
 
       <Card>
-        <h2 className="mb-2 font-semibold">Reading history</h2>
+        <h2 className="mb-2 text-sm font-semibold tracking-wide text-gray-900 uppercase">Reading history</h2>
         {readings.length === 0 ? (
           <p className="text-sm text-gray-500">No readings yet.</p>
         ) : (
@@ -234,28 +293,6 @@ export default async function MeterDetailPage({
           </div>
         )}
       </Card>
-
-      {canManage && manageData ? (
-        <Card>
-          <h2 className="mb-3 font-semibold">Edit meter</h2>
-          <MeterForm
-            assets={manageData.assets}
-            locations={manageData.locations}
-            meter={{
-              id: meter.id,
-              name: meter.name,
-              description: meter.description,
-              unit: meter.unit,
-              assetId: meter.assetId,
-              locationId: meter.locationId,
-              mustIncrease: meter.mustIncrease,
-              warnThreshold: meter.warnThreshold,
-              criticalThreshold: meter.criticalThreshold,
-              isActive: meter.isActive,
-            }}
-          />
-        </Card>
-      ) : null}
-    </div>
+    </DetailLayout>
   );
 }

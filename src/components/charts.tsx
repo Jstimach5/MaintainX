@@ -83,10 +83,16 @@ export function LineChart({
   points,
   unit,
   height = 160,
+  thresholds = [],
 }: {
   points: LinePoint[];
   unit: string;
   height?: number;
+  /**
+   * Reference lines drawn behind the series — e.g. a meter's warn and
+   * critical levels, so a reading is read against what it means.
+   */
+  thresholds?: { value: number; label: string; tone: "warn" | "critical" }[];
 }) {
   const ref = useRef<SVGSVGElement>(null);
   const [hover, setHover] = useState<number | null>(null);
@@ -94,13 +100,21 @@ export function LineChart({
   const H = height;
   const PAD = { top: 12, right: 12, bottom: 22, left: 44 };
 
-  const { path, xs, ys, min, max } = useMemo(() => {
+  const { path, xs, ys, min, max, yOf } = useMemo(() => {
     if (points.length === 0) {
-      return { path: "", xs: [] as number[], ys: [] as number[], min: 0, max: 1 };
+      return {
+        path: "",
+        xs: [] as number[],
+        ys: [] as number[],
+        min: 0,
+        max: 1,
+        yOf: () => 0,
+      };
     }
     const values = points.map((p) => p.value);
-    const lo = Math.min(...values);
-    const hi = Math.max(...values);
+    const scaleValues = [...values, ...thresholds.map((t) => t.value)];
+    const lo = Math.min(...scaleValues);
+    const hi = Math.max(...scaleValues);
     const span = hi - lo || 1;
     const innerW = W - PAD.left - PAD.right;
     const innerH = H - PAD.top - PAD.bottom;
@@ -113,9 +127,11 @@ export function LineChart({
       (v) => PAD.top + innerH - ((v - lo) / span) * innerH,
     );
     const path = xs.map((x, i) => `${i === 0 ? "M" : "L"}${x},${ys[i]}`).join(" ");
-    return { path, xs, ys, min: lo, max: hi };
+    const yOf = (v: number) =>
+      PAD.top + innerH - ((v - lo) / span) * innerH;
+    return { path, xs, ys, min: lo, max: hi, yOf };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [points]);
+  }, [points, thresholds]);
 
   if (points.length === 0) {
     return <p className="text-sm text-gray-400">No readings yet.</p>;
@@ -150,6 +166,34 @@ export function LineChart({
         onMouseMove={onMove}
         onMouseLeave={() => setHover(null)}
       >
+        {/* Threshold reference lines — labelled, so colour is never the
+            only carrier of meaning. */}
+        {thresholds.map((t) => {
+          const y = yOf(t.value);
+          const stroke = t.tone === "critical" ? "#dc2626" : "#d97706";
+          return (
+            <g key={`${t.label}-${t.value}`}>
+              <line
+                x1={PAD.left}
+                x2={W - PAD.right}
+                y1={y}
+                y2={y}
+                stroke={stroke}
+                strokeWidth={1}
+                strokeDasharray="4 3"
+              />
+              <text
+                x={W - PAD.right}
+                y={y - 4}
+                textAnchor="end"
+                fontSize={10}
+                fill={stroke}
+              >
+                {t.label} {t.value}
+              </text>
+            </g>
+          );
+        })}
         {/* Recessive grid: min/max only */}
         <line x1={PAD.left} x2={W - PAD.right} y1={PAD.top} y2={PAD.top} stroke="#e5e7eb" strokeWidth={1} />
         <line x1={PAD.left} x2={W - PAD.right} y1={H - PAD.bottom} y2={H - PAD.bottom} stroke="#e5e7eb" strokeWidth={1} />
