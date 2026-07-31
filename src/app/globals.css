@@ -3,6 +3,29 @@
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
+
+  /*
+   * Seal Tech brand green, anchored at the marketing site's #4CAF50 (= 500).
+   * Contrast contract (white text on shade): 500 = 2.9:1 FAIL, 600 = 3.3:1
+   * (graphics/large text only), 700 = 4.1:1 FAIL AA, 800 = 5.1:1 PASS,
+   * 900 = 7.9:1, 950 = 14.3:1.
+   * Rules: interactive text + solid buttons use 800 (hover 900); focus
+   * borders/rings 600; header/hero surfaces 950; 500 is ACCENT ONLY (logo
+   * diamond, active text on 950, large graphics). Status colors (Badge
+   * green/blue/amber/red, banners) are NOT brand — they stay on Tailwind's
+   * stock palettes.
+   */
+  --color-brand-50: #e8f5e9;
+  --color-brand-100: #c8e6c9;
+  --color-brand-200: #a5d6a7;
+  --color-brand-300: #81c784;
+  --color-brand-400: #66bb6a; /* site stats-band green */
+  --color-brand-500: #4caf50; /* site primary — decorative/accent only */
+  --color-brand-600: #43a047;
+  --color-brand-700: #388e3c;
+  --color-brand-800: #2e7d32; /* interactive: links, solid buttons */
+  --color-brand-900: #1b5e20; /* hover/pressed on 800 */
+  --color-brand-950: #123020; /* forest header, matches site hero */
 }
 
 html {
