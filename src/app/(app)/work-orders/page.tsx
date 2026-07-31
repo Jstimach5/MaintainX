@@ -22,6 +22,7 @@ import {
   Select,
 } from "@/components/ui";
 import { ListLayout } from "@/components/layout";
+import { FilterToolbar } from "@/components/filter-toolbar";
 import { WoPriorityBadge, WoStatusBadge } from "@/components/wo-badges";
 
 export const metadata = { title: "Work orders" };
@@ -94,7 +95,28 @@ export default async function WorkOrdersPage({
           ) : undefined
         }
       />
-      <form method="get" className="mb-4 flex flex-wrap items-center gap-2">
+      <FilterToolbar
+        activeCount={
+          [
+            params.q,
+            params.status,
+            params.priority,
+            params.type,
+            params.site,
+            params.mine,
+            params.done,
+          ].filter(Boolean).length
+        }
+        defaultOpen={
+          [
+            params.q,
+            params.status,
+            params.priority,
+            params.type,
+            params.site,
+          ].some(Boolean)
+        }
+      >
         <Input
           type="search"
           name="q"
@@ -179,7 +201,7 @@ export default async function WorkOrdersPage({
         <Button type="submit" variant="secondary">
           Filter
         </Button>
-      </form>
+      </FilterToolbar>
 
       {rows.length === 0 ? (
         <EmptyState

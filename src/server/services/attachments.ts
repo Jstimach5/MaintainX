@@ -1,9 +1,10 @@
 import crypto from "crypto";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/server/db";
 import { assets, attachments } from "@/server/db/schema";
 import {
   ALLOWED_TYPES,
+  IMAGE_TYPES,
   MAX_UPLOAD_BYTES,
   storage,
 } from "@/server/storage";
@@ -50,6 +51,44 @@ export async function listAttachments(
       ),
     )
     .orderBy(asc(attachments.createdAt));
+}
+
+/**
+ * One representative image per entity, for list thumbnails — a single
+ * query for the whole page rather than one per row. A photo filed as
+ * "main" wins; otherwise the oldest image stands in.
+ */
+export async function listMainImages(
+  entityType: AttachmentEntityType,
+  entityIds: number[],
+): Promise<Map<number, number>> {
+  if (entityIds.length === 0) return new Map();
+  const rows = await db
+    .select({
+      entityId: attachments.entityId,
+      id: attachments.id,
+      mimeType: attachments.mimeType,
+      category: attachments.category,
+    })
+    .from(attachments)
+    .where(
+      and(
+        eq(attachments.entityType, entityType),
+        inArray(attachments.entityId, entityIds),
+      ),
+    )
+    .orderBy(asc(attachments.createdAt));
+
+  const best = new Map<number, { id: number; isMain: boolean }>();
+  for (const row of rows) {
+    if (!IMAGE_TYPES.has(row.mimeType)) continue;
+    const current = best.get(row.entityId);
+    const isMain = row.category === "main";
+    if (!current || (isMain && !current.isMain)) {
+      best.set(row.entityId, { id: row.id, isMain });
+    }
+  }
+  return new Map([...best].map(([entityId, v]) => [entityId, v.id]));
 }
 
 export async function getAttachment(id: number) {

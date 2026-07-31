@@ -18,6 +18,9 @@ import {
   Select,
 } from "@/components/ui";
 import { ListLayout } from "@/components/layout";
+import { AssetThumb } from "@/components/asset-thumb";
+import { listMainImages } from "@/server/services/attachments";
+import { FilterToolbar } from "@/components/filter-toolbar";
 import type { BadgeTone } from "@/components/ui";
 
 export const metadata = { title: "Assets" };
@@ -42,7 +45,7 @@ export default async function AssetsPage({
   const status = ASSET_STATUSES.some((s) => s.value === params.status)
     ? (params.status as AssetStatusValue)
     : undefined;
-  const [rows, sites] = await Promise.all([
+  const [rowsRaw, sites] = await Promise.all([
     listAssets({
       q: params.q,
       siteId: Number.isInteger(siteId) ? siteId : undefined,
@@ -51,6 +54,12 @@ export default async function AssetsPage({
     }),
     listSites({ activeOnly: true }),
   ]);
+  const rows = rowsRaw;
+  // One query for the page's thumbnails, not one per row.
+  const photos = await listMainImages(
+    "asset",
+    rows.map((r) => r.asset.id),
+  );
 
   return (
     <ListLayout>
@@ -63,7 +72,7 @@ export default async function AssetsPage({
           ) : undefined
         }
       />
-      <form method="get" className="mb-4 flex flex-wrap items-center gap-2">
+      <FilterToolbar activeCount={[params.q, params.site, params.status, params.archived].filter(Boolean).length}>
         <Input
           type="search"
           name="q"
@@ -102,7 +111,7 @@ export default async function AssetsPage({
         <Button type="submit" variant="secondary">
           Filter
         </Button>
-      </form>
+      </FilterToolbar>
       {rows.length === 0 ? (
         <EmptyState
           title="No assets found"
@@ -118,7 +127,12 @@ export default async function AssetsPage({
                 href={`/assets/${asset.id}`}
                 className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 active:bg-gray-50"
               >
-                <span className="min-w-0">
+                <span className="flex min-w-0 items-start gap-3">
+                  <AssetThumb
+                    attachmentId={photos.get(asset.id)}
+                    assetType={asset.assetType}
+                  />
+                  <span className="min-w-0">
                   <span className="block font-medium text-brand-800">
                     {asset.assetNumber} · {asset.name}
                   </span>
@@ -126,6 +140,7 @@ export default async function AssetsPage({
                     {siteName}
                     {locationName ? ` › ${locationName}` : ""}
                     {asset.assetType ? ` · ${asset.assetType}` : ""}
+                  </span>
                   </span>
                 </span>
                 <span className="flex items-center gap-2">
@@ -156,12 +171,19 @@ export default async function AssetsPage({
                 {rows.map(({ asset, siteName, locationName }) => (
                   <tr key={asset.id} className="hover:bg-gray-50">
                     <td className="px-4 py-2.5">
-                      <Link
-                        href={`/assets/${asset.id}`}
-                        className="font-medium text-brand-800 hover:underline"
-                      >
-                        {asset.assetNumber} · {asset.name}
-                      </Link>
+                      <span className="flex items-center gap-2.5">
+                        <AssetThumb
+                          attachmentId={photos.get(asset.id)}
+                          assetType={asset.assetType}
+                          className="h-8 w-8"
+                        />
+                        <Link
+                          href={`/assets/${asset.id}`}
+                          className="font-medium text-brand-800 hover:underline"
+                        >
+                          {asset.assetNumber} · {asset.name}
+                        </Link>
+                      </span>
                     </td>
                     <td className="max-w-40 truncate px-3 py-2.5 text-gray-600">
                       {asset.assetType ?? "—"}

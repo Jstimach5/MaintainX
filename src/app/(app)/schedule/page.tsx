@@ -16,6 +16,7 @@ import { getOrgSettings } from "@/server/services/org";
 import { formatDate, formatDateTime, todayInTimezone } from "@/lib/format";
 import { Badge, Button, Card, PageHeader, Select } from "@/components/ui";
 import { ListLayout } from "@/components/layout";
+import { FilterToolbar } from "@/components/filter-toolbar";
 import { TriangleAlert } from "@/components/icons";
 import { WoPriorityBadge, WoStatusBadge } from "@/components/wo-badges";
 import Link2 from "next/link";
@@ -201,7 +202,7 @@ export default async function SchedulePage({
       ) : null}
 
       {view !== "table" ? null : (
-      <form method="get" className="mb-4 flex flex-wrap items-end gap-2">
+      <FilterToolbar activeCount={[params.status, params.priority, params.type, params.site, params.assignee, params.done].filter(Boolean).length}>
         <Select name="status" defaultValue={params.status ?? ""} inline aria-label="Status">
           <option value="">All open</option>
           {WO_STATUSES.map((s) => (
@@ -251,7 +252,7 @@ export default async function SchedulePage({
           Include finished
         </label>
         <Button type="submit" variant="secondary">Filter</Button>
-      </form>
+      </FilterToolbar>
       )}
 
       {view !== "table" ? null : (

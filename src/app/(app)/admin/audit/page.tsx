@@ -6,6 +6,7 @@ import { getOrgSettings } from "@/server/services/org";
 import { formatDateTime } from "@/lib/format";
 import { Badge, Button, Card, Input, PageHeader, Select } from "@/components/ui";
 import { ListLayout } from "@/components/layout";
+import { FilterToolbar } from "@/components/filter-toolbar";
 
 export const metadata = { title: "Audit log" };
 export const dynamic = "force-dynamic";
@@ -64,7 +65,7 @@ export default async function AuditPage({
         title="Audit log"
         subtitle="Append-only record of every important action. Newest first, capped at 200 rows per view — narrow with the filters."
       />
-      <form method="get" className="mb-4 flex flex-wrap items-end gap-2">
+      <FilterToolbar activeCount={[params.entity, params.action, params.user, params.from, params.to].filter(Boolean).length}>
         <Select name="entity" defaultValue={params.entity ?? ""} inline aria-label="Record type">
           <option value="">All record types</option>
           {entityTypes.map((t) => (
@@ -91,7 +92,7 @@ export default async function AuditPage({
         <Input type="date" name="from" defaultValue={params.from ?? ""} aria-label="From date" inline />
         <Input type="date" name="to" defaultValue={params.to ?? ""} aria-label="To date" inline />
         <Button type="submit" variant="secondary">Filter</Button>
-      </form>
+      </FilterToolbar>
       <Card className="divide-y divide-gray-100 p-0">
         {rows.map(({ event, userName }) => (
           <div key={event.id} className="px-4 py-2.5">

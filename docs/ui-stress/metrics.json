@@ -1,0 +1,222 @@
+[
+  {
+    "role": "technician",
+    "slug": "dashboard",
+    "viewport": "1440x900",
+    "url": "/dashboard",
+    "screenshot": "technician/dashboard--1440x900.png",
+    "title": "Dashboard",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.21
+  },
+  {
+    "role": "technician",
+    "slug": "dashboard",
+    "viewport": "1280x800",
+    "url": "/dashboard",
+    "screenshot": "technician/dashboard--1280x800.png",
+    "title": "Dashboard",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.36
+  },
+  {
+    "role": "technician",
+    "slug": "dashboard",
+    "viewport": "1024x768",
+    "url": "/dashboard",
+    "screenshot": "technician/dashboard--1024x768.png",
+    "title": "Dashboard",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.42
+  },
+  {
+    "role": "technician",
+    "slug": "dashboard",
+    "viewport": "768x1024",
+    "url": "/dashboard",
+    "screenshot": "technician/dashboard--768x1024.png",
+    "title": "Dashboard",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.07
+  },
+  {
+    "role": "technician",
+    "slug": "dashboard",
+    "viewport": "390x844",
+    "url": "/dashboard",
+    "screenshot": "technician/dashboard--390x844.png",
+    "title": "Dashboard",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.8
+  },
+  {
+    "role": "technician",
+    "slug": "dashboard",
+    "viewport": "360x800",
+    "url": "/dashboard",
+    "screenshot": "technician/dashboard--360x800.png",
+    "title": "Dashboard",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.93
+  },
+  {
+    "role": "technician",
+    "slug": "work-order-detail",
+    "viewport": "1440x900",
+    "url": "/work-orders/3",
+    "screenshot": "technician/work-order-detail--1440x900.png",
+    "title": "Work order",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.9
+  },
+  {
+    "role": "technician",
+    "slug": "work-order-detail",
+    "viewport": "1280x800",
+    "url": "/work-orders/3",
+    "screenshot": "technician/work-order-detail--1280x800.png",
+    "title": "Work order",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 2.13
+  },
+  {
+    "role": "technician",
+    "slug": "work-order-detail",
+    "viewport": "1024x768",
+    "url": "/work-orders/3",
+    "screenshot": "technician/work-order-detail--1024x768.png",
+    "title": "Work order",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 2.36
+  },
+  {
+    "role": "technician",
+    "slug": "work-order-detail",
+    "viewport": "768x1024",
+    "url": "/work-orders/3",
+    "screenshot": "technician/work-order-detail--768x1024.png",
+    "title": "Work order",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 2.3
+  },
+  {
+    "role": "technician",
+    "slug": "work-order-detail",
+    "viewport": "390x844",
+    "url": "/work-orders/3",
+    "screenshot": "technician/work-order-detail--390x844.png",
+    "title": "Work order",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 3.2
+  },
+  {
+    "role": "technician",
+    "slug": "work-order-detail",
+    "viewport": "360x800",
+    "url": "/work-orders/3",
+    "screenshot": "technician/work-order-detail--360x800.png",
+    "title": "Work order",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 3.48
+  },
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "1440x900",
+    "url": "/assets",
+    "screenshot": "technician/assets--1440x900.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1
+  },
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "1280x800",
+    "url": "/assets",
+    "screenshot": "technician/assets--1280x800.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1
+  },
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "1024x768",
+    "url": "/assets",
+    "screenshot": "technician/assets--1024x768.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1
+  },
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "768x1024",
+    "url": "/assets",
+    "screenshot": "technician/assets--768x1024.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1
+  },
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "390x844",
+    "url": "/assets",
+    "screenshot": "technician/assets--390x844.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.38
+  },
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "360x800",
+    "url": "/assets",
+    "screenshot": "technician/assets--360x800.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.5
+  },
+  {
+    "role": "technician",
+    "slug": "work-orders-mine",
+    "viewport": "390x844",
+    "url": "/work-orders?mine=1",
+    "screenshot": "technician/work-orders-mine--390x844.png",
+    "title": "Work orders",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.69
+  },
+  {
+    "role": "technician",
+    "slug": "work-orders-mine",
+    "viewport": "360x800",
+    "url": "/work-orders?mine=1",
+    "screenshot": "technician/work-orders-mine--360x800.png",
+    "title": "Work orders",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.78
+  }
+]

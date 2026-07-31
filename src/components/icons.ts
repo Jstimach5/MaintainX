@@ -39,6 +39,8 @@ export {
   // Actions & feedback
   Plus,
   Search,
+  SlidersHorizontal,
+  Truck,
   Camera,
   ImagePlus,
   MessageSquare,

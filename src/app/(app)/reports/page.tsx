@@ -24,6 +24,7 @@ import { db } from "@/server/db";
 import { reportViews } from "@/server/db/schema";
 import { Button, Card, Input, PageHeader, Select } from "@/components/ui";
 import { ListLayout } from "@/components/layout";
+import { FilterToolbar } from "@/components/filter-toolbar";
 import { BarRows, StatTile } from "@/components/charts";
 import { PrintButton } from "@/components/print-button";
 import { deleteReportViewAction, saveReportViewAction } from "./actions";
@@ -102,7 +103,7 @@ export default async function ReportsPage({
         subtitle="Counts always distinguish completed from canceled — canceled work is never counted as done."
       />
 
-      <form method="get" className="flex flex-wrap items-end gap-2">
+      <FilterToolbar activeCount={[params.from, params.to, params.site].filter(Boolean).length}>
         <label className="text-sm text-gray-600">
           From
           <Input type="date" name="from" defaultValue={params.from ?? ""} inline className="mt-0.5 block" />
@@ -127,7 +128,7 @@ export default async function ReportsPage({
           Export CSV
         </a>
         <PrintButton />
-      </form>
+      </FilterToolbar>
 
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         {savedViews.map((v) => (

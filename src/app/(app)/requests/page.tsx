@@ -19,6 +19,7 @@ import {
 } from "@/components/ui";
 import type { BadgeTone } from "@/components/ui";
 import { ListLayout } from "@/components/layout";
+import { FilterToolbar } from "@/components/filter-toolbar";
 
 export const metadata = { title: "Requests" };
 
@@ -74,7 +75,7 @@ export default async function RequestsPage({
         actions={<ButtonLink href="/requests/new">New request</ButtonLink>}
       />
       {isReviewer ? (
-        <form method="get" className="mb-4 flex flex-wrap items-center gap-2">
+        <FilterToolbar activeCount={[params.status].filter(Boolean).length}>
           <Select
             name="status"
             defaultValue={params.status ?? ""}
@@ -91,7 +92,7 @@ export default async function RequestsPage({
           <Button type="submit" variant="secondary">
             Filter
           </Button>
-        </form>
+        </FilterToolbar>
       ) : null}
 
       {rows.length === 0 ? (

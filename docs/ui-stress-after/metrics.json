@@ -1,0 +1,90 @@
+[
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "1440x900",
+    "url": "/assets",
+    "screenshot": "technician/assets--1440x900.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1
+  },
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "1280x800",
+    "url": "/assets",
+    "screenshot": "technician/assets--1280x800.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1
+  },
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "1024x768",
+    "url": "/assets",
+    "screenshot": "technician/assets--1024x768.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1
+  },
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "768x1024",
+    "url": "/assets",
+    "screenshot": "technician/assets--768x1024.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1
+  },
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "390x844",
+    "url": "/assets",
+    "screenshot": "technician/assets--390x844.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.29
+  },
+  {
+    "role": "technician",
+    "slug": "assets",
+    "viewport": "360x800",
+    "url": "/assets",
+    "screenshot": "technician/assets--360x800.png",
+    "title": "Assets",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.42
+  },
+  {
+    "role": "technician",
+    "slug": "work-orders-mine",
+    "viewport": "390x844",
+    "url": "/work-orders?mine=1",
+    "screenshot": "technician/work-orders-mine--390x844.png",
+    "title": "Work orders",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.44
+  },
+  {
+    "role": "technician",
+    "slug": "work-orders-mine",
+    "viewport": "360x800",
+    "url": "/work-orders?mine=1",
+    "screenshot": "technician/work-orders-mine--360x800.png",
+    "title": "Work orders",
+    "overflowX": false,
+    "mainWidthPct": 100,
+    "foldRatio": 1.52
+  }
+]
