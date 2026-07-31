@@ -151,9 +151,22 @@ Format — **User/purpose · Primary action · Secondary · Visible info · Unus
 
 ## Task & usability baseline
 
-Recorded by `scripts/ui-tasks.ts` (Phase 1) into the table below — scripted Playwright runs measure *interaction cost* (clicks, page loads, backtracks) on the same seed; time is the scripted wall-clock (machine speed, comparable only run-to-run); confusion points and the 1–7 ease rating are reviewer judgments with rationale, with columns left open for real-user ratings.
+Recorded by `scripts/ui-tasks.ts` (raw numbers in `docs/ui-baseline/tasks.json`). Scripted Playwright runs measure *interaction cost* — clicks, form-field touches, page navigations, backtracks — on the same seed. Time is scripted wall-clock (machine speed; comparable only against other runs of the same script). The scripted path is the **minimum** path: a human unfamiliar with the UI pays extra cost from S1 (overflowing nav) and S2 (no active state) that these counters can't see. Ease (1–7, higher = easier) and confusion points are reviewer judgments; the User-ease column is left blank for real-user ratings if desired. Note: on detail pages, form submissions re-render the same URL, which the harness counts as "backtracks" — for those rows the number reflects post-action re-renders, not lost users.
 
-_Table filled in by the Phase 1 commit._
+| Role | Task | Done | ms | Clicks | Fields | Navs | Back | Ease | User ease | Confusion points |
+|---|---|---|---|---|---|---|---|---|---|---|
+| admin | Create site → location → asset | ✓ | 1045 | 8 | 4 | 8 | 1 | 4 | | Three separate forms across two modules; asset form doesn't carry site/location context from the site you just made; "Add location" is a small link on the site page. |
+| admin | Invite a user | ✓ | 248 | 3 | 2 | 2 | 0 | 6 | | "Invite user" vs "Add manually" choice unexplained; one-time link only appears after submit. |
+| admin | Locate asset, open QR label | ✓ | 631 | 4 | 1 | 5 | 1 | 5 | | Search requires the Filter click; label page relies on the browser's print UI with no printed-identity branding. |
+| manager | Find overdue work | ✓ | 138 | 1 | 0 | 1 | 0 | 4 | | Worked in 1 click only because the overdue WO happened to be in "Due soon"; there is **no overdue filter/view anywhere** — otherwise you scan lists for red date text. |
+| manager | Create, assign, schedule a WO | ✓ | 454 | 4 | 4 | 3 | 0 | 5 | | Solid form; browser-default datetime control; no success confirmation (silent redirect to detail). |
+| manager | Review upcoming PM | ✓ | 183 | 2 | 0 | 2 | 0 | 6 | | Nav label "PM" is jargon; plan detail shows occurrences clearly. |
+| technician | Find today's work, open, start | ✓ | 335 | 2 | 0 | 2 | 1 | 5 | | "Today — nothing scheduled" dead card shows while real work sits under "All my work"; start itself is clear. |
+| technician | Note + meter reading + photo + complete | ✓ | 20852* | 5 | 4 | 5 | 4* | 4 | | Comment box at the bottom of a 3.2-fold scroll; meter "Record" is a small secondary button; photo upload gives no visible confirmation (*the 20s is the harness waiting for one); completion sheet has no title. |
+| requester | Submit a request | ✓ | 174 | 2 | 2 | 1 | 0 | 6 | | Best form in the app; success feedback is minimal. |
+| requester | Find request later, check status | ✓ | 155 | 2 | 0 | 2 | 0 | 5 | | Status is plain gray text on the home card; no explanation of the request lifecycle stages. |
+
+Post-pilot and post-rollout, the same script re-runs (`OUT_FILE=docs/ui-after/tasks.json`); the redesign must not increase click/nav counts on these paths, and the specific confusion points above are its checklist.
 
 ## What this baseline commits the redesign to
 

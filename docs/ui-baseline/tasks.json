@@ -1,0 +1,102 @@
+[
+  {
+    "role": "admin",
+    "task": "create site, location, asset",
+    "completed": true,
+    "ms": 1045,
+    "clicks": 8,
+    "fields": 4,
+    "navigations": 8,
+    "backtracks": 1
+  },
+  {
+    "role": "admin",
+    "task": "invite a user",
+    "completed": true,
+    "ms": 248,
+    "clicks": 3,
+    "fields": 2,
+    "navigations": 2,
+    "backtracks": 0
+  },
+  {
+    "role": "admin",
+    "task": "locate asset, open QR label",
+    "completed": true,
+    "ms": 631,
+    "clicks": 4,
+    "fields": 1,
+    "navigations": 5,
+    "backtracks": 1
+  },
+  {
+    "role": "manager",
+    "task": "find overdue work",
+    "completed": true,
+    "ms": 138,
+    "clicks": 1,
+    "fields": 0,
+    "navigations": 1,
+    "backtracks": 0
+  },
+  {
+    "role": "manager",
+    "task": "create, assign, schedule a work order",
+    "completed": true,
+    "ms": 454,
+    "clicks": 4,
+    "fields": 4,
+    "navigations": 3,
+    "backtracks": 0
+  },
+  {
+    "role": "manager",
+    "task": "review upcoming preventive maintenance",
+    "completed": true,
+    "ms": 183,
+    "clicks": 2,
+    "fields": 0,
+    "navigations": 2,
+    "backtracks": 0
+  },
+  {
+    "role": "technician",
+    "task": "find today's assigned work, open it, start work",
+    "completed": true,
+    "ms": 335,
+    "clicks": 2,
+    "fields": 0,
+    "navigations": 2,
+    "backtracks": 1
+  },
+  {
+    "role": "technician",
+    "task": "add note, meter reading, photo; complete the WO",
+    "completed": true,
+    "ms": 20852,
+    "clicks": 5,
+    "fields": 4,
+    "navigations": 5,
+    "backtracks": 4
+  },
+  {
+    "role": "requester",
+    "task": "submit a maintenance request",
+    "completed": true,
+    "ms": 174,
+    "clicks": 2,
+    "fields": 2,
+    "navigations": 1,
+    "backtracks": 0
+  },
+  {
+    "role": "requester",
+    "task": "find the request later, check status",
+    "completed": true,
+    "ms": 155,
+    "clicks": 2,
+    "fields": 0,
+    "navigations": 2,
+    "backtracks": 0
+  }
+]
