@@ -22,7 +22,6 @@
     "e2e:server": "tsx e2e/reset-db.ts && DATABASE_URL=${E2E_DATABASE_URL:-postgres://cmms:cmms_dev_password@localhost:5432/cmms_e2e} APP_URL=http://localhost:3100 next dev -p 3100"
   },
   "dependencies": {
-    "@axe-core/playwright": "^4.12.1",
     "csv-parse": "7.0.1",
     "drizzle-orm": "0.45.2",
     "exceljs": "4.4.0",
@@ -37,6 +36,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/eslintrc": "3.3.6",
     "@playwright/test": "1.62.0",
     "@tailwindcss/postcss": "4.3.3",
